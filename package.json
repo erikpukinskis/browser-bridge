@@ -1,6 +1,6 @@
 {
   "name": "nrtv-bridge-tie",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Proxies code and state between Node and the browser",
   "main": "bridge-tie.js",
   "repository": {
