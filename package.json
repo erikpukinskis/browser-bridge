@@ -1,0 +1,17 @@
+{
+  "name": "nrtv-bridge-tie",
+  "version": "0.1.0",
+  "description": "Proxies code and state between Node and the browser",
+  "main": "bridge-tie.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/erikpukinskis/nrtv-bridge-tie.git"
+  },
+  "dependencies": {
+    "nrtv-component": "*",
+    "nrtv-element": "*",
+    "object-hash": "*"
+  },
+  "license": "ISC",
+  "homepage": "https://github.com/erikpukinskis/nrtv-bridge-tie"
+}
