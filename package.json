@@ -8,6 +8,7 @@
     "url": "https://github.com/erikpukinskis/nrtv-bridge-tie.git"
   },
   "dependencies": {
+    "amdefine": "*",
     "nrtv-component": "*",
     "nrtv-element": "*",
     "object-hash": "*"

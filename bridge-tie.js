@@ -1,8 +1,12 @@
+if (typeof define !== 'function') {
+  var define = require('amdefine')(
+    module)}
+
 // Bridge Tie
 
 define(
   "nrtv-bridge-tie", 
-  ["component", "nrtv-element", "object-hash"],
+  ["nrtv-component", "nrtv-element", "object-hash"],
   function(component, element, hash) {
     function BridgeTie(instance) {
       this.instance = instance
