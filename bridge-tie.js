@@ -5,9 +5,8 @@ if (typeof define !== 'function') {
 // Bridge Tie
 
 define(
-  "nrtv-bridge-tie", 
-  ["nrtv-component", "nrtv-element", "object-hash"],
-  function(component, element, hash) {
+  ["nrtv-element", "object-hash"],
+  function(element, hash) {
     function BridgeTie(instance) {
       this.instance = instance
       this.clientFuncs = {}
@@ -125,6 +124,8 @@ define(
       }
     }
 
-    component.addTypeOfTie("bridge", BridgeTie)
+    return function(component) {
+      component.addTypeOfTie("bridge", BridgeTie)
+    }
   }
 )
