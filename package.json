@@ -7,11 +7,21 @@
     "type": "git",
     "url": "https://github.com/erikpukinskis/nrtv-bridge-tie.git"
   },
+  "scripts": {
+    "test": "node test.js"
+  },
   "dependencies": {
     "amdefine": "*",
     "nrtv-component": "*",
     "nrtv-element": "*",
-    "object-hash": "*"
+    "object-hash": "*",
+    "html": "*"
+  },
+  "devDependencies": {
+    "requirejs": "*",
+    "chai": "*",
+    "sinon": "*",
+    "sinon-chai": "*"
   },
   "license": "ISC",
   "homepage": "https://github.com/erikpukinskis/nrtv-bridge-tie"

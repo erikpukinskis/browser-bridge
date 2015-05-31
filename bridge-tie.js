@@ -5,8 +5,8 @@ if (typeof define !== 'function') {
 // Bridge Tie
 
 define(
-  ["nrtv-element", "object-hash"],
-  function(element, hash) {
+  ["nrtv-element", "object-hash", "html"],
+  function(element, hash, html) {
     function BridgeTie(instance) {
       this.instance = instance
       this.clientFuncs = {}
@@ -24,17 +24,19 @@ define(
 
         var styles = element("style", " .hidden { display: none }")
 
-        var html = element("html", [
+        var el = element("html", [
           element("head", [
             jquery,
             bindings,
             styles
           ]),
-          element("body", body.html())
-        ]).html()
+          body
+        ])
+
+        var source = "<!DOCTYPE html>\n" + el.html()
 
         return function(x, response) {
-          response.send(html)
+          response.send(html.prettyPrint(source))
         }
 
       }
