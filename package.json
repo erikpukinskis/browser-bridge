@@ -1,28 +1,26 @@
 {
-  "name": "nrtv-bridge-tie",
+  "name": "nrtv-server-browser-bridge",
   "version": "0.4.0",
   "description": "Proxies code and state between Node and the browser",
-  "main": "bridge-tie.js",
+  "main": "server-browser-bridge.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/erikpukinskis/nrtv-bridge-tie.git"
+    "url": "https://github.com/erikpukinskis/nrtv-server-browser-bridge.git"
   },
   "scripts": {
     "test": "node test.js"
   },
   "dependencies": {
-    "amdefine": "*",
-    "nrtv-component": "*",
+    "nrtv-library": "*",
     "nrtv-element": "*",
     "object-hash": "*",
     "html": "*"
   },
   "devDependencies": {
-    "requirejs": "*",
     "chai": "*",
     "sinon": "*",
     "sinon-chai": "*"
   },
   "license": "ISC",
-  "homepage": "https://github.com/erikpukinskis/nrtv-bridge-tie"
+  "homepage": "https://github.com/erikpukinskis/nrtv-server-browser-bridge"
 }

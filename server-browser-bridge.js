@@ -1,18 +1,16 @@
-if (typeof define !== 'function') {
-  var define = require('amdefine')(
-    module)}
+var library = require("nrtv-library")(require)
 
-// Bridge Tie
-
-define(
+module.exports = library.export(
+  "server-browser-bridge",
   ["nrtv-element", "object-hash", "html"],
   function(element, hash, html) {
-    function BridgeTie(instance) {
+ 
+    function ServerBrowserBridge(instance) {
       this.instance = instance
       this.clientFuncs = {}
     }
 
-    BridgeTie.prototype.sendPage =
+    ServerBrowserBridge.prototype.sendPage =
       function(body) {
 
         var jquery = element("script", {src: "https://code.jquery.com/jquery-2.1.4.min.js"})
@@ -41,7 +39,7 @@ define(
 
       }
 
-    BridgeTie.prototype.script =
+    ServerBrowserBridge.prototype.script =
       function() {
         var lines = []
         for (key in this.clientFuncs) {
@@ -72,7 +70,7 @@ define(
         // )
     }
 
-    BridgeTie.prototype.defineOnClient =
+    ServerBrowserBridge.prototype.defineOnClient =
       function(func) {
         var key = hash(func)
 
@@ -99,7 +97,7 @@ define(
 
     // gives you a string that when evaled on the client, would cause the function to be called with the args
 
-    BoundFunc.prototype.evalable =
+    ServerBrowserBridge.prototype.evalable =
       function() {
         return "funcs[\""
           + this.binding.key
@@ -110,7 +108,7 @@ define(
 
     // gives you a JSON object that, if sent to the client, causes the function to be called with the args
 
-    BoundFunc.prototype.evalResponse =
+    ServerBrowserBridge.prototype.evalResponse =
         function() {
           return this.binding
         }
@@ -126,8 +124,6 @@ define(
       }
     }
 
-    return function(component) {
-      component.addTypeOfTie("bridge", BridgeTie)
-    }
+    return ServerBrowserBridge
   }
 )

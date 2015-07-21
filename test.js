@@ -1,16 +1,18 @@
-requirejs = require("requirejs")
+var library = require("nrtv-library")(require)
 
-requirejs(
-  ["nrtv-component", "bridge-tie", "nrtv-element", "chai", "sinon", "sinon-chai"],
-  function(component, BridgeTie, element, chai, sinon, sinonChai) {
-    var expect = chai.expect
-    chai.use(sinonChai)
 
-    var Hello = component(BridgeTie)
+library.test(
+  "sending an element",
+
+  ["nrtv-element", "sinon", "./server-browser-bridge"],
+
+  function(expect, done, element, sinon, ServerBrowserBridge) {
+
+    var bridge = new ServerBrowserBridge()
 
     var el = element("body", "Hello, world!")
 
-    var middleware = Hello.bridge().sendPage(el)
+    var middleware = bridge.sendPage(el)
 
     var response = {
       send: function(html) {
@@ -18,6 +20,7 @@ requirejs(
         expect(html).to.contain("<body>")
         expect(html).to.contain("<html>")
         expect(html).to.contain("Hello, world!")
+        done()
       }
     }
 
@@ -27,4 +30,5 @@ requirejs(
 
     expect(response.send).to.have
       .been.called
-  })
+  }
+)
