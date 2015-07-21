@@ -4,11 +4,11 @@ var library = require("nrtv-library")(require)
 library.test(
   "sending an element",
 
-  ["nrtv-element", "sinon", "./server-browser-bridge"],
+  ["nrtv-element", "sinon", "./browser-bridge"],
 
-  function(expect, done, element, sinon, ServerBrowserBridge) {
+  function(expect, done, element, sinon, BrowserBridge) {
 
-    var bridge = new ServerBrowserBridge()
+    var bridge = new BrowserBridge()
 
     var el = element("body", "Hello, world!")
 
