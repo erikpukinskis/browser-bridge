@@ -21,7 +21,6 @@ module.exports = library.export(
 
     BrowserBridge.prototype.sendPage =
       function(body) {
-
         var jquery = element("script", {src: "https://code.jquery.com/jquery-2.1.4.min.js"})
 
         var bindings = element(
