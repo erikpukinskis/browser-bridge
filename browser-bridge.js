@@ -1,16 +1,25 @@
 var library = require("nrtv-library")(require)
 
 module.exports = library.export(
-  "server-browser-bridge",
-  ["nrtv-element", "object-hash", "html"],
-  function(element, hash, html) {
+  "browser-bridge",
+  [library.collective({}), "nrtv-element", "object-hash", "html"],
+  function(collective, element, hash, html) {
  
-    function ServerBrowserBridge(instance) {
+    function BrowserBridge(instance) {
       this.instance = instance
       this.clientFuncs = {}
     }
 
-    ServerBrowserBridge.prototype.sendPage =
+    BrowserBridge.collective =
+      function() {
+        if (!collective.bridge) {
+          collective.bridge = new BrowserBridge()
+        }
+
+        return collective.bridge
+      }
+
+    BrowserBridge.prototype.sendPage =
       function(body) {
 
         var jquery = element("script", {src: "https://code.jquery.com/jquery-2.1.4.min.js"})
@@ -39,7 +48,7 @@ module.exports = library.export(
 
       }
 
-    ServerBrowserBridge.prototype.script =
+    BrowserBridge.prototype.script =
       function() {
         var lines = []
         for (key in this.clientFuncs) {
@@ -70,7 +79,7 @@ module.exports = library.export(
         // )
     }
 
-    ServerBrowserBridge.prototype.defineOnClient =
+    BrowserBridge.prototype.defineOnClient =
       function(func) {
         var key = hash(func)
 
@@ -97,7 +106,7 @@ module.exports = library.export(
 
     // gives you a string that when evaled on the client, would cause the function to be called with the args
 
-    ServerBrowserBridge.prototype.evalable =
+    BrowserBridge.prototype.evalable =
       function() {
         return "funcs[\""
           + this.binding.key
@@ -108,7 +117,7 @@ module.exports = library.export(
 
     // gives you a JSON object that, if sent to the client, causes the function to be called with the args
 
-    ServerBrowserBridge.prototype.evalResponse =
+    BrowserBridge.prototype.evalResponse =
         function() {
           return this.binding
         }
@@ -124,6 +133,6 @@ module.exports = library.export(
       }
     }
 
-    return ServerBrowserBridge
+    return BrowserBridge
   }
 )

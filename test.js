@@ -32,3 +32,15 @@ library.test(
       .been.called
   }
 )
+
+library.test(
+  "has a collective",
+  ["./browser-bridge"],
+  function(expect, done, BrowserBridge) {
+    var bridge = BrowserBridge.collective()
+
+    expect(bridge.sendPage).to.be.a("function")
+    done()
+  }
+
+)
