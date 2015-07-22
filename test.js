@@ -42,5 +42,29 @@ library.test(
     expect(bridge.sendPage).to.be.a("function")
     done()
   }
+)
+
+library.test(
+  "getting evalable javascript references",
+  ["./browser-bridge"],
+  function(expect, done, BrowserBridge) {
+    var bridge = new BrowserBridge()
+
+    function greet(name) {
+      alert("hi, "+name)
+    }
+
+    var boundFunction = bridge.defineOnClient(greet)
+
+    var greetErik = boundFunction("Erik")
+
+    expect(greetErik.evalable()).to.match(/\["Erik"\]/)
+
+    expect(bridge.script()).to.contain(greetErik.binding.key)
+
+    expect(bridge.script()).to.contain("function greet(name)")
+
+    done()
+  }
 
 )

@@ -106,7 +106,7 @@ module.exports = library.export(
 
     // gives you a string that when evaled on the client, would cause the function to be called with the args
 
-    BrowserBridge.prototype.evalable =
+    BoundFunc.prototype.evalable =
       function() {
         return "funcs[\""
           + this.binding.key
@@ -117,7 +117,7 @@ module.exports = library.export(
 
     // gives you a JSON object that, if sent to the client, causes the function to be called with the args
 
-    BrowserBridge.prototype.evalResponse =
+    BoundFunc.prototype.evalResponse =
         function() {
           return this.binding
         }
