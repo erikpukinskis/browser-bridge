@@ -66,5 +66,64 @@ library.test(
 
     done()
   }
-
 )
+
+library.test(
+  "client functions can use other client functions",
+  ["nrtv-element", "./browser-bridge", "nrtv-server", "zombie"],
+  function(expect, done, element, BrowserBridge, Server, Browser) {
+
+    var bridge = new BrowserBridge()
+
+    var foo = bridge.defineOnClient(
+      function(number) {
+        return "foo "+number
+      }
+    )
+
+    var bar = bridge.defineOnClient(
+      [foo],
+      function(foo, baz) {
+        $(".out").html(foo(3)+" "+baz)
+      }
+    )
+
+    var button = element("button", {onclick: bar("rabbit").evalable()}, "Press me.")
+
+    var server = new Server()
+
+    server.get(
+      "/",
+      bridge.sendPage(
+        element([button, ".out"])
+      )
+    )
+
+    server.start(6676)
+
+    Browser.localhost("localhost", 6676);
+
+    var browser = new Browser()
+
+    browser.on("error", function(e) {
+      throw(e)
+    })
+
+    console.log("going")
+    browser.visit("/", function() {
+
+      console.log("there")
+      browser.pressButton(
+        "button",
+
+        function() {
+          console.log("pressed")
+          server.stop()
+          browser.assert.text(".out", "foo 3 rabbit")
+          done()
+        }
+      )
+    })
+  }
+)
+

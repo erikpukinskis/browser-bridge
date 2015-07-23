@@ -8,7 +8,7 @@
     "url": "https://github.com/erikpukinskis/nrtv-browser-bridge.git"
   },
   "scripts": {
-    "test": "node test.js"
+    "test": "node --harmony test.js"
   },
   "dependencies": {
     "nrtv-library": "*",
@@ -17,9 +17,9 @@
     "html": "*"
   },
   "devDependencies": {
-    "chai": "*",
     "sinon": "*",
-    "sinon-chai": "*"
+    "nrtv-server": "*",
+    "zombie": "*"
   },
   "license": "ISC",
   "homepage": "https://github.com/erikpukinskis/nrtv-browser-bridge"
