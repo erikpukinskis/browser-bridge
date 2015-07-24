@@ -56,7 +56,7 @@ library.test(
 
     var boundFunction = bridge.defineOnClient(greet)
 
-    var greetErik = boundFunction("Erik")
+    var greetErik = boundFunction.withArgs("Erik")
 
     expect(greetErik.evalable()).to.match(/\["Erik"\]/)
 
@@ -70,8 +70,8 @@ library.test(
 
 library.test(
   "client functions can use other client functions",
-  ["nrtv-element", "./browser-bridge", "nrtv-server", "zombie"],
-  function(expect, done, element, BrowserBridge, Server, Browser) {
+  ["nrtv-element", "./browser-bridge", "nrtv-server", "nrtv-browse"],
+  function(expect, done, element, BrowserBridge, Server, browse) {
 
     var bridge = new BrowserBridge()
 
@@ -84,11 +84,11 @@ library.test(
     var bar = bridge.defineOnClient(
       [foo],
       function(foo, baz) {
-        $(".out").html(foo(3)+" "+baz)
+        document.querySelectorAll(".out")[0].innerHTML = foo(3)+" "+baz
       }
     )
 
-    var button = element("button", {onclick: bar("rabbit").evalable()}, "Press me.")
+    var button = element("button", {onclick: bar.withArgs("rabbit").evalable()}, "Press me.")
 
     var server = new Server()
 
@@ -101,23 +101,12 @@ library.test(
 
     server.start(6676)
 
-    Browser.localhost("localhost", 6676);
+    var browser = browse(6676)
 
-    var browser = new Browser()
-
-    browser.on("error", function(e) {
-      throw(e)
-    })
-
-    console.log("going")
     browser.visit("/", function() {
-
-      console.log("there")
       browser.pressButton(
         "button",
-
         function() {
-          console.log("pressed")
           server.stop()
           browser.assert.text(".out", "foo 3 rabbit")
           done()

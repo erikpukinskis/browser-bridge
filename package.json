@@ -19,7 +19,7 @@
   "devDependencies": {
     "sinon": "*",
     "nrtv-server": "*",
-    "zombie": "*"
+    "nrtv-browse": "*"
   },
   "license": "ISC",
   "homepage": "https://github.com/erikpukinskis/nrtv-browser-bridge"

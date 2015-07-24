@@ -79,7 +79,16 @@ module.exports = library.export(
     }
 
     BrowserBridge.prototype.defineOnClient =
-      function(func) {
+      function(one, two) {
+
+        if (two) {
+          var func = two
+          var dependencies = one
+        } else {
+          var func = one
+          var dependencies = []
+        }
+
         var key = hash(func)
 
         if (!this.clientFuncs[key]) {
@@ -89,29 +98,58 @@ module.exports = library.export(
           this.clientFuncs[key] = func
         }
 
-        return function() {
-          var args = Array.prototype.slice.call(arguments)
-
-          return new BoundFunc(key, args)
-        }
+        return new BoundFunc(key, dependencies)
       }
 
-    function BoundFunc(key, args) {
+    // rename ClientDefinition?
+    function BoundFunc(key, dependencies, args) {
       this.binding = {
         key: key,
-        args: args
+        dependencies: dependencies || [],
+        args: args || [],
       }
     }
+
+    BoundFunc.prototype.withArgs =
+      function() {
+        var args = Array.prototype.slice.call(arguments)
+
+        debugger
+        return new BoundFunc(
+          this.binding.key,
+          this.binding.dependencies,
+          [].concat(this.binding.args, args)
+        )
+      }
 
     // gives you a string that when evaled on the client, would cause the function to be called with the args
 
     BoundFunc.prototype.evalable =
       function() {
+        var deps = []
+
+        for(var i=0; i<this.binding.dependencies.length; i++) {
+
+          deps.push(this.binding.dependencies[i].callable())
+        }
+
+        for(var i=0; i<this.binding.args.length; i++) {
+
+          deps.push(JSON.stringify(this.binding.args[i]))
+        }
+
         return "funcs[\""
           + this.binding.key
-          + "\"].apply(bridge,"
-          + JSON.stringify(this.binding.args)
-          + ")"
+          + "\"].apply(bridge,["
+          + deps.join(",")
+          + "])"
+      }
+
+    BoundFunc.prototype.callable =
+      function() {
+        return "funcs[\""
+          + this.binding.key
+          + "\"]"
       }
 
     // gives you a JSON object that, if sent to the client, causes the function to be called with the args
