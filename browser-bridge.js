@@ -21,6 +21,16 @@ module.exports = library.export(
 
     BrowserBridge.prototype.sendPage =
       function(body) {
+        var html = this.getPage(body)
+
+        return function(x, response) {
+          response.send(html)
+        }
+
+      }
+
+    BrowserBridge.prototype.getPage =
+      function(body) {
         var jquery = element("script", {src: "https://code.jquery.com/jquery-2.1.4.min.js"})
 
         var bindings = element(
@@ -36,15 +46,12 @@ module.exports = library.export(
             bindings,
             styles
           ]),
-          body
+          body || ""
         ])
 
         var source = "<!DOCTYPE html>\n" + el.html()
 
-        return function(x, response) {
-          response.send(html.prettyPrint(source))
-        }
-
+        return html.prettyPrint(source)
       }
 
     BrowserBridge.prototype.script =
