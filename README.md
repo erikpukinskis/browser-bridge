@@ -69,7 +69,7 @@ var refund = bridge.defineOnClient(
 
 You can then pass refund.evalable() down to the browser, and it will pop up a "minus one plus one" alert.
 
-##Why
+## Why
 
 * you only send down the javascript that you actually need on a specific page, for faster first visit load times
 
