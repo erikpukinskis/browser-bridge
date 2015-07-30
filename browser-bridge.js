@@ -1,7 +1,7 @@
 var library = require("nrtv-library")(require)
 
 module.exports = library.export(
-  "browser-bridge",
+  "nrtv-browser-bridge",
   [library.collective({}), "nrtv-element", "object-hash", "html"],
   function(collective, element, hash, html) {
  
