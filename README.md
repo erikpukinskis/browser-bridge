@@ -62,16 +62,16 @@ You can also pass data between functions on the client by passing references on 
 var refund = bridge.defineOnClient(
   [plusOne],
   function(plusOne) {
-    alert(plusOne("minus one")
+    alert(plusOne("minus one"))
   }
 )
 ```
 
 You can then pass refund.evalable() down to the browser, and it will pop up a "minus one plus one" alert.
 
-!! Why
+##Why
 
-* you only send down the javascript that you actually need on a specific page, for faster first visit load times.
+* you only send down the javascript that you actually need on a specific page, for faster first visit load times
 
 * no extra asset build step
 
