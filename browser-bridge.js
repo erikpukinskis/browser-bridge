@@ -121,7 +121,6 @@ module.exports = library.export(
       function() {
         var args = Array.prototype.slice.call(arguments)
 
-        debugger
         return new BoundFunc(
           this.binding.key,
           this.binding.dependencies,
@@ -131,7 +130,7 @@ module.exports = library.export(
 
     // gives you a string that when evaled on the client, would cause the function to be called with the args
 
-    BoundFunc.prototype.evalable =
+    BoundFunc.prototype.callable =
       function() {
         var deps = []
 
@@ -145,18 +144,24 @@ module.exports = library.export(
           deps.push(JSON.stringify(this.binding.args[i]))
         }
 
-        return "funcs[\""
+        deps = deps.length ? deps.join(",") : ""
+
+        var javascript = "funcs[\""
           + this.binding.key
-          + "\"].apply(bridge,["
-          + deps.join(",")
-          + "])"
+          + "\"].bind(bridge"
+
+        if (deps.length > 0) {
+          javascript += ","+deps
+        }
+
+        javascript += ")"
+
+        return javascript
       }
 
-    BoundFunc.prototype.callable =
+    BoundFunc.prototype.evalable =
       function() {
-        return "funcs[\""
-          + this.binding.key
-          + "\"]"
+        return this.callable()+"()"
       }
 
     // gives you a JSON object that, if sent to the client, causes the function to be called with the args

@@ -58,7 +58,7 @@ library.test(
 
     var greetErik = boundFunction.withArgs("Erik")
 
-    expect(greetErik.evalable()).to.match(/\["Erik"\]/)
+    expect(greetErik.evalable()).to.match(/"Erik"/)
 
     expect(bridge.script()).to.contain(greetErik.binding.key)
 
@@ -72,6 +72,8 @@ library.test(
   "client functions can use other client functions",
   ["nrtv-element", "./browser-bridge", "nrtv-server", "nrtv-browse"],
   function(expect, done, element, BrowserBridge, Server, browse) {
+
+    done.failAfter(4000)
 
     var bridge = new BrowserBridge()
 
