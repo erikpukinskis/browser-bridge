@@ -7,6 +7,7 @@ module.exports = library.export(
  
     function BrowserBridge(instance) {
       this.instance = instance
+      this.id = Math.random().toString(36).substr(2,4)
       this.clientFuncs = {}
     }
 
