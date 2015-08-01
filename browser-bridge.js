@@ -60,13 +60,16 @@ module.exports = library.export(
         for (key in this.clientFuncs) {
           var source = this.clientFuncs[key].toString()
 
-          var source = source.replace(/^function[^(]*\(/, "function "+key+"(")
+          var source = source.replace(
+            /^function[^(]*\(/,
+            "function "+key+"("
+          )
 
           lines.push(source)
         }
 
         funcsSource = "\n"
-          + lines.join("\n")
+          + lines.join("\n      ")
           + "\n"
 
         var lines = client.toString().replace("FUNCS", funcsSource).split("\n")
@@ -124,17 +127,13 @@ module.exports = library.export(
 
     BoundFunc.prototype.callable =
       function() {
-        var javascript = this.binding.key+".bind(bridge"
-
         var arguments = this.argumentString()
 
-        if (arguments.length > 0) {
-          javascript += ","+arguments
+        if (arguments.length < 1) {
+          return this.binding.key
         }
 
-        javascript += ")"
-
-        return javascript
+        return this.binding.key+".bind(bridge,"+arguments+")"
       }
 
     BoundFunc.prototype.argumentString = function() {
@@ -156,7 +155,7 @@ module.exports = library.export(
 
     BoundFunc.prototype.evalable =
       function() {
-        return this.key+"("+this.argumentString+")"
+        return this.binding.key+"("+this.argumentString()+")"
       }
 
     // gives you a JSON object that, if sent to the client, causes the function to be called with the args
