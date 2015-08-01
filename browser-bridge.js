@@ -156,8 +156,7 @@ module.exports = library.export(
 
     BoundFunc.prototype.evalable =
       function() {
-
-        return this.callable()+"()"
+        return this.key+"("+this.argumentString+")"
       }
 
     // gives you a JSON object that, if sent to the client, causes the function to be called with the args
