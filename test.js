@@ -8,6 +8,7 @@ library.test(
 
   function(expect, done, element, sinon, BrowserBridge) {
 
+    done.failAfter(3000)
     var bridge = new BrowserBridge()
 
     var el = element("body", "Hello, world!")
@@ -62,7 +63,7 @@ library.test(
 
     expect(bridge.script()).to.contain(greetErik.binding.key)
 
-    expect(bridge.script()).to.contain("function greet(name)")
+    expect(bridge.script()).to.match(/function .*(name)/)
 
     done()
   }

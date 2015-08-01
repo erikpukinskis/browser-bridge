@@ -58,32 +58,22 @@ module.exports = library.export(
       function() {
         var lines = []
         for (key in this.clientFuncs) {
-          lines.push(
-            "'"
-            + key
-            + "': "
-            + funcSource(this.clientFuncs[key])
-          )
+          var source = this.clientFuncs[key].toString()
+
+          var source = source.replace(/^function[^(]*\(/, "function "+key+"(")
+
+          lines.push(source)
         }
 
-        funcsSource = "{\n"
-          + lines.join(",\n  ")
-          + "\n}"
+        funcsSource = "\n"
+          + lines.join("\n")
+          + "\n"
 
         var lines = client.toString().replace("FUNCS", funcsSource).split("\n")
 
         return lines.slice(1,lines.length-1).join("\n")
 
       }
-
-    function funcSource(func) {
-      return func
-        .toString()
-        // .replace(
-        //   /function [a-zA-Z0-9_]+ ?\(/,
-        //   "function("
-        // )
-    }
 
     BrowserBridge.prototype.defineOnClient =
       function(one, two) {
@@ -96,7 +86,8 @@ module.exports = library.export(
           var dependencies = []
         }
 
-        var key = hash(func)
+
+        var key = (func.name.length ? func.name : 'f')+"_"+hash(func).substr(0,4)
 
         if (!this.clientFuncs[key]) {
 
@@ -146,9 +137,7 @@ module.exports = library.export(
 
         deps = deps.length ? deps.join(",") : ""
 
-        var javascript = "funcs[\""
-          + this.binding.key
-          + "\"].bind(bridge"
+        var javascript = this.binding.key+".bind(bridge"
 
         if (deps.length > 0) {
           javascript += ","+deps
@@ -174,7 +163,7 @@ module.exports = library.export(
     // And here is the client we run in the browser to facilitate those two things. The funcs are swapped in when we write the HTML page. 
 
     function client() {
-      var funcs = FUNCS
+      FUNCS
       var bridge = {
         handle: function(binding) {
           funcs[binding.key].apply(bridge, binding.args)
