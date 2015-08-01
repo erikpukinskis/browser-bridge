@@ -3,12 +3,12 @@ Historically, we write client and server-side javascript separately, and have an
 The browser bridge lets you achieve the same ends more directly. You just define functions in Node that you want to be on the client:
 
 ```javascript
-var BrowserBridge = require("nrtv-browser-bridge")
+var BrowserBridge = require("./browser-bridge")
 
 var bridge = new BrowserBridge()
 
 var plusOne = bridge.defineOnClient(
-  function(plusOne) {
+  function tackOneOn(number) {
     return number+" plus one"
   }
 )
@@ -18,24 +18,23 @@ If you then call bridge.getPage() you'll get a page with that function available
 
 ```html
 <html>
-
+    
 <head>
-    <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
-    <script>
-        var funcs = {
-    '7ac697f71ce0d89b02abaa34025c87d9c2d54ae6': function (plusOne) {
-            return number+" plus one"
-          }
+  <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+  <script>
+    function tackOneOn_408d(number) {
+      return number+" plus one"
     }
-          var bridge = {
-            handle: function(binding) {
-              funcs[binding.key].apply(bridge, binding.args)
-            }
-          }
-    </script>
-    <style>
-        .hidden { display: none }
-    </style>
+      
+    var bridge = {
+      handle: function(binding) {
+        funcs[binding.key].apply(bridge, binding.args)
+      }
+    }
+  </script>
+  <style>
+      .hidden { display: none }
+  </style>
 </head>
 <div></div>
 
@@ -51,7 +50,7 @@ plusOne.withArgs("ten").evalable()
 will return:
 
 ```javascript
-funcs["7ac697f71ce0d89b02abaa34025c87d9c2d54ae6"].apply(bridge,["ten"])
+tackOneOn_408d("ten")
 ```
 
 If you put that code in a click handler, it will return "ten plus one".
