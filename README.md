@@ -1,6 +1,6 @@
 Historically, we write client and server-side javascript separately, and have an elaborate build system to package client side javascript into assets.
 
-The browser bridge lets you achieve the same ends more directly. You just define functions in Node that you want to be on the client:
+The browser bridge lets you achieve the same ends more directly. You define functions in Node that you want to be on the client:
 
 ```javascript
 var BrowserBridge = require("./browser-bridge")
