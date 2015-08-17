@@ -3,7 +3,7 @@ Historically, we write client and server-side javascript separately, and have an
 The browser bridge lets you achieve the same ends more directly. You define functions in Node that you want to be on the client:
 
 ```javascript
-var BrowserBridge = require("./browser-bridge")
+var BrowserBridge = require("nrtv-browser-bridge")
 
 var bridge = new BrowserBridge()
 
