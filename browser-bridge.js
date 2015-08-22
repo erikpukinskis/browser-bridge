@@ -11,14 +11,15 @@ module.exports = library.export(
       this.clientFuncs = {}
     }
 
-    BrowserBridge.collective =
-      function() {
-        if (!collective.bridge) {
-          collective.bridge = new BrowserBridge()
-        }
-
-        return collective.bridge
+    function getCollective() {
+      if (!collective.bridge) {
+        collective.bridge = new BrowserBridge()
       }
+
+      return collective.bridge
+    }
+
+    // Rename sendPageHandler? #todo
 
     BrowserBridge.prototype.sendPage =
       function(body) {
@@ -27,7 +28,11 @@ module.exports = library.export(
         return function(x, response) {
           response.send(html)
         }
+      }
 
+    BrowserBridge.sendPage =
+      function(body) {
+        return getCollective().sendPage(body)
       }
 
     BrowserBridge.prototype.getPage =
@@ -101,6 +106,11 @@ module.exports = library.export(
         }
 
         return new BoundFunc(key, dependencies)
+      }
+
+    BrowserBridge.defineOnClient =
+      function(one, two) {
+        return getCollective().defineOnClient(one, two)
       }
 
     // rename ClientDefinition?

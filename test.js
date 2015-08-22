@@ -34,19 +34,10 @@ library.test(
   }
 )
 
-library.test(
-  "has a collective",
-  ["./browser-bridge"],
-  function(expect, done, BrowserBridge) {
-    var bridge = BrowserBridge.collective()
-
-    expect(bridge.sendPage).to.be.a("function")
-    done()
-  }
-)
 
 library.test(
   "getting evalable javascript references",
+
   ["./browser-bridge"],
   function(expect, done, BrowserBridge) {
     var bridge = new BrowserBridge()
@@ -69,8 +60,10 @@ library.test(
   }
 )
 
+
 library.test(
   "client functions can use other client functions",
+
   ["nrtv-element", "./browser-bridge", "nrtv-server", "nrtv-browse"],
   function(expect, done, element, BrowserBridge, Server, browse) {
 
@@ -116,6 +109,33 @@ library.test(
         }
       )
     })
+  }
+)
+
+
+
+library.test(
+  "Use static methods to do stuff with the collective bridge",
+
+  ["./browser-bridge"],
+  function(expect, done, BrowserBridge) {
+
+    BrowserBridge.defineOnClient(function brussels() {}
+    )
+
+    BrowserBridge.defineOnClient(
+      function sprouts() {}
+    )
+
+    var response = {
+      send: function(html) {
+        expect(html).to.contain("brussels")
+        expect(html).to.contain("sprouts")
+        done()
+      }
+    }
+
+    BrowserBridge.sendPage()(null, response)
   }
 )
 
