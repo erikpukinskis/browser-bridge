@@ -171,6 +171,8 @@ module.exports = library.export(
 
     // gives you a JSON object that, if sent to the client, causes the function to be called with the args
 
+    // Rename to ajaxResponse? #todo
+
     BoundFunc.prototype.evalResponse =
         function() {
           return this.binding
@@ -182,7 +184,7 @@ module.exports = library.export(
       FUNCS
       var bridge = {
         handle: function(binding) {
-          funcs[binding.key].apply(bridge, binding.args)
+          window[binding.key].apply(bridge, binding.args)
         }
       }
     }

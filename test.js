@@ -1,5 +1,6 @@
 var library = require("nrtv-library")(require)
 
+library.test.only("sending responses to the client bridge evaluates them")
 
 library.test(
   "sending an element",
@@ -139,3 +140,61 @@ library.test(
   }
 )
 
+
+
+
+library.test(
+  "sending responses to the client bridge evaluates them",
+
+  ["./browser-bridge", "nrtv-element", "nrtv-server", "nrtv-browse"],
+  function(expect, done, BrowserBridge,   element, Server, browse) {
+    var bridge = new BrowserBridge()
+
+    var whatever = bridge.defineOnClient(
+      function(name) {
+        document.write(name)
+      }
+    )
+
+    var applyBinding = bridge.defineOnClient(
+      function(binding) {
+        bridge.handle(binding)
+      }
+    )
+
+    var binding = whatever.withArgs("ted").evalResponse()
+
+    var button = element(
+      "button",
+      "Buttoon", {
+      onclick: applyBinding.withArgs(binding).evalable()
+    })
+
+    var server = new Server()
+
+    server.get(
+      "/",
+      bridge.sendPage(button)
+    )
+
+    server.start(10101)
+
+    var browser = browse()
+
+    browser.visit(
+      "http://localhost:10101",
+      function() {
+        browser.pressButton(
+          "button",
+          function() {
+            server.stop()
+            browser.assert.text("body", "ted")
+            done()
+          }
+        )
+      }
+    )
+
+
+  }
+)
