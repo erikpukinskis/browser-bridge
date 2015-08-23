@@ -1,6 +1,6 @@
 var library = require("nrtv-library")(require)
 
-library.test.only("sending responses to the client bridge evaluates them")
+// library.test.only("sending responses to the client bridge evaluates them")
 
 library.test(
   "sending an element",
@@ -98,18 +98,19 @@ library.test(
 
     server.start(6676)
 
-    var browser = browse(6676)
+    browse("http://localhost:6676", function(browser) {
 
-    browser.visit("/", function() {
-      browser.pressButton(
-        "button",
-        function() {
-          server.stop()
-          browser.assert.text(".out", "foo 3 rabbit")
-          done()
-        }
-      )
-    })
+        browser.pressButton(
+          "button",
+          function() {
+            server.stop()
+            browser.assert.text(".out", "foo 3 rabbit")
+            done()
+          }
+        )
+
+      }
+    )
   }
 )
 
@@ -179,22 +180,21 @@ library.test(
 
     server.start(10101)
 
-    var browser = browse()
+    browse("http://localhost:10101",
+      function(browser) {
 
-    browser.visit(
-      "http://localhost:10101",
-      function() {
         browser.pressButton(
-          "button",
+          "button", 
           function() {
             server.stop()
-            browser.assert.text("body", "ted")
+            browser.assert.text(
+              "body", "ted"
+            )
             done()
           }
         )
+
       }
     )
-
-
   }
 )
