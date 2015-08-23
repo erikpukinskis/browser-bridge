@@ -162,7 +162,7 @@ library.test(
       }
     )
 
-    var binding = whatever.withArgs("ted").evalResponse()
+    var binding = whatever.withArgs("ted").ajaxResponse()
 
     var button = element(
       "button",

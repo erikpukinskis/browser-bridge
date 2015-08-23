@@ -173,7 +173,7 @@ module.exports = library.export(
 
     // Rename to ajaxResponse? #todo
 
-    BoundFunc.prototype.evalResponse =
+    BoundFunc.prototype.ajaxResponse =
         function() {
           return this.binding
         }
