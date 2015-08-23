@@ -116,6 +116,7 @@ module.exports = library.export(
     // rename ClientDefinition?
     function BoundFunc(key, dependencies, args) {
       this.binding = {
+        __BrowserBridgeBinding: true,
         key: key,
         dependencies: dependencies || [],
         args: args || [],
@@ -184,7 +185,10 @@ module.exports = library.export(
       FUNCS
       var bridge = {
         handle: function(binding) {
-          window[binding.key].apply(bridge, binding.args)
+          if (binding.__BrowserBridgeBinding) {
+
+            window[binding.key].apply(bridge, binding.args)
+          }
         }
       }
     }
