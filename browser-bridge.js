@@ -37,7 +37,6 @@ module.exports = library.export(
 
     BrowserBridge.prototype.getPage =
       function(body) {
-        var jquery = element("script", {src: "https://code.jquery.com/jquery-2.1.4.min.js"})
 
         var bindings = element(
           "script",
@@ -48,7 +47,6 @@ module.exports = library.export(
 
         var el = element("html", [
           element("head", [
-            jquery,
             bindings,
             styles
           ]),
