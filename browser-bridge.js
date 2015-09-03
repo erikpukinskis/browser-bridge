@@ -197,7 +197,11 @@ module.exports = library.export(
       var bridge = {
         handle: function(binding) {
           if (binding.__BrowserBridgeBinding) {
+            var func = window[binding.key]
 
+            if (!func) {
+              throw new Error("Tried to call "+binding.key+"in the browser, but it isn't defined. Did you try to call defineOnClient in an ajax response? You need to define all client functions before you send the initial page to the browser.")
+            }
             window[binding.key].apply(bridge, binding.args)
           }
         }
