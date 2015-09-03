@@ -4,7 +4,7 @@ module.exports = library.export(
   "nrtv-browser-bridge",
   [library.collective({}), "nrtv-element", "object-hash", "html"],
   function(collective, element, hash, html) {
- 
+
     function BrowserBridge(instance) {
       this.instance = instance
       this.id = Math.random().toString(36).substr(2,4)
@@ -82,17 +82,20 @@ module.exports = library.export(
 
       }
 
+    // The dependencies and the withArgs are a little redundant here. #todo Remove dependencies.
+
     BrowserBridge.prototype.defineOnClient =
       function(one, two) {
 
         if (two) {
           var func = two
           var dependencies = one
-        } else {
+        } else if (one) {
           var func = one
           var dependencies = []
+        } else {
+          throw new Error("You need to pass a function to BrowserBridge.defineOnClient, but you passed "+JSON.stringify(one)+".")
         }
-
 
         var key = (func.name.length ? func.name : 'f')+"_"+hash(func).substr(0,4)
 
@@ -187,7 +190,7 @@ module.exports = library.export(
           return this.binding
         }
 
-    // And here is the client we run in the browser to facilitate those two things. The funcs are swapped in when we write the HTML page. 
+    // And here is the client we run in the browser to facilitate those two things. The funcs are swapped in when we write the HTML page.
 
     function client() {
       FUNCS
