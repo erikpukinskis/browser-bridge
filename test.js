@@ -1,6 +1,6 @@
 var library = require("nrtv-library")(require)
 
-// library.test.only("sending responses to the client bridge evaluates them")
+// library.test.only("passing other functions as arguments")
 
 library.test(
   "sending an element",
@@ -189,6 +189,62 @@ library.test(
             server.stop()
             browser.assert.text(
               "body", "ted"
+            )
+            done()
+          }
+        )
+
+      }
+    )
+  }
+)
+
+
+library.test(
+  "other functions can be passed as arguments",
+
+  ["./browser-bridge", "nrtv-element", "nrtv-server", "nrtv-browse"],
+
+  function(expect, done, BrowserBridge,   element, Server, browse) {
+
+    var bridge = new BrowserBridge()
+
+    var overwrite = bridge.defineOnClient(
+      function(getWords) {
+        document.write(getWords() + " are words")
+      }
+    )
+
+    var someWords = bridge.defineOnClient(
+      function() {
+        return "bird, cat, and fish"
+      }
+    )
+
+    var button = element(
+      "button",
+      "Write stuff!", {
+      onclick: overwrite.withArgs(someWords).evalable()
+    })
+
+    var server = new Server()
+
+    server.get(
+      "/",
+      bridge.sendPage(button)
+    )
+
+    server.start(7662)
+
+    browse("http://localhost:7662",
+      function(browser) {
+
+        browser.pressButton(
+          "button",
+          function() {
+            server.stop()
+            browser.assert.text(
+              "body", "bird, cat, and fish are words"
             )
             done()
           }

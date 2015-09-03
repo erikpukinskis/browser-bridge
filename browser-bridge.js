@@ -157,7 +157,17 @@ module.exports = library.export(
 
         for(var i=0; i<this.binding.args.length; i++) {
 
-          deps.push(JSON.stringify(this.binding.args[i]))
+          var arg = this.binding.args[i]
+
+          var isClientFunction = arg.binding && arg.binding.__BrowserBridgeBinding
+
+          if (isClientFunction) {
+            var source = arg.callable()
+          } else {
+            var source = JSON.stringify(arg)
+          }
+
+          deps.push(source)
         }
 
         return deps.length ? deps.join(",") : ""
