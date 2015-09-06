@@ -165,13 +165,13 @@ module.exports = library.export(
           var isClientFunction = arg && arg.binding && arg.binding.__BrowserBridgeBinding
 
           if (typeof arg == "undefined") {
-            return "undefined"
+            var source = "undefined"
           } else if (arg === null) {
-            return "null"
+            source = "null"
           } else if (isClientFunction) {
-            var source = arg.callable()
+            source = arg.callable()
           } else {
-            var source = JSON.stringify(arg)
+            source = JSON.stringify(arg)
           }
 
           deps.push(source)
