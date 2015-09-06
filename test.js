@@ -72,7 +72,9 @@ library.test(
 
     var boundFunction = bridge.defineOnClient(greet)
 
-    boundFunction.withArgs(undefined).evalable()
+    var source = boundFunction.withArgs(undefined).evalable()
+
+    expect(source).to.contain("undefined")
 
     done()
   }

@@ -164,7 +164,11 @@ module.exports = library.export(
 
           var isClientFunction = arg && arg.binding && arg.binding.__BrowserBridgeBinding
 
-          if (isClientFunction) {
+          if (typeof arg == "undefined") {
+            return "undefined"
+          } else if (arg === null) {
+            return "null"
+          } else if (isClientFunction) {
             var source = arg.callable()
           } else {
             var source = JSON.stringify(arg)
