@@ -162,7 +162,7 @@ module.exports = library.export(
 
           var arg = this.binding.args[i]
 
-          var isClientFunction = arg.binding && arg.binding.__BrowserBridgeBinding
+          var isClientFunction = arg && arg.binding && arg.binding.__BrowserBridgeBinding
 
           if (isClientFunction) {
             var source = arg.callable()

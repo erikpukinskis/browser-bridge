@@ -36,16 +36,17 @@ library.test(
 )
 
 
+function greet(name) {
+  alert("hi, "+name)
+}
+
+
 library.test(
   "getting evalable javascript references",
 
   ["./browser-bridge"],
   function(expect, done, BrowserBridge) {
     var bridge = new BrowserBridge()
-
-    function greet(name) {
-      alert("hi, "+name)
-    }
 
     var boundFunction = bridge.defineOnClient(greet)
 
@@ -56,6 +57,22 @@ library.test(
     expect(bridge.script()).to.contain(greetErik.binding.key)
 
     expect(bridge.script()).to.match(/function .*(name)/)
+
+    done()
+  }
+)
+
+
+library.test(
+  "arguments can be undefined",
+
+  ["./browser-bridge"],
+  function(expect, done, BrowserBridge) {
+    var bridge = new BrowserBridge()
+
+    var boundFunction = bridge.defineOnClient(greet)
+
+    boundFunction.withArgs(undefined).evalable()
 
     done()
   }
