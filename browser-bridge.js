@@ -8,8 +8,16 @@ module.exports = library.export(
     function BrowserBridge(instance) {
       this.instance = instance
       this.id = Math.random().toString(36).substr(2,4)
-      this.clientFuncs = {}
+      this.bindings = {}
     }
+
+    BrowserBridge.collective =
+      function(attributes) {
+        return {
+          __dependencyType: "browser collective",
+          attributes: attributes
+        }
+      }
 
     function getCollective() {
       if (!collective.bridge) {
@@ -61,13 +69,8 @@ module.exports = library.export(
     BrowserBridge.prototype.script =
       function() {
         var lines = []
-        for (key in this.clientFuncs) {
-          var source = this.clientFuncs[key].toString()
-
-          var source = source.replace(
-            /^function[^(]*\(/,
-            "function "+key+"("
-          )
+        for (key in this.bindings) {
+          var source = this.bindings[key].source()
 
           lines.push(source)
         }
@@ -99,14 +102,13 @@ module.exports = library.export(
 
         var key = (func.name.length ? func.name : 'f')+"_"+hash(func).substr(0,4)
 
-        if (!this.clientFuncs[key]) {
+        if (!this.bindings[key]) {
+          var binding = new BoundFunc(func, key, dependencies)
 
-          // We keep the functions so when someone asks for a page we can send them down with the HTML
-
-          this.clientFuncs[key] = func
+          this.bindings[key] = binding
         }
 
-        return new BoundFunc(key, dependencies)
+        return this.bindings[key]
       }
 
     BrowserBridge.defineOnClient =
@@ -115,9 +117,10 @@ module.exports = library.export(
       }
 
     // rename ClientDefinition?
-    function BoundFunc(key, dependencies, args) {
+    function BoundFunc(func, key, dependencies, args) {
       this.binding = {
         __BrowserBridgeBinding: true,
+        func: func,
         key: key,
         dependencies: dependencies || [],
         args: args || [],
@@ -129,10 +132,31 @@ module.exports = library.export(
         var args = Array.prototype.slice.call(arguments)
 
         return new BoundFunc(
+          this.binding.func,
           this.binding.key,
           this.binding.dependencies,
           [].concat(this.binding.args, args)
         )
+      }
+
+    BoundFunc.prototype.source =
+      function() {
+        var source = this.binding.func.toString()
+
+        var source = source.replace(
+          /^function[^(]*\(/,
+          "function "+key+"("
+        )
+
+        var firstDependency = this.binding.dependencies[0]
+
+        var hasCollective = firstDependency &&firstDependency.__dependencyType == "browser collective"
+
+        if (hasCollective) {
+          source = "var "+key+" = ("+source+").bind(null,"+JSON.stringify(firstDependency.attributes)+")"
+        }
+
+        return source
       }
 
     // gives you a string that when evaled on the client, would cause the function to be called with the args
@@ -155,7 +179,16 @@ module.exports = library.export(
 
         for(var i=0; i<this.binding.dependencies.length; i++) {
 
-          deps.push(this.binding.dependencies[i].callable())
+          var dep = this.binding.dependencies[i]
+
+          var isCollective = dep.__dependencyType == "browser collective"
+
+          if (isCollective && i>0) {
+            throw new Error("You can only use a collective as the first dependency of a browser function. (I know, annoying.) You have library.collective("+JSON.stringify(dep.attributes)+") as the "+i+ "th argument to "+this.binding.key)
+          }
+          if (!isCollective) {
+            deps.push(dep.callable())
+          }
         }
 
         for(var i=0; i<this.binding.args.length; i++) {

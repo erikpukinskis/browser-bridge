@@ -1,6 +1,6 @@
 var library = require("nrtv-library")(require)
 
-// library.test.only("passing other functions as arguments")
+// library.test.only("client functions can have collectives")
 
 library.test(
   "sending an element",
@@ -273,3 +273,51 @@ library.test(
     )
   }
 )
+
+
+library.test(
+  "client functions can have collectives",
+
+  ["./browser-bridge", "nrtv-server", "nrtv-browse", "nrtv-element"],
+  function(expect, done, BrowserBridge, Server, browse, element) {
+
+    var increment = BrowserBridge.defineOnClient(
+
+      [BrowserBridge.collective({count: 0})],
+
+      function inc(collective) {
+        collective.count++
+
+        document.getElementsByClassName("counter")[0].innerHTML =collective.count
+      }
+    )
+
+    var button = element("button", {
+      onclick: increment.evalable()
+    })
+
+    var counter = element(".counter")
+
+    Server.get("/", BrowserBridge.sendPage([button, counter]))
+
+    Server.start(4488)
+
+    browse("http://localhost:4488",function(browser) {
+
+      browser.pressButton("button",function() {
+
+        browser.pressButton("button", function() {
+
+          browser.assert.text(".counter", "2")
+
+          Server.stop()
+          done()
+        })
+      })
+    })
+
+  }
+)
+
+
+
