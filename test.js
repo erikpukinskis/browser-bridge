@@ -1,6 +1,6 @@
 var library = require("nrtv-library")(require)
 
-// library.test.only("client functions can have collectives")
+// library.test.only("do something on page load")
 
 library.test(
   "sending an element",
@@ -320,4 +320,33 @@ library.test(
 )
 
 
+library.test(
+  "do something on page load",
+
+  ["./browser-bridge", library.reset("nrtv-server"), "nrtv-browse"],
+  function(expect, done, BrowserBridge, Server, browse) {
+
+    var bridge = new BrowserBridge()
+
+    var hello = bridge.defineOnClient(
+      function() {
+        document.getElementsByTagName("body")[0].innerHTML = "hola"
+      }
+    )
+
+    bridge.asap(hello)
+
+    Server.get("/", bridge.sendPage())
+
+    Server.start(9876)
+
+    browse("http://localhost:9876",
+      function(browser) {
+        browser.assert.text("body", "hola")
+        Server.stop()
+        done()
+      }
+    )
+  }
+)
 

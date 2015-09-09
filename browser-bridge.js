@@ -9,6 +9,7 @@ module.exports = library.export(
       this.instance = instance
       this.id = Math.random().toString(36).substr(2,4)
       this.bindings = {}
+      this.asapBindings = []
     }
 
     BrowserBridge.collective =
@@ -81,8 +82,27 @@ module.exports = library.export(
 
         var lines = client.toString().replace("FUNCS", funcsSource).split("\n")
 
-        return lines.slice(1,lines.length-1).join("\n")
+        var source = lines.slice(1,lines.length-1).join("\n")
 
+        source += "\n\n// Stuff to run on page load:\n\n"
+
+        source += this.asapBindings.map(
+          function(binding) {
+            return binding.evalable()
+          }
+        ).join("\n")
+
+        return source
+      }
+
+    BrowserBridge.prototype.asap =
+      function(binding) {
+        this.asapBindings.push(binding)
+      }
+
+    BrowserBridge.asap =
+      function(binding) {
+        getCollective().asap(binding)
       }
 
     // The dependencies and the withArgs are a little redundant here. #todo Remove dependencies.
@@ -159,8 +179,7 @@ module.exports = library.export(
         return source
       }
 
-    // gives you a string that when evaled on the client, would cause the function to be called with the args
-
+    // Gives you a string that when evaled on the client, would cause the function to be called with the args:
 
     BoundFunc.prototype.callable =
       function() {
@@ -218,7 +237,7 @@ module.exports = library.export(
         return this.binding.key+"("+this.argumentString()+")"
       }
 
-    // gives you a JSON object that, if sent to the client, causes the function to be called with the args
+    // Gives you a JSON object that, if sent to the client, causes the function to be called with the args:
 
     // Rename to ajaxResponse? #todo
 
