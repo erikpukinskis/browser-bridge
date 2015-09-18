@@ -10,6 +10,8 @@ module.exports = library.export(
       this.id = Math.random().toString(36).substr(2,4)
       this.bindings = {}
       this.asapBindings = []
+      this.browser = {}
+      this.browser.define = this.defineOnClient.bind(this)
     }
 
     BrowserBridge.collective =
@@ -135,6 +137,9 @@ module.exports = library.export(
       function(one, two) {
         return getCollective().defineOnClient(one, two)
       }
+
+    BrowserBridge.browser = {}
+    BrowserBridge.browser.define = BrowserBridge.defineOnClient.bind(BrowserBridge)
 
     // rename ClientDefinition?
     function BoundFunc(func, key, dependencies, args) {
