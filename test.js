@@ -1,6 +1,6 @@
 var library = require("nrtv-library")(require)
 
-// library.test.only("do something on page load")
+// library.test.only("getting evalable javascript references")
 
 library.test(
   "sending an element",

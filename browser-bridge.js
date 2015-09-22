@@ -110,16 +110,21 @@ module.exports = library.export(
     // The dependencies and the withArgs are a little redundant here. #todo Remove dependencies.
 
     BrowserBridge.prototype.defineOnClient =
-      function(one, two) {
+      function() {
 
-        if (two) {
-          var func = two
-          var dependencies = one
-        } else if (one) {
-          var func = one
-          var dependencies = []
-        } else {
-          throw new Error("You need to pass a function to BrowserBridge.defineOnClient, but you passed "+JSON.stringify(one)+".")
+        for (var i=0; i<arguments.length; i++) {
+
+          if (typeof arguments[i] == "string") {
+            var name = arguments[i]
+          } else if (typeof arguments[i] == "function") {
+            var func = arguments[i]
+          } else if (Array.isArray(arguments[i])) {
+            var dependencies = arguments[i]
+          }
+        }
+
+        if (!func) {
+          throw new Error("You need to pass a function to BrowserBridge.defineOnClient, but you passed "+JSON.stringify(arguments)+".")
         }
 
         var key = (func.name.length ? func.name : 'f')+"_"+hash(func).substr(0,4)
