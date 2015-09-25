@@ -17,6 +17,7 @@
     "html": "*"
   },
   "devDependencies": {
+    "nrtv-test": "*",
     "sinon": "*",
     "nrtv-server": "*",
     "nrtv-browse": "*"

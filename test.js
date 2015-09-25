@@ -1,8 +1,9 @@
+var test = require("nrtv-test")(require)
 var library = require("nrtv-library")(require)
 
-// library.test.only("getting evalable javascript references")
+// test.only("getting evalable javascript references")
 
-library.test(
+test.using(
   "sending an element",
 
   ["nrtv-element", "sinon", "./browser-bridge"],
@@ -41,7 +42,7 @@ function greet(name) {
 }
 
 
-library.test(
+test.using(
   "getting evalable javascript references",
 
   ["./browser-bridge"],
@@ -63,7 +64,7 @@ library.test(
 )
 
 
-library.test(
+test.using(
   "arguments can be undefined",
 
   ["./browser-bridge"],
@@ -81,7 +82,7 @@ library.test(
 )
 
 
-library.test(
+test.using(
   "client functions can use other client functions",
 
   ["nrtv-element", "./browser-bridge", "nrtv-server", "nrtv-browse"],
@@ -135,7 +136,7 @@ library.test(
 
 
 
-library.test(
+test.using(
   "Use static methods to do stuff with the collective bridge",
 
   ["./browser-bridge"],
@@ -163,7 +164,7 @@ library.test(
 
 
 
-library.test(
+test.using(
   "sending responses to the client bridge evaluates them",
 
   ["./browser-bridge", "nrtv-element", "nrtv-server", "nrtv-browse"],
@@ -219,7 +220,7 @@ library.test(
 )
 
 
-library.test(
+test.using(
   "other functions can be passed as arguments",
 
   ["./browser-bridge", "nrtv-element", "nrtv-server", "nrtv-browse"],
@@ -275,7 +276,7 @@ library.test(
 )
 
 
-library.test(
+test.using(
   "client functions can have collectives",
 
   ["./browser-bridge", "nrtv-server", "nrtv-browse", "nrtv-element"],
@@ -320,7 +321,7 @@ library.test(
 )
 
 
-library.test(
+test.using(
   "do something on page load",
 
   ["./browser-bridge", library.reset("nrtv-server"), "nrtv-browse"],
