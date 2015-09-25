@@ -49,7 +49,7 @@ test.using(
   function(expect, done, BrowserBridge) {
     var bridge = new BrowserBridge()
 
-    var boundFunction = bridge.defineOnClient(greet)
+    var boundFunction = bridge.browser.define(greet)
 
     var greetErik = boundFunction.withArgs("Erik")
 
@@ -71,7 +71,7 @@ test.using(
   function(expect, done, BrowserBridge) {
     var bridge = new BrowserBridge()
 
-    var boundFunction = bridge.defineOnClient(greet)
+    var boundFunction = bridge.browser.define(greet)
 
     var source = boundFunction.withArgs(undefined, {}).evalable()
 
@@ -92,13 +92,13 @@ test.using(
 
     var bridge = new BrowserBridge()
 
-    var foo = bridge.defineOnClient(
+    var foo = bridge.browser.define(
       function(number) {
         return "foo "+number
       }
     )
 
-    var bar = bridge.defineOnClient(
+    var bar = bridge.browser.define(
       [foo],
       function(foo, baz) {
         document.querySelectorAll(".out")[0].innerHTML = foo(3)+" "+baz
@@ -140,12 +140,12 @@ test.using(
   "Use static methods to do stuff with the collective bridge",
 
   ["./browser-bridge"],
-  function(expect, done, BrowserBridge) {
+  function(expect, done, bridge) {
 
-    BrowserBridge.defineOnClient(function brussels() {}
+    bridge.browser.define(function brussels() {}
     )
 
-    BrowserBridge.defineOnClient(
+    bridge.browser.define(
       function sprouts() {}
     )
 
@@ -157,7 +157,7 @@ test.using(
       }
     }
 
-    BrowserBridge.sendPage()(null, response)
+    bridge.sendPage()(null, response)
   }
 )
 
@@ -171,13 +171,13 @@ test.using(
   function(expect, done, BrowserBridge,   element, Server, browse) {
     var bridge = new BrowserBridge()
 
-    var whatever = bridge.defineOnClient(
+    var whatever = bridge.browser.define(
       function(name) {
         document.write(name)
       }
     )
 
-    var applyBinding = bridge.defineOnClient(
+    var applyBinding = bridge.browser.define(
       function(binding) {
         bridge.handle(binding)
       }
@@ -229,13 +229,13 @@ test.using(
 
     var bridge = new BrowserBridge()
 
-    var overwrite = bridge.defineOnClient(
+    var overwrite = bridge.browser.define(
       function(getWords) {
         document.write(getWords() + " are words")
       }
     )
 
-    var someWords = bridge.defineOnClient(
+    var someWords = bridge.browser.define(
       function() {
         return "bird, cat, and fish"
       }
@@ -280,11 +280,11 @@ test.using(
   "client functions can have collectives",
 
   ["./browser-bridge", "nrtv-server", "nrtv-browse", "nrtv-element"],
-  function(expect, done, BrowserBridge, Server, browse, element) {
+  function(expect, done, bridge, server, browse, element) {
 
-    var increment = BrowserBridge.defineOnClient(
+    var increment = bridge.browser.define(
 
-      [BrowserBridge.collective({count: 0})],
+      [bridge.collective({count: 0})],
 
       function inc(collective) {
         collective.count++
@@ -299,9 +299,9 @@ test.using(
 
     var counter = element(".counter")
 
-    Server.get("/", BrowserBridge.sendPage([button, counter]))
+    server.get("/", bridge.sendPage([button, counter]))
 
-    Server.start(4488)
+    server.start(4488)
 
     browse("http://localhost:4488",function(browser) {
 
@@ -311,7 +311,7 @@ test.using(
 
           browser.assert.text(".counter", "2")
 
-          Server.stop()
+          server.stop()
           done()
         })
       })
@@ -325,11 +325,11 @@ test.using(
   "do something on page load",
 
   ["./browser-bridge", library.reset("nrtv-server"), "nrtv-browse"],
-  function(expect, done, BrowserBridge, Server, browse) {
+  function(expect, done, BrowserBridge, server, browse) {
 
     var bridge = new BrowserBridge()
 
-    var hello = bridge.defineOnClient(
+    var hello = bridge.browser.define(
       function() {
         document.getElementsByTagName("body")[0].innerHTML = "hola"
       }
@@ -337,14 +337,14 @@ test.using(
 
     bridge.asap(hello)
 
-    Server.get("/", bridge.sendPage())
+    server.get("/", bridge.sendPage())
 
-    Server.start(9876)
+    server.start(9876)
 
     browse("http://localhost:9876",
       function(browser) {
         browser.assert.text("body", "hola")
-        Server.stop()
+        server.stop()
         done()
       }
     )
