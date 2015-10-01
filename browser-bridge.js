@@ -100,13 +100,11 @@ module.exports = library.export(
     BrowserBridge.prototype.asap =
       function(binding) {
 
-        var type = binding.constructor && binding.constructor.name
-
-        if (type != "BoundFunc") {
-          throw new Error("You tried to do bridge.asap("+JSON.stringify(binding)+") but asap only knows what to do if you pass it a binding that came from, like, bridge.define or something that does bridge.define for you.")
+        if (!binding.evalable) {
+          throw new Error("You tried to do bridge.asap("+JSON.stringify(binding)+") but asap only knows what to do if you pass it a binding that came from, like, bridge.define or something that does bridge.define for you. It should be something with an .evalable() method.")
         }
 
-        this.asapBindings.push(binding)
+         this.asapBindings.push(binding)
       }
 
     BrowserBridge.asap =
