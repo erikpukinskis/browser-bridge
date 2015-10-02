@@ -1,7 +1,7 @@
 var test = require("nrtv-test")(require)
 var library = require("nrtv-library")(require)
 
-// test.only("getting evalable javascript references")
+// test.only("define a singleton generator")
 
 test.using(
   "sending an element",
@@ -351,3 +351,48 @@ test.using(
   }
 )
 
+
+test.using(
+  "define a singleton generator",
+
+  ["./browser-bridge", library.reset("nrtv-server"), "nrtv-browse"],
+  function(expect, done, BrowserBridge, server, browse) {
+
+    var bridge = new BrowserBridge()
+
+    var jump = bridge.browser.define(
+      function jump() {
+        return "so high!"
+      }
+    )
+
+    var random = bridge.defineSingleton(
+      [jump],
+      function rando(jump) {
+        jump()
+        return "gonzo"
+      }
+    )
+
+    var check = bridge.browser.define(
+      [random],
+      function checkSingleton(random) {
+        if (random != "gonzo") {
+          throw new Error("expected rando to be gonzo")
+        }
+      }
+    )
+
+    bridge.asap(check)
+
+    server.get("/", bridge.sendPage())
+    server.start(7000)
+
+    browse("http://localhost:7000",
+      function(browser) {
+        server.stop()
+        done()
+      }
+    )
+  }
+)

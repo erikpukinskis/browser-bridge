@@ -75,11 +75,11 @@ module.exports = library.export(
         for (key in this.bindings) {
           var source = this.bindings[key].source()
 
-          lines.push(source)
+          lines.push("      "+source)
         }
 
         funcsSource = "\n"
-          + lines.join("\n      ")
+          + lines.join("\n\n")
           + "\n"
 
         var lines = client.toString().replace("FUNCS", funcsSource).split("\n")
@@ -110,6 +110,15 @@ module.exports = library.export(
     BrowserBridge.asap =
       function(binding) {
         getCollective().asap(binding)
+      }
+
+    BrowserBridge.prototype.defineSingleton =
+      function() {
+        var boundFunc = this.defineOnClient.apply(this, arguments)
+
+        boundFunc.isGenerator = true
+
+        return boundFunc
       }
 
     // The dependencies and the withArgs are a little redundant here. #todo Remove dependencies.
@@ -191,6 +200,19 @@ module.exports = library.export(
           source = "var "+key+" = ("+source+").bind(null,"+JSON.stringify(firstDependency.attributes)+")"
         }
 
+        if (this.isGenerator) {
+
+          if (this.binding.dependencies.length > 0) {
+
+            var callArgs = "null, "+this.argumentString()
+
+          } else {
+            var callArgs = ""
+          }
+
+          source = "var "+key+" = ("+source+").call("+callArgs+")"
+        }
+
         return source
       }
 
@@ -198,6 +220,10 @@ module.exports = library.export(
 
     BoundFunc.prototype.callable =
       function() {
+        if (this.isGenerator) {
+          return this.binding.key
+        }
+
         var arguments = this.argumentString()
 
         if (arguments.length < 1) {
