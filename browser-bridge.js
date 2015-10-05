@@ -247,6 +247,9 @@ module.exports = library.export(
             throw new Error("You can only use a collective as the first dependency of a browser function. (I know, annoying.) You have library.collective("+JSON.stringify(dep.attributes)+") as the "+i+ "th argument to "+this.binding.key)
           }
           if (!isCollective) {
+            if (typeof dep.callable != "function") {
+              throw new Error("You passed "+JSON.stringify(dep)+" as a dependency to "+this.key+" but it needs to either be a collective or have a .callable() method.")
+            }
             deps.push(dep.callable())
           }
         }
