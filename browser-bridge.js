@@ -10,8 +10,6 @@ module.exports = library.export(
       this.id = Math.random().toString(36).substr(2,4)
       this.bindings = {}
       this.asapBindings = []
-      this.browser = {}
-      this.browser.define = this.defineOnClient.bind(this)
     }
 
     BrowserBridge.collective =
@@ -114,7 +112,7 @@ module.exports = library.export(
 
     BrowserBridge.prototype.defineSingleton =
       function() {
-        var boundFunc = this.defineOnClient.apply(this, arguments)
+        var boundFunc = this.defineFunction.apply(this, arguments)
 
         boundFunc.isGenerator = true
 
@@ -123,7 +121,7 @@ module.exports = library.export(
 
     // The dependencies and the withArgs are a little redundant here. #todo Remove dependencies.
 
-    BrowserBridge.prototype.defineOnClient =
+    BrowserBridge.prototype.defineFunction =
       function() {
 
         for (var i=0; i<arguments.length; i++) {
@@ -138,7 +136,7 @@ module.exports = library.export(
         }
 
         if (!func) {
-          throw new Error("You need to pass a function to BrowserBridge.defineOnClient, but you passed "+JSON.stringify(arguments)+".")
+          throw new Error("You need to pass a function to bridge.defineFunction, but you passed "+JSON.stringify(arguments)+".")
         }
 
         var key = (func.name.length ? func.name : 'f')+"_"+hash(func).substr(0,4)
@@ -152,13 +150,10 @@ module.exports = library.export(
         return this.bindings[key]
       }
 
-    BrowserBridge.defineOnClient =
+    BrowserBridge.defineFunction =
       function(one, two) {
-        return getCollective().defineOnClient(one, two)
+        return getCollective().defineFunction(one, two)
       }
-
-    BrowserBridge.browser = {}
-    BrowserBridge.browser.define = BrowserBridge.defineOnClient.bind(BrowserBridge)
 
     // rename ClientDefinition?
     function BoundFunc(func, key, dependencies, args) {
@@ -300,7 +295,7 @@ module.exports = library.export(
             var func = window[binding.key]
 
             if (!func) {
-              throw new Error("Tried to call "+binding.key+"in the browser, but it isn't defined. Did you try to call defineOnClient in an ajax response? You need to define all client functions before you send the initial page to the browser.")
+              throw new Error("Tried to call "+binding.key+"in the browser, but it isn't defined. Did you try to call defineFunction in an ajax response? You need to define all client functions before you send the initial page to the browser.")
             }
             window[binding.key].apply(bridge, binding.args)
           }

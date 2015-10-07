@@ -49,7 +49,7 @@ test.using(
   function(expect, done, BrowserBridge) {
     var bridge = new BrowserBridge()
 
-    var boundFunction = bridge.browser.define(greet)
+    var boundFunction = bridge.defineFunction(greet)
 
     var greetErik = boundFunction.withArgs("Erik")
 
@@ -71,7 +71,7 @@ test.using(
   function(expect, done, BrowserBridge) {
     var bridge = new BrowserBridge()
 
-    var boundFunction = bridge.browser.define(greet)
+    var boundFunction = bridge.defineFunction(greet)
 
     var source = boundFunction.withArgs(undefined, {}).evalable()
 
@@ -92,13 +92,13 @@ test.using(
 
     var bridge = new BrowserBridge()
 
-    var foo = bridge.browser.define(
+    var foo = bridge.defineFunction(
       function(number) {
         return "foo "+number
       }
     )
 
-    var bar = bridge.browser.define(
+    var bar = bridge.defineFunction(
       [foo],
       function(foo, baz) {
         document.querySelectorAll(".out")[0].innerHTML = foo(3)+" "+baz
@@ -142,10 +142,10 @@ test.using(
   ["./browser-bridge"],
   function(expect, done, bridge) {
 
-    bridge.browser.define(function brussels() {}
+    bridge.defineFunction(function brussels() {}
     )
 
-    bridge.browser.define(
+    bridge.defineFunction(
       function sprouts() {}
     )
 
@@ -171,13 +171,13 @@ test.using(
   function(expect, done, BrowserBridge,   element, Server, browse) {
     var bridge = new BrowserBridge()
 
-    var whatever = bridge.browser.define(
+    var whatever = bridge.defineFunction(
       function(name) {
         document.write(name)
       }
     )
 
-    var applyBinding = bridge.browser.define(
+    var applyBinding = bridge.defineFunction(
       function(binding) {
         bridge.handle(binding)
       }
@@ -229,13 +229,13 @@ test.using(
 
     var bridge = new BrowserBridge()
 
-    var overwrite = bridge.browser.define(
+    var overwrite = bridge.defineFunction(
       function(getWords) {
         document.write(getWords() + " are words")
       }
     )
 
-    var someWords = bridge.browser.define(
+    var someWords = bridge.defineFunction(
       function() {
         return "bird, cat, and fish"
       }
@@ -282,7 +282,7 @@ test.using(
   ["./browser-bridge", "nrtv-server", "nrtv-browse", "nrtv-element"],
   function(expect, done, bridge, server, browse, element) {
 
-    var increment = bridge.browser.define(
+    var increment = bridge.defineFunction(
 
       [bridge.collective({count: 0})],
 
@@ -329,7 +329,7 @@ test.using(
 
     var bridge = new BrowserBridge()
 
-    var hello = bridge.browser.define(
+    var hello = bridge.defineFunction(
       function() {
         document.getElementsByTagName("body")[0].innerHTML = "hola"
       }
@@ -360,7 +360,7 @@ test.using(
 
     var bridge = new BrowserBridge()
 
-    var jump = bridge.browser.define(
+    var jump = bridge.defineFunction(
       function jump() {
         return "so high!"
       }
@@ -374,7 +374,7 @@ test.using(
       }
     )
 
-    var check = bridge.browser.define(
+    var check = bridge.defineFunction(
       [random],
       function checkSingleton(random) {
         if (random != "gonzo") {
