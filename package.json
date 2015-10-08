@@ -1,6 +1,6 @@
 {
   "name": "nrtv-browser-bridge",
-  "version": "0.34.0",
+  "version": "0.35.0",
   "description": "Proxies code and state between Node and the browser",
   "main": "browser-bridge.js",
   "repository": {
