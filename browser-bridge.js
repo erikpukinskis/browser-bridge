@@ -39,13 +39,10 @@ module.exports = library.export(
         }
       }
 
-    BrowserBridge.sendPage =
-      function(body) {
-        return getCollective().sendPage(body)
-      }
+    // make this private: #todo
 
     BrowserBridge.prototype.getPage =
-      function(body) {
+      function getPage(body) {
 
         var bindings = element(
           "script",
@@ -105,11 +102,6 @@ module.exports = library.export(
          this.asapBindings.push(binding)
       }
 
-    BrowserBridge.asap =
-      function(binding) {
-        getCollective().asap(binding)
-      }
-
     BrowserBridge.prototype.defineSingleton =
       function() {
         var boundFunc = this.defineFunction.apply(this, arguments)
@@ -150,10 +142,14 @@ module.exports = library.export(
         return this.bindings[key]
       }
 
-    BrowserBridge.defineFunction =
-      function(one, two) {
-        return getCollective().defineFunction(one, two)
-      }
+    library.collectivize(
+      BrowserBridge,
+      collective,
+      function() {
+        return new BrowserBridge()
+      },
+      ["sendPage", "asap", "defineFunction", "defineSingleton"]      
+    )
 
     // rename ClientDefinition?
     function BoundFunc(func, key, dependencies, args) {
@@ -186,14 +182,6 @@ module.exports = library.export(
           /^function[^(]*\(/,
           "function "+key+"("
         )
-
-        var firstDependency = this.binding.dependencies[0]
-
-        var hasCollective = firstDependency &&firstDependency.__dependencyType == "browser collective"
-
-        if (hasCollective) {
-          source = "var "+key+" = ("+source+").bind(null,"+JSON.stringify(firstDependency.attributes)+")"
-        }
 
         if (this.isGenerator) {
 
@@ -236,17 +224,11 @@ module.exports = library.export(
 
           var dep = this.binding.dependencies[i]
 
-          var isCollective = dep.__dependencyType == "browser collective"
+          if (typeof dep.callable != "function") {
+            throw new Error("You passed "+JSON.stringify(dep)+" as a dependency to "+this.key+" but it needs to either be a collective or have a .callable() method.")
+          }
 
-          if (isCollective && i>0) {
-            throw new Error("You can only use a collective as the first dependency of a browser function. (I know, annoying.) You have library.collective("+JSON.stringify(dep.attributes)+") as the "+i+ "th argument to "+this.binding.key)
-          }
-          if (!isCollective) {
-            if (typeof dep.callable != "function") {
-              throw new Error("You passed "+JSON.stringify(dep)+" as a dependency to "+this.key+" but it needs to either be a collective or have a .callable() method.")
-            }
-            deps.push(dep.callable())
-          }
+          deps.push(dep.callable())
         }
 
         for(var i=0; i<this.binding.args.length; i++) {

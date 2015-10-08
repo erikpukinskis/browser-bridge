@@ -1,7 +1,7 @@
 var test = require("nrtv-test")(require)
 var library = require("nrtv-library")(require)
 
-// test.only("define a singleton generator")
+// test.only("client functions can have collectives")
 
 test.using(
   "sending an element",
@@ -136,33 +136,6 @@ test.using(
 
 
 
-test.using(
-  "Use static methods to do stuff with the collective bridge",
-
-  ["./browser-bridge"],
-  function(expect, done, bridge) {
-
-    bridge.defineFunction(function brussels() {}
-    )
-
-    bridge.defineFunction(
-      function sprouts() {}
-    )
-
-    var response = {
-      send: function(html) {
-        expect(html).to.contain("brussels")
-        expect(html).to.contain("sprouts")
-        done()
-      }
-    }
-
-    bridge.sendPage()(null, response)
-  }
-)
-
-
-
 
 test.using(
   "sending responses to the client bridge evaluates them",
@@ -275,50 +248,6 @@ test.using(
   }
 )
 
-
-test.using(
-  "client functions can have collectives",
-
-  ["./browser-bridge", "nrtv-server", "nrtv-browse", "nrtv-element"],
-  function(expect, done, bridge, server, browse, element) {
-
-    var increment = bridge.defineFunction(
-
-      [bridge.collective({count: 0})],
-
-      function inc(collective) {
-        collective.count++
-
-        document.getElementsByClassName("counter")[0].innerHTML =collective.count
-      }
-    )
-
-    var button = element("button", {
-      onclick: increment.evalable()
-    })
-
-    var counter = element(".counter")
-
-    server.get("/", bridge.sendPage([button, counter]))
-
-    server.start(4488)
-
-    browse("http://localhost:4488",function(browser) {
-
-      browser.pressButton("button",function() {
-
-        browser.pressButton("button", function() {
-
-          browser.assert.text(".counter", "2")
-
-          server.stop()
-          done()
-        })
-      })
-    })
-
-  }
-)
 
 
 test.using(
