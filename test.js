@@ -19,7 +19,6 @@ test.using(
 
     var response = {
       send: function(html) {
-        console.log(html)
         expect(html).to.contain("<body>")
         expect(html).to.contain("<html>")
         expect(html).to.contain("Hello, world!")
@@ -296,8 +295,9 @@ test.using(
     )
 
     var random = bridge.defineSingleton(
+      "rando",
       [jump],
-      function rando(jump) {
+      function(jump) {
         jump()
         return "gonzo"
       }

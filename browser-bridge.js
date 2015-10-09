@@ -134,7 +134,7 @@ module.exports = library.export(
 
         var sourceHash = hash(func)
 
-        var identifier = original = func.name || "f"
+        var identifier = original = name || func.name || "f"
 
         var binding = this.bindings[sourceHash]
 
@@ -190,11 +190,6 @@ module.exports = library.export(
       function() {
         var source = this.binding.func.toString()
 
-        var source = source.replace(
-          /^function[^(]*\(/,
-          "function "+this.binding.identifier+"("
-        )
-
         if (this.isGenerator) {
 
           if (this.binding.dependencies.length > 0) {
@@ -206,6 +201,11 @@ module.exports = library.export(
           }
 
           source = "var "+this.binding.identifier+" = ("+source+").call("+callArgs+")"
+        } else {
+          source = source.replace(
+            /^function[^(]*\(/,
+            "function "+this.binding.identifier+"("
+          )
         }
 
         return source
