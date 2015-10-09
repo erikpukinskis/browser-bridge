@@ -9,6 +9,7 @@ module.exports = library.export(
       this.instance = instance
       this.id = Math.random().toString(36).substr(2,4)
       this.bindings = {}
+      this.identifiers = {}
       this.asapBindings = []
     }
 
@@ -133,15 +134,24 @@ module.exports = library.export(
 
         var sourceHash = hash(func)
 
-        var identifier = (func.name.length ? func.name : 'f')+"_"+hash(func).substr(0,4)
+        var identifier = original = func.name || "f"
 
-        if (!this.bindings[sourceHash]) {
-          var binding = new BoundFunc(func, identifier, dependencies)
+        var binding = this.bindings[sourceHash]
 
-          this.bindings[sourceHash] = binding
+        if (binding) { return binding }
+
+        while(identifier in this.identifiers) {
+
+          identifier = original+"_"+Math.random().toString(36).split(".")[1].substr(0,4)
         }
 
-        return this.bindings[sourceHash]
+        this.identifiers[identifier] = true
+
+        binding = new BoundFunc(func, identifier, dependencies)
+
+        this.bindings[sourceHash] = binding
+
+        return binding
       }
 
     library.collectivize(
