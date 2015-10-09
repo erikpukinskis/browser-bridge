@@ -180,7 +180,7 @@ module.exports = library.export(
 
         var source = source.replace(
           /^function[^(]*\(/,
-          "function "+key+"("
+          "function "+this.binding.key+"("
         )
 
         if (this.isGenerator) {
@@ -193,7 +193,7 @@ module.exports = library.export(
             var callArgs = ""
           }
 
-          source = "var "+key+" = ("+source+").call("+callArgs+")"
+          source = "var "+this.binding.key+" = ("+source+").call("+callArgs+")"
         }
 
         return source
