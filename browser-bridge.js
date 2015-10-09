@@ -10,7 +10,7 @@ module.exports = library.export(
       this.id = Math.random().toString(36).substr(2,4)
       this.bindings = {}
       this.identifiers = {}
-      this.asapBindings = []
+      this.asapSource = ""
     }
 
     BrowserBridge.collective =
@@ -84,23 +84,14 @@ module.exports = library.export(
 
         source += "\n\n// Stuff to run on page load:\n\n"
 
-        source += this.asapBindings.map(
-          function(binding) {
-            return binding.evalable()
-          }
-        ).join("\n")
+        source += this.asapSource
 
         return source
       }
 
     BrowserBridge.prototype.asap =
       function(binding) {
-
-        if (!binding.evalable) {
-          throw new Error("You tried to do bridge.asap("+JSON.stringify(binding)+") but asap only knows what to do if you pass it a binding that came from, like, bridge.define or something that does bridge.define for you. It should be something with an .evalable() method.")
-        }
-
-         this.asapBindings.push(binding)
+        this.asapSource += binding.evalable ? binding.evalable(): binding
       }
 
     BrowserBridge.prototype.defineSingleton =
