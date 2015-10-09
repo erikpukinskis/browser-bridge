@@ -67,8 +67,8 @@ module.exports = library.export(
     BrowserBridge.prototype.script =
       function() {
         var lines = []
-        for (identifier in this.bindings) {
-          var source = this.bindings[identifier].source()
+        for (sourceHash in this.bindings) {
+          var source = this.bindings[sourceHash].source()
 
           lines.push("      "+source)
         }
@@ -131,15 +131,17 @@ module.exports = library.export(
           throw new Error("You need to pass a function to bridge.defineFunction, but you passed "+JSON.stringify(arguments)+".")
         }
 
+        var sourceHash = hash(func)
+
         var identifier = (func.name.length ? func.name : 'f')+"_"+hash(func).substr(0,4)
 
-        if (!this.bindings[identifier]) {
+        if (!this.bindings[sourceHash]) {
           var binding = new BoundFunc(func, identifier, dependencies)
 
-          this.bindings[identifier] = binding
+          this.bindings[sourceHash] = binding
         }
 
-        return this.bindings[identifier]
+        return this.bindings[sourceHash]
       }
 
     library.collectivize(
