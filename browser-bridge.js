@@ -13,22 +13,6 @@ module.exports = library.export(
       this.asapSource = ""
     }
 
-    BrowserBridge.collective =
-      function(attributes) {
-        return {
-          __dependencyType: "browser collective",
-          attributes: attributes
-        }
-      }
-
-    function getCollective() {
-      if (!collective.bridge) {
-        collective.bridge = new BrowserBridge()
-      }
-
-      return collective.bridge
-    }
-
     // Rename sendPageHandler? #todo
 
     BrowserBridge.prototype.sendPage =
