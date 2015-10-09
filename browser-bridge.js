@@ -67,8 +67,8 @@ module.exports = library.export(
     BrowserBridge.prototype.script =
       function() {
         var lines = []
-        for (key in this.bindings) {
-          var source = this.bindings[key].source()
+        for (identifier in this.bindings) {
+          var source = this.bindings[identifier].source()
 
           lines.push("      "+source)
         }
@@ -131,15 +131,15 @@ module.exports = library.export(
           throw new Error("You need to pass a function to bridge.defineFunction, but you passed "+JSON.stringify(arguments)+".")
         }
 
-        var key = (func.name.length ? func.name : 'f')+"_"+hash(func).substr(0,4)
+        var identifier = (func.name.length ? func.name : 'f')+"_"+hash(func).substr(0,4)
 
-        if (!this.bindings[key]) {
-          var binding = new BoundFunc(func, key, dependencies)
+        if (!this.bindings[identifier]) {
+          var binding = new BoundFunc(func, identifier, dependencies)
 
-          this.bindings[key] = binding
+          this.bindings[identifier] = binding
         }
 
-        return this.bindings[key]
+        return this.bindings[identifier]
       }
 
     library.collectivize(
@@ -152,11 +152,11 @@ module.exports = library.export(
     )
 
     // rename ClientDefinition?
-    function BoundFunc(func, key, dependencies, args) {
+    function BoundFunc(func, identifier, dependencies, args) {
       this.binding = {
         __BrowserBridgeBinding: true,
         func: func,
-        key: key,
+        identifier: identifier,
         dependencies: dependencies || [],
         args: args || [],
       }
@@ -168,7 +168,7 @@ module.exports = library.export(
 
         return new BoundFunc(
           this.binding.func,
-          this.binding.key,
+          this.binding.identifier,
           this.binding.dependencies,
           [].concat(this.binding.args, args)
         )
@@ -180,7 +180,7 @@ module.exports = library.export(
 
         var source = source.replace(
           /^function[^(]*\(/,
-          "function "+this.binding.key+"("
+          "function "+this.binding.identifier+"("
         )
 
         if (this.isGenerator) {
@@ -193,7 +193,7 @@ module.exports = library.export(
             var callArgs = ""
           }
 
-          source = "var "+this.binding.key+" = ("+source+").call("+callArgs+")"
+          source = "var "+this.binding.identifier+" = ("+source+").call("+callArgs+")"
         }
 
         return source
@@ -204,16 +204,16 @@ module.exports = library.export(
     BoundFunc.prototype.callable =
       function() {
         if (this.isGenerator) {
-          return this.binding.key
+          return this.binding.identifier
         }
 
         var arguments = this.argumentString()
 
         if (arguments.length < 1) {
-          return this.binding.key
+          return this.binding.identifier
         }
 
-        return this.binding.key+".bind(bridge,"+arguments+")"
+        return this.binding.identifier+".bind(bridge,"+arguments+")"
       }
 
     BoundFunc.prototype.argumentString = function() {
@@ -225,7 +225,7 @@ module.exports = library.export(
           var dep = this.binding.dependencies[i]
 
           if (typeof dep.callable != "function") {
-            throw new Error("You passed "+JSON.stringify(dep)+" as a dependency to "+this.key+" but it needs to either be a collective or have a .callable() method.")
+            throw new Error("You passed "+JSON.stringify(dep)+" as a dependency to "+this.binding.identifier+" but it needs to either be a collective or have a .callable() method.")
           }
 
           deps.push(dep.callable())
@@ -255,7 +255,7 @@ module.exports = library.export(
 
     BoundFunc.prototype.evalable =
       function() {
-        return this.binding.key+"("+this.argumentString()+")"
+        return this.binding.identifier+"("+this.argumentString()+")"
       }
 
     // Gives you a JSON object that, if sent to the client, causes the function to be called with the args:
@@ -274,12 +274,12 @@ module.exports = library.export(
       var bridge = {
         handle: function(binding) {
           if (binding.__BrowserBridgeBinding) {
-            var func = window[binding.key]
+            var func = window[binding.identifier]
 
             if (!func) {
-              throw new Error("Tried to call "+binding.key+"in the browser, but it isn't defined. Did you try to call defineFunction in an ajax response? You need to define all client functions before you send the initial page to the browser.")
+              throw new Error("Tried to call "+binding.identifier+"in the browser, but it isn't defined. Did you try to call defineFunction in an ajax response? You need to define all client functions before you send the initial page to the browser.")
             }
-            window[binding.key].apply(bridge, binding.args)
+            window[binding.identifier].apply(bridge, binding.args)
           }
         }
       }

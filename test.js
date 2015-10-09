@@ -55,7 +55,7 @@ test.using(
 
     expect(greetErik.evalable()).to.match(/"Erik"/)
 
-    expect(bridge.script()).to.contain(greetErik.binding.key)
+    expect(bridge.script()).to.contain(greetErik.binding.identifier)
 
     expect(bridge.script()).to.match(/function .*(name)/)
 
