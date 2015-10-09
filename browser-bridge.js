@@ -52,11 +52,11 @@ module.exports = library.export(
         var styles = element("style", " .hidden { display: none }")
 
         var el = element("html", [
+          element("body", body || ""),
           element("head", [
             bindings,
             styles
-          ]),
-          body || ""
+          ])
         ])
 
         var source = "<!DOCTYPE html>\n" + el.html()
