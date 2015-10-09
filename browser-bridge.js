@@ -91,7 +91,10 @@ module.exports = library.export(
 
     BrowserBridge.prototype.asap =
       function(binding) {
-        this.asapSource += binding.evalable ? binding.evalable(): binding
+
+        var source = binding.evalable ? binding.evalable(): binding
+
+        this.asapSource += source + "\n\n"
       }
 
     BrowserBridge.prototype.defineSingleton =
