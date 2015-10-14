@@ -1,7 +1,7 @@
 var test = require("nrtv-test")(require)
 var library = require("nrtv-library")(require)
 
-// test.only("client functions can have collectives")
+// test.only("arguments can be functions")
 
 test.using(
   "sending an element",
@@ -57,6 +57,31 @@ test.using(
     expect(bridge.script()).to.contain(greetErik.binding.identifier)
 
     expect(bridge.script()).to.match(/function .*(name)/)
+
+    done()
+  }
+)
+
+
+test.using(
+  "arguments can be functions",
+
+  ["./browser-bridge"],
+  function(expect, done, BrowserBridge) {
+    var bridge = new BrowserBridge()
+
+    var takesACallback = bridge.defineFunction(
+        function callIt(callback) {
+          callback()
+        }
+      )
+
+    var wit = takesACallback
+    .withArgs(function() {
+      alert("shabooya")
+    })
+
+    expect(wit.evalable()).to.match(/shabooya/)
 
     done()
   }

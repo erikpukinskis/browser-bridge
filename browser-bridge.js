@@ -230,13 +230,15 @@ module.exports = library.export(
 
           var isCollective = dep.__dependencyType == "browser collective"
 
-          if (isCollective && i>0) {
-            throw new Error("You can only use a collective as the first dependency of a browser function. (I know, annoying.) You have library.collective("+JSON.stringify(dep.attributes)+") as the "+i+ "th argument to "+this.binding.key)
-          }
-          if (!isCollective) {
-            if (typeof dep.callable != "function") {
-              throw new Error("You passed "+JSON.stringify(dep)+" as a dependency to "+this.key+" but it needs to either be a collective or have a .callable() method.")
+          if (isCollective) {
+            if (i>0) {
+              throw new Error("You can only use a collective as the first dependency of a browser function. (I know, annoying.) You have library.collective("+JSON.stringify(dep.attributes)+") as the "+i+ "th argument to "+this.binding.key)
             }
+          } else {
+            if (typeof dep.callable != "function") {
+              throw new Error("You passed "+JSON.stringify(dep)+" as a dependency to "+this.key+" but it needs to either be a collective or a function or have a .callable() method.")
+            }
+
             deps.push(dep.callable())
           }
         }
@@ -245,14 +247,18 @@ module.exports = library.export(
 
           var arg = this.binding.args[i]
 
-          var isClientFunction = arg && arg.binding && arg.binding.__BrowserBridgeBinding
+          var isBinding = arg && arg.binding && arg.binding.__BrowserBridgeBinding
+
+          var isFunction = typeof arg == "function"
 
           if (typeof arg == "undefined") {
             var source = "undefined"
           } else if (arg === null) {
             source = "null"
-          } else if (isClientFunction) {
+          } else if (isBinding) {
             source = arg.callable()
+          } else if (isFunction) {
+            source = arg.toString()
           } else {
             source = JSON.stringify(arg)
           }
