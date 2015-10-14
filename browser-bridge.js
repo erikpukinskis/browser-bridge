@@ -13,6 +13,14 @@ module.exports = library.export(
       this.asapSource = ""
     }
 
+    BrowserBridge.collective =
+      function(attributes) {
+        return {
+          __dependencyType: "browser collective",
+          attributes: attributes
+        }
+      }
+
     // Rename sendPageHandler? #todo
 
     BrowserBridge.prototype.sendPage =
@@ -24,10 +32,8 @@ module.exports = library.export(
         }
       }
 
-    // make this private: #todo
-
     BrowserBridge.prototype.getPage =
-      function getPage(body) {
+      function(body) {
 
         var bindings = element(
           "script",
@@ -184,6 +190,14 @@ module.exports = library.export(
             /^function[^(]*\(/,
             "function "+this.binding.identifier+"("
           )
+
+          var firstDependency = this.binding.dependencies[0]
+
+          var hasCollective = firstDependency &&firstDependency.__dependencyType == "browser collective"
+
+          if (hasCollective) {
+            source = "var "+this.binding.identifier+" = ("+source+").bind(null,"+JSON.stringify(firstDependency.attributes)+")"
+          }
         }
 
         return source
@@ -214,11 +228,17 @@ module.exports = library.export(
 
           var dep = this.binding.dependencies[i]
 
-          if (typeof dep.callable != "function") {
-            throw new Error("You passed "+JSON.stringify(dep)+" as a dependency to "+this.binding.identifier+" but it needs to either be a collective or have a .callable() method.")
-          }
+          var isCollective = dep.__dependencyType == "browser collective"
 
-          deps.push(dep.callable())
+          if (isCollective && i>0) {
+            throw new Error("You can only use a collective as the first dependency of a browser function. (I know, annoying.) You have library.collective("+JSON.stringify(dep.attributes)+") as the "+i+ "th argument to "+this.binding.key)
+          }
+          if (!isCollective) {
+            if (typeof dep.callable != "function") {
+              throw new Error("You passed "+JSON.stringify(dep)+" as a dependency to "+this.key+" but it needs to either be a collective or have a .callable() method.")
+            }
+            deps.push(dep.callable())
+          }
         }
 
         for(var i=0; i<this.binding.args.length; i++) {
