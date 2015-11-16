@@ -8,7 +8,7 @@
     "url": "https://github.com/erikpukinskis/nrtv-browser-bridge.git"
   },
   "scripts": {
-    "test": "node --harmony test.js"
+    "test": "node test.js"
   },
   "dependencies": {
     "nrtv-library": "*",

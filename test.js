@@ -1,7 +1,9 @@
 var test = require("nrtv-test")(require)
 var library = require("nrtv-library")(require)
 
-// test.only("arguments can be functions")
+test.failAfter(10000)
+
+// test.only("define a singleton generator")
 
 test.using(
   "sending an element",
@@ -133,8 +135,7 @@ test.using(
 
     var server = new Server()
 
-    server.get(
-      "/",
+    server.addRoute("get", "/",
       bridge.sendPage(
         element([button, ".out"])
       )
@@ -147,9 +148,7 @@ test.using(
         browser.pressButton(
           "button",
           function() {
-            server.stop()
-            browser.assert.text(".out", "foo 3 rabbit")
-            done()
+            browser.assertText(".out", "foo 3 rabbit", server.stop, browser.done, done)
           }
         )
 
@@ -161,7 +160,7 @@ test.using(
 
 
 test.using(
-  "Use static methods to do stuff with the collective bridge",
+  "use static methods to do stuff with the collective bridge",
 
   ["./browser-bridge"],
   function(expect, done, bridge) {
@@ -217,8 +216,7 @@ test.using(
 
     var server = new Server()
 
-    server.get(
-      "/",
+    server.addRoute("get", "/",
       bridge.sendPage(button)
     )
 
@@ -230,11 +228,8 @@ test.using(
         browser.pressButton(
           "button", 
           function() {
-            server.stop()
-            browser.assert.text(
-              "body", "ted"
-            )
-            done()
+            browser.assertText(
+              "body", "ted", server.stop, browser.done, done)
           }
         )
 
@@ -273,8 +268,7 @@ test.using(
 
     var server = new Server()
 
-    server.get(
-      "/",
+    server.addRoute("get", "/",
       bridge.sendPage(button)
     )
 
@@ -286,11 +280,9 @@ test.using(
         browser.pressButton(
           "button",
           function() {
-            server.stop()
-            browser.assert.text(
-              "body", "bird, cat, and fish are words"
+            browser.assertText(
+              "body", "bird, cat, and fish are words", server.stop, browser.done, done
             )
-            done()
           }
         )
 
@@ -323,7 +315,12 @@ test.using(
 
     var counter = element(".counter")
 
-    server.get("/", bridge.sendPage([button, counter]))
+    server.addRoute("get", "/",
+      bridge.sendPage([
+        button,
+        counter
+      ])
+    )
 
     server.start(4488)
 
@@ -333,10 +330,7 @@ test.using(
 
         browser.pressButton("button", function() {
 
-          browser.assert.text(".counter", "2")
-
-          server.stop()
-          done()
+          browser.assertText(".counter", "2", server.stop, browser.done, done)
         })
       })
     })
@@ -361,15 +355,13 @@ test.using(
 
     bridge.asap(hello)
 
-    server.get("/", bridge.sendPage())
+    server.addRoute("get", "/", bridge.sendPage())
 
     server.start(9876)
 
     browse("http://localhost:9876",
       function(browser) {
-        browser.assert.text("body", "hola")
-        server.stop()
-        done()
+        browser.assertText("body", "hola", server.stop, browser.done, done)
       }
     )
   }
@@ -410,12 +402,13 @@ test.using(
 
     bridge.asap(check)
 
-    server.get("/", bridge.sendPage())
+    server.addRoute("get", "/", bridge.sendPage())
     server.start(7000)
 
     browse("http://localhost:7000",
       function(browser) {
         server.stop()
+        browser.done()
         done()
       }
     )
