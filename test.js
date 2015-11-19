@@ -3,7 +3,7 @@ var library = require("nrtv-library")(require)
 
 test.failAfter(10000)
 
-// test.only("define a singleton generator")
+// test.only("bridge handles bindings sent in AJAX responses")
 
 test.using(
   "sending an element",
@@ -188,33 +188,41 @@ test.using(
 
 
 test.using(
-  "sending responses to the client bridge evaluates them",
+  "bridge handles bindings sent in AJAX responses",
 
-  ["./browser-bridge", "nrtv-element", "nrtv-server", "nrtv-browse"],
-  function(expect, done, BrowserBridge,   element, Server, browse) {
-    var bridge = new BrowserBridge()
+  [library.reset("./browser-bridge"), "nrtv-element", "nrtv-server", "nrtv-browse", "nrtv-make-request"],
+  function(expect, done, bridge,   element, Server, browse, makeRequest) {
 
-    var whatever = bridge.defineFunction(
-      function(name) {
+    var writeName = bridge.defineFunction(
+      function write(name) {
         document.write(name)
       }
     )
 
-    var applyBinding = bridge.defineFunction(
-      function(binding) {
-        bridge.handle(binding)
+    var server = new Server()
+
+    server.addRoute("get", "/whatever",
+      function(x, response) {
+        response.send(
+          writeName
+          .withArgs("ted")
+          .ajaxResponse()
+        )
       }
     )
 
-    var binding = whatever.withArgs("ted").ajaxResponse()
+    var getCommand = makeRequest
+    .defineInBrowser()
+    .withArgs(
+      "get", "/whatever",
+      bridge.handle()
+    )
 
     var button = element(
       "button",
       "Buttoon", {
-      onclick: applyBinding.withArgs(binding).evalable()
+      onclick: getCommand.evalable()
     })
-
-    var server = new Server()
 
     server.addRoute("get", "/",
       bridge.sendPage(button)

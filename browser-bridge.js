@@ -64,13 +64,9 @@ module.exports = library.export(
           lines.push("      "+source)
         }
 
-        funcsSource = "\n"
+        var source = "\n"
           + lines.join("\n\n")
           + "\n"
-
-        var lines = client.toString().replace("FUNCS", funcsSource).split("\n")
-
-        var source = lines.slice(1,lines.length-1).join("\n")
 
         source += "\n\n// Stuff to run on page load:\n\n"
 
@@ -137,15 +133,6 @@ module.exports = library.export(
 
         return binding
       }
-
-    library.collectivize(
-      BrowserBridge,
-      collective,
-      function() {
-        return new BrowserBridge()
-      },
-      ["sendPage", "asap", "defineFunction", "defineSingleton"]      
-    )
 
     // rename ClientDefinition?
     function BoundFunc(func, identifier, dependencies, args) {
@@ -280,26 +267,32 @@ module.exports = library.export(
 
     BoundFunc.prototype.ajaxResponse =
         function() {
-          return this.binding
-        }
-
-    // And here is the client we run in the browser to facilitate those two things. The funcs are swapped in when we write the HTML page.
-
-    function client() {
-      FUNCS
-      var bridge = {
-        handle: function(binding) {
-          if (binding.__BrowserBridgeBinding) {
-            var func = window[binding.identifier]
-
-            if (!func) {
-              throw new Error("Tried to call "+binding.identifier+"in the browser, but it isn't defined. Did you try to call defineFunction in an ajax response? You need to define all client functions before you send the initial page to the browser.")
-            }
-            window[binding.identifier].apply(bridge, binding.args)
+          return {
+            evalable: this.evalable()
           }
         }
+
+    BrowserBridge.prototype.handle =
+      function() {
+        return this.defineFunction(handleBindingResponse)
       }
+
+    function handleBindingResponse(binding) {
+      if (typeof binding == "string") {
+        binding = JSON.parse(binding)
+      }
+
+      eval(binding.evalable)
     }
+
+    library.collectivize(
+      BrowserBridge,
+      collective,
+      function() {
+        return new BrowserBridge()
+      },
+      ["sendPage", "asap", "defineFunction", "defineSingleton", "handle"]      
+    )
 
     return BrowserBridge
   }
