@@ -42,8 +42,12 @@ module.exports = library.export(
 
         var styles = element("style", " .hidden { display: none }")
 
+        if (!body || body.tagName != "body") {
+          body = element("body", body || "")
+        }
+
         var el = element("html", [
-          element("body", body || ""),
+          body,
           element("head", [
             bindings,
             styles

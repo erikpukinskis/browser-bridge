@@ -3,7 +3,7 @@ var library = require("nrtv-library")(require)
 
 test.failAfter(10000)
 
-// test.only("arguments can be objects")
+test.only("send a body")
 
 test.using(
   "sending an element",
@@ -438,5 +438,29 @@ test.using(
         done()
       }
     )
+  }
+)
+
+test.using(
+  "send a body",
+
+  ["./browser-bridge", "nrtv-element"],
+  function(expect, done, BrowserBridge, element) {
+
+    var bridge = new BrowserBridge()
+
+    var handler = bridge.sendPage(
+      element("body", {up: "down"})
+    )
+
+    var response = {
+      send: function(content) {
+        console.log(content)
+        expect(content).to.not.match(/<body>/)
+        done()
+      }
+    }
+
+    handler(null, response)
   }
 )
