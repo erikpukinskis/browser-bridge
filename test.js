@@ -3,7 +3,7 @@ var library = require("nrtv-library")(require)
 
 test.failAfter(10000)
 
-// test.only("bridge handles bindings sent in AJAX responses")
+// test.only("arguments can be objects")
 
 test.using(
   "sending an element",
@@ -84,6 +84,24 @@ test.using(
     })
 
     expect(wit.evalable()).to.match(/shabooya/)
+
+    done()
+  }
+)
+
+
+test.using(
+  "arguments can be objects",
+
+  ["./browser-bridge"],
+  function(expect, done, BrowserBridge) {
+    var bridge = new BrowserBridge()
+
+    var boundFunction = bridge.defineFunction(function() {})
+
+    var source = boundFunction.withArgs({a: 2, b: "hello", c: [1,"hi"]}).evalable()
+
+    expect(source).to.contain("\"a\":2")
 
     done()
   }
