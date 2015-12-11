@@ -3,7 +3,7 @@ var library = require("nrtv-library")(require)
 
 test.failAfter(10000)
 
-test.only("send a body")
+// test.only("bridge handles bindings sent in AJAX responses")
 
 test.using(
   "sending an element",
@@ -255,7 +255,11 @@ test.using(
           "button", 
           function() {
             browser.assertText(
-              "body", "ted", server.stop, browser.done, done)
+              "body", "ted",
+              server.stop,
+              browser.done,
+              done
+            )
           }
         )
 
@@ -368,9 +372,10 @@ test.using(
 test.using(
   "do something on page load",
 
-  ["./browser-bridge", library.reset("nrtv-server"), "nrtv-browse"],
-  function(expect, done, BrowserBridge, server, browse) {
+  ["./browser-bridge", "nrtv-server", "nrtv-browse"],
+  function(expect, done, BrowserBridge, Server, browse) {
 
+    var server = new Server()
     var bridge = new BrowserBridge()
 
     var hello = bridge.defineFunction(
@@ -397,9 +402,10 @@ test.using(
 test.using(
   "define a singleton generator",
 
-  ["./browser-bridge", library.reset("nrtv-server"), "nrtv-browse"],
-  function(expect, done, BrowserBridge, server, browse) {
+  ["./browser-bridge", "nrtv-server", "nrtv-browse"],
+  function(expect, done, BrowserBridge, Server, browse) {
 
+    var server = new Server()
     var bridge = new BrowserBridge()
 
     var jump = bridge.defineFunction(

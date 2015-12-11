@@ -208,7 +208,7 @@ module.exports = library.export(
           return this.binding.identifier
         }
 
-        return this.binding.identifier+".bind(bridge,"+arguments+")"
+        return this.binding.identifier+".bind(null,"+arguments+")"
       }
 
     BoundFunc.prototype.argumentString = function() {
