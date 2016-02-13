@@ -100,7 +100,6 @@ module.exports = library.export(
 
     BrowserBridge.prototype.defineFunction =
       function() {
-
         for (var i=0; i<arguments.length; i++) {
 
           if (typeof arguments[i] == "string") {
@@ -115,6 +114,8 @@ module.exports = library.export(
         if (!func) {
           throw new Error("You need to pass a function to bridge.defineFunction, but you passed "+JSON.stringify(arguments)+".")
         }
+
+        preventUndefinedDeps(dependencies, func)
 
         var sourceHash = hash(func)
 
@@ -138,9 +139,24 @@ module.exports = library.export(
         return binding
       }
 
+    function preventUndefinedDeps(dependencies, func) {
+
+      if (!dependencies) { return }
+
+      for(var i=0; i<dependencies.length; i++) {
+
+        if (typeof dependencies[i] == "undefined") {
+
+          var description = (func.name || func.toString().substr(0,60)+"...").replace(/(\n| )+/g, " ")
+
+          throw new Error("The "+i+"th dependency you passed for "+description+" was undefined. We're currently prohibiting that because it seems sketchy.")
+        }
+      }
+
+    }
+
     // rename ClientDefinition?
     function BoundFunc(func, identifier, dependencies, args) {
-      console.log("deps are", dependencies)
       this.binding = {
         __BrowserBridgeBinding: true,
         func: func,
@@ -219,12 +235,6 @@ module.exports = library.export(
         for(var i=0; i<this.binding.dependencies.length; i++) {
 
           var dep = this.binding.dependencies[i]
-
-          if (!dep) {
-            var funcDescription = this.binding.func.name || this.binding.func.toString().substr(0,60)+"..."
-
-            throw new Error("Tried to bind arguments "+JSON.stringify(this.binding.dependencies)+" to "+funcDescription+" but the "+i+"th argument is undefined! It probably happened a while ago and we're just finding out about it now when you're trying to use the binding. Check your suchAndSuch.withArgs(...) call previously.")
-          }
 
           var isCollective = dep.__dependencyType == "browser collective"
 
