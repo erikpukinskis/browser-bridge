@@ -14,6 +14,7 @@ module.exports = library.export(
     }
 
     BrowserBridge.collective =
+    BrowserBridge.prototype.collective =
       function(attributes) {
         return {
           __dependencyType: "browser collective",
