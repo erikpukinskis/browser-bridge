@@ -248,6 +248,8 @@ test.using(
 
     server.start(10101)
 
+    // throw new Error("there's a race condition here. sometimes we still see Buttoon by the time we do our assertion")
+
     browse("http://localhost:10101",
       function(browser) {
 
