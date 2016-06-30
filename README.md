@@ -34,7 +34,7 @@ server.addRoute(
 server.start(2090)
 ```
 
-If you then call bridge.getPage() you'll get a page with that function available:
+That bridge.sendPage(button) call returns a handler that will send a page with all of those functions glued up:
 
 ```html
 <!DOCTYPE html>
@@ -60,32 +60,20 @@ If you then call bridge.getPage() you'll get a page with that function available
 </html>
 ```
 
-Then when you want to render, say, a button that calls that function, you can bind an argument on the server and get an evalable piece of javascript.
-
-```javascript
-plusOne.withArgs("ten").evalable()
-```
-
-will return:
-
-```javascript
-tackOneOn_408d("ten")
-```
-
-If you put that code in a click handler, it will return "ten plus one".
-
 You can also pass data between functions on the client by passing references on the server:
 
 ```javascript
-var refund = bridge.defineOnClient(
-  [plusOne],
-  function(plusOne) {
-    alert(plusOne("minus one"))
+var maybeGreet = bridge.defineOnClient(
+  [greet],
+  function(greet) {
+    if (Math.random() < 0.5) {
+      greet()
+    }
   }
 )
 ```
 
-You can then pass refund.evalable() down to the browser, and it will pop up a "minus one plus one" alert.
+You can then pass maybeGreet.evalable() down to the browser, and the button will be broken half the time. :)
 
 ## Why
 
