@@ -4,39 +4,58 @@ The browser bridge lets you achieve the same ends more directly. You define func
 
 ```javascript
 var BrowserBridge = require("nrtv-browser-bridge")
+var server = require("nrtv-server")
+var element = require("nrtv-element")
 
 var bridge = new BrowserBridge()
 
-var plusOne = bridge.defineOnClient(
-  function tackOneOn(number) {
-    return number+" plus one"
+var greet = bridge.defineFunction(
+  function greet(name) {
+    alert("hi, "+name)
   }
 )
+
+var button = element(
+  "button",
+  "Hi there", 
+  {onclick: greet.withArgs("Tam").evalable()}
+)
+
+bridge.asap(function() {
+  console.log("Everything is awesome")
+})
+
+server.addRoute(
+  "get",
+  "/",
+  bridge.sendPage(button)
+)
+
+server.start(2090)
 ```
 
 If you then call bridge.getPage() you'll get a page with that function available:
 
 ```html
-<html>
-    
-<head>
-  <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
-  <script>
-    function tackOneOn_408d(number) {
-      return number+" plus one"
-    }
-      
-    var bridge = {
-      handle: function(binding) {
-        funcs[binding.key].apply(bridge, binding.args)
+<!DOCTYPE html>
+<html>    
+  <head>
+    <script>
+      function greet(name) {
+        alert("hi, "+name)
       }
-    }
-  </script>
-  <style>
-      .hidden { display: none }
-  </style>
-</head>
-<div></div>
+            
+      // Stuff to run on page load:
+      
+      function () {
+        console.log("Everything is awesome.")
+      }
+      </script>
+  </head>
+
+  <body>
+      <button onclick="greet(&quot;Tam&quot;)">Hi there</button>
+  </body>
 
 </html>
 ```
