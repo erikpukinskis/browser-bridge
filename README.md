@@ -63,7 +63,7 @@ That bridge.sendPage(button) call returns a handler that will send a page with a
 You can also pass data between functions on the client by passing references on the server:
 
 ```javascript
-var maybeGreet = bridge.defineOnClient(
+var maybeGreet = bridge.defineFunction(
   [greet],
   function(greet) {
     if (Math.random() < 0.5) {
