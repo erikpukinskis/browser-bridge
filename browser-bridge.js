@@ -2,8 +2,8 @@ var library = require("nrtv-library")(require)
 
 module.exports = library.export(
   "nrtv-browser-bridge",
-  [library.collective({}), "nrtv-element", "object-hash", "html", "nrtv-function-call"],
-  function(collective, element, hash, html, functionCall) {
+  [library.collective({}), "nrtv-element", "html", "nrtv-function-call"],
+  function(collective, element, html, functionCall) {
 
     function BrowserBridge(instance) {
       this.instance = instance
@@ -63,8 +63,8 @@ module.exports = library.export(
     BrowserBridge.prototype.script =
       function() {
         var lines = []
-        for (sourceHash in this.bindings) {
-          var source = this.bindings[sourceHash].source()
+        for (identifier in this.bindings) {
+          var source = this.bindings[identifier].source()
 
           lines.push("      "+source)
         }
@@ -118,13 +118,7 @@ module.exports = library.export(
 
         preventUndefinedDeps(dependencies, func)
 
-        var sourceHash = hash(func)
-
         var identifier = original = name || func.name || "f"
-
-        var binding = this.bindings[sourceHash]
-
-        if (binding) { return binding }
 
         while(identifier in this.identifiers) {
 
@@ -133,9 +127,9 @@ module.exports = library.export(
 
         this.identifiers[identifier] = true
 
-        binding = functionCall(func, identifier, dependencies)
+        var binding = functionCall(func, identifier, dependencies)
 
-        this.bindings[sourceHash] = binding
+        this.bindings[identifier] = binding
 
         return binding
       }
