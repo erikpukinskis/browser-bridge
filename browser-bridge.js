@@ -11,6 +11,11 @@ module.exports = library.export(
       this.bindings = {}
       this.identifiers = {}
       this.asapSource = ""
+      this.__isNrtvBrowserBridge = true
+    }
+
+    BrowserBridge.isBridge = function(thing) {
+      return !!thing.__isNrtvBrowserBridge
     }
 
     BrowserBridge.collective =
