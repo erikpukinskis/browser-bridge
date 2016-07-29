@@ -25,8 +25,8 @@ module.exports = library.export(
     // Rename sendPageHandler? #todo
 
     BrowserBridge.prototype.sendPage =
-      function(body) {
-        var html = this.getPage(body)
+      function(content) {
+        var html = this.getPage(content)
 
         return function(x, response) {
           response.send(html)
@@ -34,7 +34,7 @@ module.exports = library.export(
       }
 
     BrowserBridge.prototype.getPage =
-      function(body) {
+      function(content) {
 
         var bindings = element(
           "script",
@@ -43,22 +43,45 @@ module.exports = library.export(
 
         var styles = element("style", " .hidden { display: none }")
 
-        if (!body || body.tagName != "body") {
-          body = element("body", body || "")
+        var needsBody = content && typeof(content) != "string" && !hasBody(content, 2)
+
+        if (!content) {
+          content = element("body")
+        } else if (needsBody) {
+          content = element("body", content)
         }
 
-        var el = element("html", [
-          body,
-          element("head", [
-            bindings,
-            styles
-          ])
-        ])
+        var el = element("html", content)
+
+        el.children.push(bindings, styles)
 
         var source = "<!DOCTYPE html>\n" + el.html()
 
         return html.prettyPrint(source)
       }
+
+    function hasBody(content, depth) {
+      if (depth < 1) { return false }
+
+      if (content.tagName == "body") {
+        return true
+      }
+
+      var children = content.children || content
+
+      if (!Array.isArray(children)) {
+        return false
+      }
+
+      for(var i=0; i<children.length; i++) {
+
+        if (hasBody(children[i], depth-1)) {
+          return true
+        }
+      }
+
+      return false
+    }
 
     BrowserBridge.prototype.script =
       function() {
