@@ -2,7 +2,7 @@ var library = require("nrtv-library")(require)
 
 module.exports = library.export(
   "nrtv-browser-bridge",
-  [library.collective({}), "nrtv-element", "html", "nrtv-function-call"],
+  [library.collective({}), "nrtv-element", "html", "function-call"],
   function(collective, element, html, functionCall) {
 
     function BrowserBridge(instance) {
@@ -54,7 +54,7 @@ module.exports = library.export(
           })
 
         var headSource = element.stylesheet(hidden).html() + this.head
-        
+
         var head = element("head", 
           element.raw(headSource)
         )

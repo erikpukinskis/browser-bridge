@@ -1,17 +1,17 @@
 {
-  "name": "nrtv-browser-bridge",
+  "name": "browser-bridge",
   "version": "0.57.0",
   "description": "Proxies code and state between Node and the browser",
   "main": "browser-bridge.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/erikpukinskis/nrtv-browser-bridge.git"
+    "url": "https://github.com/erikpukinskis/browser-bridge.git"
   },
   "scripts": {
     "test": "node test.js"
   },
   "dependencies": {
-    "nrtv-function-call": "*",
+    "function-call": "*",
     "nrtv-library": "*",
     "nrtv-element": "*",
     "object-hash": "*",
@@ -24,5 +24,5 @@
     "nrtv-browse": "*"
   },
   "license": "ISC",
-  "homepage": "https://github.com/erikpukinskis/nrtv-browser-bridge"
+  "homepage": "https://github.com/erikpukinskis/browser-bridge"
 }
