@@ -11,6 +11,7 @@ module.exports = library.export(
       this.bindings = {}
       this.identifiers = {}
       this.asapSource = ""
+      this.head = ""
     }
 
     BrowserBridge.collective =
@@ -33,6 +34,11 @@ module.exports = library.export(
         }
       }
 
+    BrowserBridge.prototype.addToHead =
+      function(html) {
+        this.head = this.head+html
+      }
+
     BrowserBridge.prototype.getPage =
       function(content) {
 
@@ -41,7 +47,18 @@ module.exports = library.export(
           this.script()
         )
 
-        var styles = element("style", " .hidden { display: none }")
+        
+        var hidden = element.style(
+          ".hidden", {
+            "display": "none"
+          })
+
+        var headSource = element.stylesheet(hidden).html() + this.head
+        
+        var head = element("head", 
+          element.raw(headSource)
+        )
+
 
         var needsBody = content && typeof(content) != "string" && !hasBody(content, 2)
 
@@ -50,12 +67,11 @@ module.exports = library.export(
         } else if (needsBody) {
           content = element("body", content)
         }
+        content.addChild(bindings)
 
-        var el = element("html", content)
+        var page = element("html", [head, content])
 
-        el.children.push(bindings, styles)
-
-        var source = "<!DOCTYPE html>\n" + el.html()
+        var source = "<!DOCTYPE html>\n" + page.html()
 
         return html.prettyPrint(source)
       }

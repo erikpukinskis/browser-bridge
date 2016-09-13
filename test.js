@@ -3,7 +3,7 @@ var library = require("nrtv-library")(require)
 
 test.failAfter(10000)
 
-// test.only("bridge handles bindings sent in AJAX responses")
+// test.only("adding styles")
 
 test.using(
   "sending an element",
@@ -12,7 +12,6 @@ test.using(
 
   function(expect, done, element, sinon, BrowserBridge) {
 
-    done.failAfter(3000)
     var bridge = new BrowserBridge()
 
     var el = element("body", "Hello, world!")
@@ -470,5 +469,27 @@ test.using(
     }
 
     handler(null, response)
+  }
+)
+
+test.using(
+  "adding styles",
+  ["./browser-bridge", "nrtv-element"],
+  function(expect, done, BrowserBridge, element) {
+
+    var bridge = new BrowserBridge()
+
+    var bright = element.style(
+      ".bright",
+      {color: "cyan"}
+    )
+
+    bridge.addToHead(element.stylesheet(bright).html())
+
+    var html = bridge.getPage().replace(/\r?\n|\r/gm, "")
+
+    expect(html).to.match(/<head>.*\.bright {.*\<\/head>/)
+
+    done()
   }
 )
