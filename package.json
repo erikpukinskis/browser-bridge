@@ -1,6 +1,6 @@
 {
   "name": "browser-bridge",
-  "version": "0.57.0",
+  "version": "0.58.0",
   "description": "Proxies code and state between Node and the browser",
   "main": "browser-bridge.js",
   "repository": {
