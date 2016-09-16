@@ -53,7 +53,7 @@ module.exports = library.export(
             "display": "none"
           })
 
-        var headSource = element.stylesheet(hidden).html() + this.head
+        var headSource = '<meta name="viewport" content="width=device-width, initial-scale=1">\n'+element.stylesheet(hidden).html() + this.head
 
         var head = element("head", 
           element.raw(headSource)
