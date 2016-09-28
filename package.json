@@ -13,7 +13,7 @@
   "dependencies": {
     "function-call": "*",
     "nrtv-library": "*",
-    "nrtv-element": "*",
+    "web-element": "*",
     "object-hash": "*",
     "html": "*"
   },

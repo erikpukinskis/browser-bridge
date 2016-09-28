@@ -8,7 +8,7 @@ test.failAfter(10000)
 test.using(
   "sending an element",
 
-  ["nrtv-element", "sinon", "./browser-bridge"],
+  ["web-element", "sinon", "./"],
 
   function(expect, done, element, sinon, BrowserBridge) {
 
@@ -45,7 +45,7 @@ function greet(name) {
 test.using(
   "getting evalable javascript references",
 
-  ["./browser-bridge"],
+  ["./"],
   function(expect, done, BrowserBridge) {
     var bridge = new BrowserBridge()
 
@@ -67,7 +67,7 @@ test.using(
 test.using(
   "arguments can be functions",
 
-  ["./browser-bridge"],
+  ["./"],
   function(expect, done, BrowserBridge) {
     var bridge = new BrowserBridge()
 
@@ -92,7 +92,7 @@ test.using(
 test.using(
   "arguments can be objects",
 
-  ["./browser-bridge"],
+  ["./"],
   function(expect, done, BrowserBridge) {
     var bridge = new BrowserBridge()
 
@@ -110,7 +110,7 @@ test.using(
 test.using(
   "arguments can be undefined",
 
-  ["./browser-bridge"],
+  ["./"],
   function(expect, done, BrowserBridge) {
     var bridge = new BrowserBridge()
 
@@ -128,7 +128,7 @@ test.using(
 test.using(
   "client functions can use other client functions",
 
-  ["nrtv-element", "./browser-bridge", "nrtv-server", "nrtv-browse"],
+  ["web-element", "./", "nrtv-server", "nrtv-browse"],
   function(expect, done, element, BrowserBridge, Server, browse) {
 
     done.failAfter(4000)
@@ -179,7 +179,7 @@ test.using(
 test.using(
   "use static methods to do stuff with the collective bridge",
 
-  ["./browser-bridge"],
+  ["./"],
   function(expect, done, bridge) {
 
     bridge.defineFunction(function brussels() {}
@@ -207,7 +207,7 @@ test.using(
 test.using(
   "bridge handles bindings sent in AJAX responses",
 
-  [library.reset("./browser-bridge"), "nrtv-element", "nrtv-server", "nrtv-browse", "nrtv-make-request"],
+  [library.reset("./"), "web-element", "nrtv-server", "nrtv-browse", "nrtv-make-request"],
   function(expect, done, bridge,   element, Server, browse, makeRequest) {
 
     var writeName = bridge.defineFunction(
@@ -273,7 +273,7 @@ test.using(
 test.using(
   "other functions can be passed as arguments",
 
-  ["./browser-bridge", "nrtv-element", "nrtv-server", "nrtv-browse"],
+  ["./", "web-element", "nrtv-server", "nrtv-browse"],
 
   function(expect, done, BrowserBridge,   element, Server, browse) {
 
@@ -326,7 +326,7 @@ test.using(
 test.using(
   "client functions can have collectives",
 
-  ["./browser-bridge", "nrtv-server", "nrtv-browse", "nrtv-element"],
+  ["./", "nrtv-server", "nrtv-browse", "web-element"],
   function(expect, done, bridge, server, browse, element) {
 
     var increment = bridge.defineFunction(
@@ -373,7 +373,7 @@ test.using(
 test.using(
   "do something on page load",
 
-  ["./browser-bridge", "nrtv-server", "nrtv-browse"],
+  ["./", "nrtv-server", "nrtv-browse"],
   function(expect, done, BrowserBridge, Server, browse) {
 
     var server = new Server()
@@ -403,7 +403,7 @@ test.using(
 test.using(
   "define a singleton generator",
 
-  ["./browser-bridge", "nrtv-server", "nrtv-browse"],
+  ["./", "nrtv-server", "nrtv-browse"],
   function(expect, done, BrowserBridge, Server, browse) {
 
     var server = new Server()
@@ -451,7 +451,7 @@ test.using(
 test.using(
   "send a body",
 
-  ["./browser-bridge", "nrtv-element"],
+  ["./", "web-element"],
   function(expect, done, BrowserBridge, element) {
 
     var bridge = new BrowserBridge()
@@ -474,7 +474,7 @@ test.using(
 
 test.using(
   "adding styles",
-  ["./browser-bridge", "nrtv-element"],
+  ["./", "web-element"],
   function(expect, done, BrowserBridge, element) {
 
     var bridge = new BrowserBridge()
