@@ -67,7 +67,12 @@ module.exports = library.export(
         } else if (needsBody) {
           content = element("body", content)
         }
-        content.addChild(bindings)
+
+        if (Array.isArray(content)) {
+          content.push(bindings)
+        } else {
+          content.addChild(bindings)
+        }
 
         var page = element("html", [head, content])
 
