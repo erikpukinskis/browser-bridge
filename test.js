@@ -118,7 +118,7 @@ test.using(
 
     var source = boundFunction.withArgs(undefined, {}).evalable()
 
-    expect(source).to.contain("undefined,{}")
+    expect(source).to.contain("undefined, {}")
 
     done()
   }
@@ -207,8 +207,10 @@ test.using(
 test.using(
   "bridge handles bindings sent in AJAX responses",
 
-  [library.reset("./"), "web-element", "nrtv-server", "nrtv-browse", "nrtv-make-request"],
-  function(expect, done, bridge,   element, Server, browse, makeRequest) {
+  ["./", "web-element", "nrtv-server", "nrtv-browse", "make-request"],
+  function(expect, done, BrowserBridge,   element, Server, browse, makeRequest) {
+
+    var bridge = new BrowserBridge()
 
     var writeName = bridge.defineFunction(
       function write(name) {
@@ -229,7 +231,7 @@ test.using(
     )
 
     var getCommand = makeRequest
-    .defineInBrowser()
+    .defineOn(bridge)
     .withArgs(
       "get", "/whatever",
       bridge.handle()

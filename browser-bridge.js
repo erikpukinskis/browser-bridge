@@ -134,49 +134,61 @@ module.exports = library.export(
 
     BrowserBridge.prototype.defineSingleton =
       function() {
-        var boundFunc = this.defineFunction.apply(this, arguments)
 
-        boundFunc.isGenerator = true
+        var binding = buildBinding(arguments, this.identifiers)
 
-        return boundFunc
+        binding.isGenerator = true
+
+        this.asap(binding)
+
+        return binding
       }
-
-    // The dependencies and the withArgs are a little redundant here. #todo Remove dependencies.
 
     BrowserBridge.prototype.defineFunction =
       function() {
-        for (var i=0; i<arguments.length; i++) {
+        var binding = buildBinding(arguments, this.identifiers)
 
-          if (typeof arguments[i] == "string") {
-            var name = arguments[i]
-          } else if (typeof arguments[i] == "function") {
-            var func = arguments[i]
-          } else if (Array.isArray(arguments[i])) {
-            var dependencies = arguments[i]
-          }
-        }
-
-        if (!func) {
-          throw new Error("You need to pass a function to bridge.defineFunction, but you passed "+JSON.stringify(arguments)+".")
-        }
-
-        preventUndefinedDeps(dependencies, func)
-
-        var identifier = original = name || func.name || "f"
-
-        while(identifier in this.identifiers) {
-
-          identifier = original+"_"+Math.random().toString(36).split(".")[1].substr(0,4)
-        }
-
-        this.identifiers[identifier] = true
-
-        var binding = functionCall(func, identifier, dependencies)
+        var identifier = binding.binding.identifier
 
         this.bindings[identifier] = binding
 
         return binding
       }
+
+    function buildBinding(args, identifiers) {
+      for (var i=0; i<args.length; i++) {
+
+        if (typeof args[i] == "string") {
+          var name = args[i]
+        } else if (typeof args[i] == "function") {
+          var func = args[i]
+        } else if (Array.isArray(args[i])) {
+
+          // The dependencies and the withArgs are a little redundant here. #todo Remove dependencies.
+
+          var dependencies = args[i]
+        }
+      }
+
+      if (!func) {
+        throw new Error("You need to pass a function to bridge.defineFunction, but you passed "+JSON.stringify(args)+".")
+      }
+
+      preventUndefinedDeps(dependencies, func)
+
+      var identifier = original = name || func.name || "f"
+
+      while(identifier in identifiers) {
+
+        identifier = original+"_"+Math.random().toString(36).split(".")[1].substr(0,4)
+      }
+
+      identifiers[identifier] = true
+
+      var binding = functionCall(func, identifier, dependencies)
+
+      return binding
+    }
 
     function preventUndefinedDeps(dependencies, func) {
 
