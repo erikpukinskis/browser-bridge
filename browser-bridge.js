@@ -139,7 +139,7 @@ module.exports = library.export(
 
         binding.isGenerator = true
 
-        this.asap(binding)
+        this.asap(binding.source())
 
         return binding
       }
