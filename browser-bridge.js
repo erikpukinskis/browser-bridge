@@ -127,7 +127,7 @@ module.exports = library.export(
     BrowserBridge.prototype.asap =
       function(binding) {
 
-        var source = binding.evalable ? binding.evalable(): binding
+        var source = binding.evalable ? binding.evalable({expand: true}): binding
 
         this.asapSource += source + "\n\n"
       }
