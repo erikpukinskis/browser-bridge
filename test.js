@@ -3,7 +3,9 @@ var library = require("nrtv-library")(require)
 
 test.failAfter(10000)
 
-// test.only("adding styles")
+test.only("singleton source")
+
+
 
 test.using(
   "sending an element",
@@ -400,6 +402,35 @@ test.using(
     )
   }
 )
+
+
+
+test.using(
+  "singleton source",
+  ["./", "browser-bridge"],
+  function(expect, done, bridgeModule, BrowserBridge) {
+
+    var bridge = new BrowserBridge()
+
+    binding = bridge.defineSingleton(
+      "program",
+function () {
+  return true
+}
+    )
+
+    var lines = [
+      "var program = (function () {",
+      "  return true",
+      "}).call()"
+    ]
+
+    expect(binding.source()).to.equal(lines.join("\n"))
+    done()
+  }
+)
+
+
 
 
 test.using(
