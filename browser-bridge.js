@@ -135,9 +135,7 @@ module.exports = library.export(
     BrowserBridge.prototype.defineSingleton =
       function() {
 
-        var binding = buildBinding(arguments, this.identifiers)
-
-        binding.isGenerator = true
+        var binding = buildBinding(arguments, this.identifiers).singleton()
 
         this.asap(binding.source())
 
