@@ -108,7 +108,8 @@ module.exports = library.export(
       function() {
         var lines = []
         for (identifier in this.bindings) {
-          var source = this.bindings[identifier].source()
+          var binding = this.bindings[identifier] 
+          var source = binding.definitionComment+"\n"+binding.source()
 
           lines.push("      "+source)
         }
@@ -124,10 +125,21 @@ module.exports = library.export(
         return source
       }
 
+    function definitionComment() {
+      try {
+        throw new Error("browser-bridge induced this error for introspection purposes")
+      } catch (e) {
+        var origin = e.stack.split("\n")[3].substr(7)
+        return "// defined at "+origin
+      }
+    }
+
     BrowserBridge.prototype.asap =
       function(binding) {
 
-        var source = binding.evalable ? binding.evalable({expand: true}): binding
+        var source = definitionComment() + "\n"
+
+        source += binding.evalable ? binding.evalable({expand: true}): binding
 
         this.asapSource += source + "\n\n"
       }
@@ -137,7 +149,11 @@ module.exports = library.export(
 
         var binding = buildBinding(arguments, this.identifiers).singleton()
 
-        this.asap(binding.source())
+        binding.definitionComment = definitionComment()
+
+        var source = definitionComment()+"\n" + binding.source()
+
+        this.asapSource += source + "\n\n"
 
         return binding
       }
@@ -145,6 +161,8 @@ module.exports = library.export(
     BrowserBridge.prototype.defineFunction =
       function() {
         var binding = buildBinding(arguments, this.identifiers)
+
+        binding.definitionComment = definitionComment()
 
         var identifier = binding.binding.identifier
 
