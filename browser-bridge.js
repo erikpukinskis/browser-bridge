@@ -9,6 +9,7 @@ module.exports = library.export(
       this.instance = instance
       this.id = Math.random().toString(36).substr(2,4)
       this.bindings = {}
+      this.previousBindingStacks = {}
       this.identifiers = {}
       this.asapSource = ""
       this.head = ""
@@ -108,7 +109,7 @@ module.exports = library.export(
       function() {
         var lines = []
         for (identifier in this.bindings) {
-          var binding = this.bindings[identifier] 
+          var binding = this.bindings[identifier]
           var source = binding.definitionComment+"\n"+binding.source()
 
           lines.push("      "+source)
@@ -147,7 +148,7 @@ module.exports = library.export(
     BrowserBridge.prototype.defineSingleton =
       function() {
 
-        var binding = buildBinding(arguments, this.identifiers).singleton()
+        var binding = buildBinding(arguments, this).singleton()
 
         binding.definitionComment = definitionComment()
 
@@ -160,7 +161,7 @@ module.exports = library.export(
 
     BrowserBridge.prototype.defineFunction =
       function() {
-        var binding = buildBinding(arguments, this.identifiers)
+        var binding = buildBinding(arguments, this)
 
         binding.definitionComment = definitionComment()
 
@@ -171,7 +172,7 @@ module.exports = library.export(
         return binding
       }
 
-    function buildBinding(args, identifiers) {
+    function buildBinding(args, bridge) {
       for (var i=0; i<args.length; i++) {
 
         if (typeof args[i] == "string") {
@@ -190,16 +191,33 @@ module.exports = library.export(
         throw new Error("You need to pass a function to bridge.defineFunction, but you passed "+JSON.stringify(args)+".")
       }
 
+      var functionHash = hash(func.toString())
+
+      var stack = bridge.previousBindingStacks[functionHash]
+
+      if (stack) {
+        console.log("function:", func)
+        console.log("Original defined at:", stack)
+
+        throw new Error("You are trying to define the above function, but we already defined one that looks just like that on this bridge. That seems wrong, but if you think it's right, add support to browser-bridge for this.")
+      } else {
+        try {
+          throw new Error()
+        } catch(e) {
+          bridge.previousBindingStacks[functionHash] = e.stack.split("\n").slice(3).join("\n")
+        }
+      }
+      
       preventUndefinedDeps(dependencies, func)
 
       var identifier = original = name || func.name || "f"
 
-      while(identifier in identifiers) {
+      while(identifier in bridge.identifiers) {
 
         identifier = original+"_"+Math.random().toString(36).split(".")[1].substr(0,4)
       }
 
-      identifiers[identifier] = true
+      bridge.identifiers[identifier] = true
 
       var binding = functionCall(func, identifier, dependencies)
 
@@ -233,6 +251,20 @@ module.exports = library.export(
       }
 
       eval(binding.evalable)
+    }
+
+    // fnv32a
+    function hash(str)
+    {
+      // https://gist.github.com/vaiorabbit/5657561
+      var FNV1_32A_INIT = 0x811c9dc5;
+      var hval = FNV1_32A_INIT;
+      for ( var i = 0; i < str.length; ++i )
+      {
+        hval ^= str.charCodeAt(i);
+        hval += (hval << 1) + (hval << 4) + (hval << 7) + (hval << 8) + (hval << 24);
+      }
+      return hval >>> 0;
     }
 
     library.collectivize(

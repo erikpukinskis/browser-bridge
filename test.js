@@ -1,12 +1,6 @@
 var test = require("nrtv-test")(require)
 var library = require("nrtv-library")(require)
 
-test.failAfter(10000)
-
-test.only("singleton source")
-
-
-
 test.using(
   "sending an element",
 
@@ -132,8 +126,6 @@ test.using(
 
   ["web-element", "./", "nrtv-server", "nrtv-browse"],
   function(expect, done, element, BrowserBridge, Server, browse) {
-
-    done.failAfter(4000)
 
     var bridge = new BrowserBridge()
 
@@ -432,7 +424,6 @@ function () {
 
 
 
-
 test.using(
   "define a singleton generator",
 
@@ -495,7 +486,6 @@ test.using(
 
     var response = {
       send: function(content) {
-        console.log(content)
         expect(content).to.not.match(/<body>/)
         done()
       }
@@ -524,5 +514,30 @@ test.using(
     expect(html).to.match(/<head>.*\.bright {.*\<\/head>/)
 
     done()
+  }
+)
+
+test.using(
+  "detecting duplicate definitions",
+
+  ["./"],
+
+  function(expect, done, BrowserBridge) {
+    var bridge = new BrowserBridge()
+
+    function splendid() {
+      log("I love being bathed in the sink!")
+    }
+
+    bridge.defineFunction(splendid)
+
+    try {
+      bridge.defineFunction(splendid)
+    } catch (e) {
+      done()
+      return
+    }
+
+    throw new Error("Was able to define a function twice")
   }
 )
