@@ -28,7 +28,7 @@ module.exports = library.export(
 
     BrowserBridge.prototype.sendPage =
       function(content) {
-        var html = this.getPage(content)
+        var html = this.toHtml(content)
 
         return function(x, response) {
           response.send(html)
@@ -40,7 +40,7 @@ module.exports = library.export(
         this.head = this.head+html
       }
 
-    BrowserBridge.prototype.getPage =
+    BrowserBridge.prototype.toHtml =
       function(content) {
 
         var bindings = element(

@@ -21,7 +21,8 @@
     "nrtv-test": "*",
     "sinon": "*",
     "nrtv-server": "*",
-    "nrtv-browse": "*"
+    "nrtv-browse": "*",
+    "make-request": "*"
   },
   "license": "ISC",
   "homepage": "https://github.com/erikpukinskis/browser-bridge"
