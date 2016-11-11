@@ -138,6 +138,14 @@ module.exports = library.export(
     BrowserBridge.prototype.asap =
       function(binding) {
 
+        if (!binding.__isFunctionCallBinding) {
+
+          var args = Array.prototype.slice.call(arguments)
+
+          console.log("args are", args)
+          binding = this.defineFunction.apply(this, args)
+        }
+
         var source = definitionComment() + "\n"
 
         source += binding.evalable ? binding.evalable({expand: true}): binding

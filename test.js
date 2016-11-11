@@ -1,5 +1,6 @@
 var test = require("nrtv-test")(require)
-var library = require("nrtv-library")(require)
+
+test.failAfter(3000)
 
 test.using(
   "sending an element",
@@ -276,13 +277,13 @@ test.using(
     var bridge = new BrowserBridge()
 
     var overwrite = bridge.defineFunction(
-      function(getWords) {
+      function overwrite(getWords) {
         document.write(getWords() + " are words")
       }
     )
 
-    var someWords = bridge.defineFunction(
-      function() {
+    var getWords = bridge.defineFunction(
+      function getWords() {
         return "bird, cat, and fish"
       }
     )
@@ -290,7 +291,7 @@ test.using(
     var button = element(
       "button",
       "Write stuff!", {
-      onclick: overwrite.withArgs(someWords).evalable()
+      onclick: overwrite.withArgs(getWords).evalable()
     })
 
     var server = new Server()
@@ -375,13 +376,9 @@ test.using(
     var server = new Server()
     var bridge = new BrowserBridge()
 
-    var hello = bridge.defineFunction(
-      function() {
-        document.getElementsByTagName("body")[0].innerHTML = "hola"
-      }
-    )
-
-    bridge.asap(hello)
+    bridge.asap(function hello() {
+      document.getElementsByTagName("body")[0].innerHTML = "hola"
+    })
 
     server.addRoute("get", "/", bridge.sendPage())
 
@@ -509,7 +506,7 @@ test.using(
 
     bridge.addToHead(element.stylesheet(bright).html())
 
-    var html = bridge.getPage().replace(/\r?\n|\r/gm, "")
+    var html = bridge.toHtml().replace(/\r?\n|\r/gm, "")
 
     expect(html).to.match(/<head>.*\.bright {.*\<\/head>/)
 
