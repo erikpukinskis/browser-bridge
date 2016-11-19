@@ -130,7 +130,16 @@ module.exports = library.export(
       try {
         throw new Error("browser-bridge induced this error for introspection purposes")
       } catch (e) {
-        var origin = e.stack.split("\n")[3].substr(7)
+        var stack = e.stack.split("\n")
+
+        if (stack[3].match("callCollectiveMethod")) {
+          var depth = 4
+        } else {
+          var depth = 3
+        }
+
+        var origin = stack[depth].substr(7)
+
         return "// defined at "+origin
       }
     }
@@ -142,7 +151,6 @@ module.exports = library.export(
 
           var args = Array.prototype.slice.call(arguments)
 
-          console.log("args are", args)
           binding = this.defineFunction.apply(this, args)
         }
 
@@ -204,8 +212,8 @@ module.exports = library.export(
       var stack = bridge.previousBindingStacks[functionHash]
 
       if (stack) {
-        console.log("function:", func)
-        console.log("Original defined at:", stack)
+        console.log("Duplicate function:\n", func)
+        console.log("\nOriginal defined:\n", stack)
 
         throw new Error("You are trying to define the above function, but we already defined one that looks just like that on this bridge. That seems wrong, but if you think it's right, add support to browser-bridge for this.")
       } else {

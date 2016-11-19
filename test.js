@@ -1,6 +1,6 @@
 var test = require("nrtv-test")(require)
 
-test.failAfter(3000)
+// test.only("bridge handles bindings sent in AJAX responses")
 
 test.using(
   "sending an element",
@@ -246,23 +246,21 @@ test.using(
 
     // throw new Error("there's a race condition here. sometimes we still see Buttoon by the time we do our assertion")
 
-    browse("http://localhost:10101",
-      function(browser) {
+    var browser = browse("http://localhost:10101", pressIt)
 
-        browser.pressButton(
-          "button", 
-          function() {
-            browser.assertText(
-              "body", "ted",
-              server.stop,
-              browser.done,
-              done
-            )
-          }
-        )
+    function pressIt() {
+      browser.pressButton("button", checkForTed)
+    }
 
-      }
-    )
+    function checkForTed() {
+      browser.assertText(
+        "body", "ted",
+        server.stop,
+        browser.done,
+        done
+      )
+    }
+
   }
 )
 
@@ -538,3 +536,6 @@ test.using(
     throw new Error("Was able to define a function twice")
   }
 )
+
+
+
