@@ -18,10 +18,10 @@
     "html": "*"
   },
   "devDependencies": {
-    "nrtv-test": "*",
+    "run-test": "*",
     "sinon": "*",
-    "nrtv-server": "*",
-    "nrtv-browse": "*",
+    "web-site": "*",
+    "browser-task": "*",
     "make-request": "*"
   },
   "license": "ISC",

@@ -1,8 +1,9 @@
-var test = require("nrtv-test")(require)
+var runTest = require("run-test")(require)
 
-// test.only("bridge handles bindings sent in AJAX responses")
+// runTest.only("dependencies get pre-bound")
+// runTest.only("bridge handles bindings sent in AJAX responses")
 
-test.using(
+runTest(
   "sending an element",
 
   ["web-element", "sinon", "./"],
@@ -39,7 +40,7 @@ function greet(name) {
 }
 
 
-test.using(
+runTest(
   "getting evalable javascript references",
 
   ["./"],
@@ -61,7 +62,7 @@ test.using(
 )
 
 
-test.using(
+runTest(
   "arguments can be functions",
 
   ["./"],
@@ -86,7 +87,7 @@ test.using(
 )
 
 
-test.using(
+runTest(
   "arguments can be objects",
 
   ["./"],
@@ -104,7 +105,7 @@ test.using(
 )
 
 
-test.using(
+runTest(
   "arguments can be undefined",
 
   ["./"],
@@ -122,11 +123,11 @@ test.using(
 )
 
 
-test.using(
+runTest(
   "client functions can use other client functions",
 
-  ["web-element", "./", "nrtv-server", "nrtv-browse"],
-  function(expect, done, element, BrowserBridge, Server, browse) {
+  ["web-element", "./", "web-site", "browser-task"],
+  function(expect, done, element, BrowserBridge, WebSite, browserTask) {
 
     var bridge = new BrowserBridge()
 
@@ -145,22 +146,22 @@ test.using(
 
     var button = element("button", {onclick: bar.withArgs("rabbit").evalable()}, "Press me.")
 
-    var server = new Server()
+    var site = new WebSite()
 
-    server.addRoute("get", "/",
+    site.addRoute("get", "/",
       bridge.sendPage(
         element([button, ".out"])
       )
     )
 
-    server.start(6676)
+    site.start(6676)
 
-    browse("http://localhost:6676", function(browser) {
+    browserTask("http://localhost:6676", function(browser) {
 
         browser.pressButton(
           "button",
           function() {
-            browser.assertText(".out", "foo 3 rabbit", server.stop, browser.done, done)
+            browser.assertText(".out", "foo 3 rabbit", site.stop, browser.done, done)
           }
         )
 
@@ -171,7 +172,7 @@ test.using(
 
 
 
-test.using(
+runTest(
   "use static methods to do stuff with the collective bridge",
 
   ["./"],
@@ -199,11 +200,11 @@ test.using(
 
 
 
-test.using(
+runTest(
   "bridge handles bindings sent in AJAX responses",
 
-  ["./", "web-element", "nrtv-server", "nrtv-browse", "make-request"],
-  function(expect, done, BrowserBridge,   element, Server, browse, makeRequest) {
+  ["./", "web-element", "web-site", "browser-task", "make-request"],
+  function(expect, done, BrowserBridge,   element, WebSite, browserTask, makeRequest) {
 
     var bridge = new BrowserBridge()
 
@@ -213,9 +214,9 @@ test.using(
       }
     )
 
-    var server = new Server()
+    var site = new WebSite()
 
-    server.addRoute("get", "/whatever",
+    site.addRoute("get", "/whatever",
       function(x, response) {
         response.send(
           writeName
@@ -238,15 +239,15 @@ test.using(
       onclick: getCommand.evalable()
     })
 
-    server.addRoute("get", "/",
+    site.addRoute("get", "/",
       bridge.sendPage(button)
     )
 
-    server.start(10101)
+    site.start(10101)
 
     // throw new Error("there's a race condition here. sometimes we still see Buttoon by the time we do our assertion")
 
-    var browser = browse("http://localhost:10101", pressIt)
+    var browser = browserTask("http://localhost:10101", pressIt)
 
     function pressIt() {
       browser.pressButton("button", checkForTed)
@@ -255,7 +256,7 @@ test.using(
     function checkForTed() {
       browser.assertText(
         "body", "ted",
-        server.stop,
+        site.stop,
         browser.done,
         done
       )
@@ -265,12 +266,12 @@ test.using(
 )
 
 
-test.using(
+runTest(
   "other functions can be passed as arguments",
 
-  ["./", "web-element", "nrtv-server", "nrtv-browse"],
+  ["./", "web-element", "web-site", "browser-task"],
 
-  function(expect, done, BrowserBridge,   element, Server, browse) {
+  function(expect, done, BrowserBridge,   element, WebSite, browserTask) {
 
     var bridge = new BrowserBridge()
 
@@ -292,22 +293,22 @@ test.using(
       onclick: overwrite.withArgs(getWords).evalable()
     })
 
-    var server = new Server()
+    var site = new WebSite()
 
-    server.addRoute("get", "/",
+    site.addRoute("get", "/",
       bridge.sendPage(button)
     )
 
-    server.start(7662)
+    site.start(7662)
 
-    browse("http://localhost:7662",
+    browserTask("http://localhost:7662",
       function(browser) {
 
         browser.pressButton(
           "button",
           function() {
             browser.assertText(
-              "body", "bird, cat, and fish are words", server.stop, browser.done, done
+              "body", "bird, cat, and fish are words", site.stop, browser.done, done
             )
           }
         )
@@ -318,11 +319,11 @@ test.using(
 )
 
 
-test.using(
+runTest(
   "client functions can have collectives",
 
-  ["./", "nrtv-server", "nrtv-browse", "web-element"],
-  function(expect, done, bridge, server, browse, element) {
+  ["./", "web-site", "browser-task", "web-element"],
+  function(expect, done, bridge, WebSite, browserTask, element) {
 
     var increment = bridge.defineFunction(
 
@@ -341,22 +342,24 @@ test.using(
 
     var counter = element(".counter")
 
-    server.addRoute("get", "/",
+    var site = new WebSite()
+
+    site.addRoute("get", "/",
       bridge.sendPage([
         button,
         counter
       ])
     )
 
-    server.start(4488)
+    site.start(4488)
 
-    browse("http://localhost:4488",function(browser) {
+    browserTask("http://localhost:4488",function(browser) {
 
       browser.pressButton("button",function() {
 
         browser.pressButton("button", function() {
 
-          browser.assertText(".counter", "2", server.stop, browser.done, done)
+          browser.assertText(".counter", "2", site.stop, browser.done, done)
         })
       })
     })
@@ -365,26 +368,26 @@ test.using(
 )
 
 
-test.using(
+runTest(
   "do something on page load",
 
-  ["./", "nrtv-server", "nrtv-browse"],
-  function(expect, done, BrowserBridge, Server, browse) {
+  ["./", "web-site", "browser-task"],
+  function(expect, done, BrowserBridge, WebSite, browserTask) {
 
-    var server = new Server()
+    var site = new WebSite()
     var bridge = new BrowserBridge()
 
     bridge.asap(function hello() {
       document.getElementsByTagName("body")[0].innerHTML = "hola"
     })
 
-    server.addRoute("get", "/", bridge.sendPage())
+    site.addRoute("get", "/", bridge.sendPage())
 
-    server.start(9876)
+    site.start(9876)
 
-    browse("http://localhost:9876",
+    browserTask("http://localhost:9876",
       function(browser) {
-        browser.assertText("body", "hola", server.stop, browser.done, done)
+        browser.assertText("body", "hola", site.stop, browser.done, done)
       }
     )
   }
@@ -392,7 +395,7 @@ test.using(
 
 
 
-test.using(
+runTest(
   "singleton source",
   ["./", "browser-bridge"],
   function(expect, done, bridgeModule, BrowserBridge) {
@@ -419,13 +422,13 @@ function () {
 
 
 
-test.using(
+runTest(
   "define a singleton generator",
 
-  ["./", "nrtv-server", "nrtv-browse"],
-  function(expect, done, BrowserBridge, Server, browse) {
+  ["./", "web-site", "browser-task"],
+  function(expect, done, BrowserBridge, WebSite, browserTask) {
 
-    var server = new Server()
+    var site = new WebSite()
     var bridge = new BrowserBridge()
 
     var jump = bridge.defineFunction(
@@ -454,12 +457,12 @@ test.using(
 
     bridge.asap(check)
 
-    server.addRoute("get", "/", bridge.sendPage())
-    server.start(7000)
+    site.addRoute("get", "/", bridge.sendPage())
+    site.start(7000)
 
-    browse("http://localhost:7000",
+    browserTask("http://localhost:7000",
       function(browser) {
-        server.stop()
+        site.stop()
         browser.done()
         done()
       }
@@ -467,7 +470,7 @@ test.using(
   }
 )
 
-test.using(
+runTest(
   "send a body",
 
   ["./", "web-element"],
@@ -490,7 +493,7 @@ test.using(
   }
 )
 
-test.using(
+runTest(
   "adding styles",
   ["./", "web-element"],
   function(expect, done, BrowserBridge, element) {
@@ -512,7 +515,7 @@ test.using(
   }
 )
 
-test.using(
+runTest(
   "detecting duplicate definitions",
 
   ["./"],
@@ -538,4 +541,48 @@ test.using(
 )
 
 
+function BODY(func) {
+  var lines = func.toString().split("\n")
+  return lines.slice(1, lines.length - 1 ).join("\n")
+}
+
+// runTest(
+//   "dependencies get pre-bound",
+//   ["./"],
+//   function(BrowserBridge) {
+
+//     var bridge = new BrowserBridge()
+
+//     bridge.defineFunction(function noDeps(x) {
+
+//     })
+
+//     var expected = BODY(function() {
+//       function noDeps(x) {
+
+//       }
+//     })
+
+//     expect(bridge.bindingSource).to.contain(expected)
+
+//     // BODY(function {
+//     //   var hasDeps = (function hasArgs(y) {
+
+//     //   }).bind(null, noDeps)
+//     // })
+
+//     // BODY(function {
+//     //   var arglessSingleton = (function arglessSingleton(z) {
+
+//     //   }).call()
+
+//     // })
+
+//     // BODY(function {
+//     //   var singleton = (function singleton() {
+
+//     //   }).call(null, arglessSingleton)
+//     // })
+
+// })
 
