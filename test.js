@@ -1,6 +1,5 @@
 var runTest = require("run-test")(require)
 
-// runTest.only("dependencies get pre-bound")
 // runTest.only("bridge handles bindings sent in AJAX responses")
 
 runTest(
@@ -53,10 +52,7 @@ runTest(
 
     expect(greetErik.evalable()).to.match(/"Erik"/)
 
-    expect(bridge.script()).to.contain(greetErik.binding.identifier)
-
-    expect(bridge.script()).to.match(/function .*(name)/)
-
+    expect(bridge.script()).to.match(/function greet\(name\)/)
     done()
   }
 )
@@ -156,27 +152,26 @@ runTest(
 
     site.start(6676)
 
-    browserTask("http://localhost:6676", function(browser) {
+    var browser = browserTask("http://localhost:6676", function() {
+      browser.pressButton("button", checkText)
+    })
 
-        browser.pressButton(
-          "button",
-          function() {
-            browser.assertText(".out", "foo 3 rabbit", site.stop, browser.done, done)
-          }
-        )
+    function checkText() {
+      browser.assertText(".out", "foo 3 rabbit", site.stop, browser.done, done)
+    }
 
-      }
-    )
   }
 )
 
 
 
 runTest(
-  "use static methods to do stuff with the collective bridge",
+  "bridge.sendPage passes along javascript",
 
   ["./"],
-  function(expect, done, bridge) {
+  function(expect, done, BrowserBridge) {
+
+    var bridge = new BrowserBridge()
 
     bridge.defineFunction(function brussels() {}
     )
@@ -323,7 +318,9 @@ runTest(
   "client functions can have collectives",
 
   ["./", "web-site", "browser-task", "web-element"],
-  function(expect, done, bridge, WebSite, browserTask, element) {
+  function(expect, done, BrowserBridge, WebSite, browserTask, element) {
+
+    var bridge = new BrowserBridge()
 
     var increment = bridge.defineFunction(
 
@@ -403,19 +400,11 @@ runTest(
     var bridge = new BrowserBridge()
 
     binding = bridge.defineSingleton(
-      "program",
-function () {
-  return true
-}
-    )
+      "program", function () {
+      return true
+    })
 
-    var lines = [
-      "var program = (function () {",
-      "  return true",
-      "}).call()"
-    ]
-
-    expect(binding.source()).to.equal(lines.join("\n"))
+    expect(bridge.script()).to.contain("var program = (function () {\n  return true\n}).call()")
     done()
   }
 )
@@ -543,46 +532,47 @@ runTest(
 
 function BODY(func) {
   var lines = func.toString().split("\n")
-  return lines.slice(1, lines.length - 1 ).join("\n")
+  return lines.slice(1, lines.length - 1 ).join("\n").trim()
 }
 
-// runTest(
-//   "dependencies get pre-bound",
-//   ["./"],
-//   function(BrowserBridge) {
+runTest(
+  "dependencies get pre-bound",
+  ["./"],
+  function(expect, done, BrowserBridge) {
 
-//     var bridge = new BrowserBridge()
+    var bridge = new BrowserBridge()
 
-//     bridge.defineFunction(function noDeps(x) {
+    var noDeps = bridge.defineFunction(function noDeps(x) {
 
-//     })
+    })
 
-//     var expected = BODY(function() {
-//       function noDeps(x) {
+    expect(bridge.bindingSource).to.contain("\nfunction noDeps(x) {\n\n}")
 
-//       }
-//     })
 
-//     expect(bridge.bindingSource).to.contain(expected)
+    bridge.defineFunction([noDeps], function hasDeps(x) {
+      x()
+    })
 
-//     // BODY(function {
-//     //   var hasDeps = (function hasArgs(y) {
+    expect(bridge.bindingSource).to.contain("var hasDeps = (function hasDeps(x) {\n  x()\n}).bind(null, noDeps)")
 
-//     //   }).bind(null, noDeps)
-//     // })
+    var argless = bridge.defineSingleton("arglessSingleton", function() {
+        return 1
+      })
 
-//     // BODY(function {
-//     //   var arglessSingleton = (function arglessSingleton(z) {
 
-//     //   }).call()
+    expect(bridge.script()).to.contain("var arglessSingleton = (function () {\n  return 1\n}).call()")
 
-//     // })
+    bridge.defineSingleton("singleton",
+      [argless],
+      function(argless) {
+        return 2
+      }
+    )
+    console.log("\n===========\n"+bridge.script()+"\n=============\n")
 
-//     // BODY(function {
-//     //   var singleton = (function singleton() {
+    expect(bridge.script()).to.contain("var singleton = (function (argless) {\n  return 2\n}).call(null, arglessSingleton)")
 
-//     //   }).call(null, arglessSingleton)
-//     // })
-
-// })
+    done()
+  }
+)
 

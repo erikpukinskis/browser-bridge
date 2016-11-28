@@ -8,10 +8,10 @@ module.exports = library.export(
     function BrowserBridge(instance) {
       this.instance = instance
       this.id = Math.random().toString(36).substr(2,4)
-      this.bindings = {}
       this.previousBindingStacks = {}
       this.identifiers = {}
       this.asapSource = ""
+      this.bindingSource = ""
       this.head = ""
     }
 
@@ -105,24 +105,19 @@ module.exports = library.export(
       return false
     }
 
+    var ct = 0
     BrowserBridge.prototype.script =
       function() {
-        var lines = []
-        for (identifier in this.bindings) {
-          var binding = this.bindings[identifier]
-          var source = binding.definitionComment+"\n"+binding.source()
+        ct++
+        var source = this.bindingSource
 
-          lines.push("      "+source)
+        if (this.asapSource.length) {
+          source += "\n\n// Stuff to do ASAP:\n\n"
+
+          source += this.asapSource
         }
 
-        var source = "\n"
-          + lines.join("\n\n")
-          + "\n"
-
-        source += "\n\n// Stuff to run on page load:\n\n"
-
-        source += this.asapSource
-
+        require('fs').writeFile("bridges/bridge-"+ct+".js", source)
         return source
       }
 
@@ -164,13 +159,15 @@ module.exports = library.export(
     BrowserBridge.prototype.defineSingleton =
       function() {
 
-        var binding = buildBinding(arguments, this).singleton()
+        var binding = buildBinding(arguments, this)
 
+        var deps = binding.dependencies
+
+        binding = binding.singleton()
+        binding.dependencies = deps
         binding.definitionComment = definitionComment()
 
-        var source = definitionComment()+"\n" + binding.source()
-
-        this.asapSource += source + "\n\n"
+        this.bindingSource += bindingSource(binding)
 
         return binding
       }
@@ -181,27 +178,95 @@ module.exports = library.export(
 
         binding.definitionComment = definitionComment()
 
-        var identifier = binding.binding.identifier
-
-        this.bindings[identifier] = binding
+        this.bindingSource += bindingSource(binding)
 
         return binding
       }
 
+    function deIndent(string) {
+      var lines = string.split("\n")
+      var shave = 100
+      for(var i=1; i<lines.length; i++) {
+        var line = lines[i]
+        var leading = line.match(/^ */)[0].length
+        if (leading == line.length) {
+          continue
+        }
+        if (leading < shave) {
+          shave = leading
+        }
+      }
+
+      if (shave < 1) {
+        return string
+      }
+
+      var shaved = lines[0].trim()
+
+      for(var i=1; i<lines.length; i++) {
+        shaved += "\n"+lines[i].substr(shave)
+      }
+
+      return shaved
+    }
+
+
+    function bindingSource(binding) {
+
+      var source = deIndent(binding.binding.func.toString())
+
+      var dependencies = binding.dependencies
+      var hasDependencies = dependencies.length > 0
+
+      var isPlainFunction = !binding.isGenerator && !hasDependencies
+
+      if (isPlainFunction) {
+        source = source.replace(
+          /^function[^(]*\(/,
+          "function "+binding.binding.identifier+"("
+        )
+      } else {
+        if (dependencies[0] &&dependencies[0].__dependencyType == "browser collective") {
+          var collective = dependencies[0]
+        }
+
+        if (collective) {
+          var deps = "null, "+JSON.stringify(collective.attributes)
+          if (dependencies.length > 1) {
+            deps += functionCall.argumentString(dependencies.slice(1))
+          }
+        } else if (hasDependencies) {
+          var deps = "null, "+
+          functionCall.argumentString(dependencies)
+        } else {
+          var deps = ""
+        }
+
+        var callOrBind = binding.isGenerator ? "call" : "bind"
+
+        source = "var "+binding.binding.identifier+" = ("+source+")."+callOrBind+"("+deps+")"
+      }
+
+      return "\n"+binding.definitionComment+"\n"+source+"\n"
+    }
+
     function buildBinding(args, bridge) {
       for (var i=0; i<args.length; i++) {
+        var arg = args[i]
 
-        if (typeof args[i] == "string") {
-          var name = args[i]
-        } else if (typeof args[i] == "function") {
-          var func = args[i]
-        } else if (Array.isArray(args[i])) {
+        if (typeof arg == "string") {
+          var name = arg
+        } else if (typeof arg == "function") {
+          var func = arg
+        } else if (Array.isArray(arg)) {
 
           // The dependencies and the withArgs are a little redundant here. #todo Remove dependencies.
 
           var dependencies = args[i]
         }
       }
+
+      dependencies = dependencies || []
 
       if (!func) {
         throw new Error("You need to pass a function to bridge.defineFunction, but you passed "+JSON.stringify(args)+".")
@@ -235,7 +300,9 @@ module.exports = library.export(
 
       bridge.identifiers[identifier] = true
 
-      var binding = functionCall(func, identifier, dependencies)
+      var binding = functionCall(func, identifier)
+
+      binding.dependencies = dependencies
 
       return binding
     }
