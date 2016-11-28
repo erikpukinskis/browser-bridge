@@ -3,9 +3,9 @@ Historically, we write client and server-side javascript separately, and have an
 The browser bridge lets you achieve the same ends more directly. You define functions in Node that you want to be on the client:
 
 ```javascript
-var BrowserBridge = require("browser-bridge")
-var server = require("nrtv-server")
-var element = require("nrtv-element")
+var BrowserBridge = require("./")
+var site = require("web-site")
+var element = require("web-element")
 
 var bridge = new BrowserBridge()
 
@@ -25,40 +25,40 @@ bridge.asap(function() {
   console.log("Everything is awesome")
 })
 
-server.addRoute(
+site.addRoute(
   "get",
   "/",
   bridge.sendPage(button)
 )
 
-server.start(2090)
+site.start(2090)
 ```
 
-That bridge.sendPage(button) call returns a handler that will send a page with all of those functions glued up:
+That bridge.sendPage(button) call returns a handler that will send a page with all of those functions glued up, something like:
 
 ```html
 <!DOCTYPE html>
-<html>    
-  <head>
+<html>
+  <body>
+
+    <button onclick='greet("Tam")'>Hi there</button>
+
     <script>
       function greet(name) {
         alert("hi, "+name)
       }
-            
-      // Stuff to run on page load:
+                  
+      // Stuff to do ASAP:
       
-      function () {
-        console.log("Everything is awesome.")
-      }
-      </script>
-  </head>
-
-  <body>
-      <button onclick="greet(&quot;Tam&quot;)">Hi there</button>
+      (function () {
+        console.log("Everything is awesome")
+      }).call()
+    </script>
   </body>
-
 </html>
 ```
+
+See [demo.js](demo.js).
 
 You can also pass data between functions on the client by passing references on the server:
 
