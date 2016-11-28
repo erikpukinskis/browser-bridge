@@ -110,7 +110,7 @@ module.exports = library.export(
         var source = this.bindingSource
 
         if (this.asapSource.length) {
-          source += "\n\n// Stuff to do ASAP:\n\n"
+          source += "\n\n// Stuff to do ASAP:\n"
 
           source += this.asapSource
         }
@@ -139,16 +139,21 @@ module.exports = library.export(
     BrowserBridge.prototype.asap =
       function(binding) {
 
-        if (!binding.__isFunctionCallBinding) {
+        var source = ""
 
-          var args = Array.prototype.slice.call(arguments)
+        if (binding.__isFunctionCallBinding) {
 
-          binding = this.defineFunction.apply(this, args)
+          source += definitionComment() + "\n"
+
+          source += binding.evalable ? binding.evalable({expand: true}): binding
+
+        } else {
+          var binding = buildBinding(arguments, this)
+          binding.definitionComment = definitionComment()
+
+          source += bindingSource(binding, {callNow: true})
         }
 
-        var source = definitionComment() + "\n"
-
-        source += binding.evalable ? binding.evalable({expand: true}): binding
 
         this.asapSource += source + "\n\n"
       }
@@ -208,17 +213,17 @@ module.exports = library.export(
     }
 
 
-    function bindingSource(binding) {
+    function bindingSource(binding, options) {
 
-      var source = deIndent(binding.binding.func.toString())
+      var funcSource = deIndent(binding.binding.func.toString())
 
       var dependencies = binding.dependencies
       var hasDependencies = dependencies.length > 0
-
-      var isPlainFunction = !binding.isGenerator && !hasDependencies
+      var callNow = options && !!options.callNow
+      var isPlainFunction = !binding.isGenerator && !hasDependencies && !callNow
 
       if (isPlainFunction) {
-        source = source.replace(
+        var source = funcSource.replace(
           /^function[^(]*\(/,
           "function "+binding.binding.identifier+"("
         )
@@ -239,9 +244,15 @@ module.exports = library.export(
           var deps = ""
         }
 
-        var callOrBind = binding.isGenerator ? "call" : "bind"
+        var callOrBind = (binding.isGenerator || callNow) ? "call" : "bind"
 
-        source = "var "+binding.binding.identifier+" = ("+source+")."+callOrBind+"("+deps+")"
+        if (callNow) {
+          var source = ""
+        } else {
+          var source = "var "+binding.binding.identifier+" = "
+        }
+
+        source += "("+funcSource+")."+callOrBind+"("+deps+")"
       }
 
       return "\n"+binding.definitionComment+"\n"+source+"\n"
