@@ -105,10 +105,8 @@ module.exports = library.export(
       return false
     }
 
-    var ct = 0
     BrowserBridge.prototype.script =
       function() {
-        ct++
         var source = this.bindingSource
 
         if (this.asapSource.length) {
@@ -117,7 +115,6 @@ module.exports = library.export(
           source += this.asapSource
         }
 
-        require('fs').writeFile("bridges/bridge-"+ct+".js", source)
         return source
       }
 
