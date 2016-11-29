@@ -140,20 +140,21 @@ module.exports = library.export(
       function(binding) {
 
         var source = ""
+        var isCall = !!binding.__isFunctionCallBinding
+        var isSource = typeof(binding) == "string" && typeof(arguments[1]) == "undefined"
 
-        if (binding.__isFunctionCallBinding) {
-
+        if (isCall) {
           source += definitionComment() + "\n"
-
           source += binding.evalable ? binding.evalable({expand: true}): binding
+
+        } else if (isSource) {
+          source = binding
 
         } else {
           var binding = buildBinding(arguments, this)
           binding.definitionComment = definitionComment()
-
           source += bindingSource(binding, {callNow: true})
         }
-
 
         this.asapSource += source + "\n\n"
       }
