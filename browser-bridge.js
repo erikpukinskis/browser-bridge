@@ -110,7 +110,7 @@ module.exports = library.export(
         var source = this.bindingSource
 
         if (this.asapSource.length) {
-          source += "\n\n// Stuff to do ASAP:\n"
+          source += "\n\n// Stuff to do ASAP:\n\n"
 
           source += this.asapSource
         }
@@ -153,7 +153,7 @@ module.exports = library.export(
         } else {
           var binding = buildBinding(arguments, this)
           binding.definitionComment = definitionComment()
-          source += bindingSource(binding, {callNow: true})
+          source += ";"+bindingSource(binding, {callNow: true})
         }
 
         this.asapSource += source + "\n\n"
