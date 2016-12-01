@@ -48,8 +48,6 @@ That bridge.sendPage(button) call returns a handler that will send a page with a
         alert("hi, "+name)
       }
                   
-      // Stuff to do ASAP:
-      
       (function () {
         console.log("Everything is awesome")
       }).call()
