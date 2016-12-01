@@ -10,7 +10,6 @@ module.exports = library.export(
       this.id = Math.random().toString(36).substr(2,4)
       this.previousBindingStacks = {}
       this.identifiers = {}
-      this.asapSource = ""
       this.bindingSource = ""
       this.head = ""
     }
@@ -107,15 +106,7 @@ module.exports = library.export(
 
     BrowserBridge.prototype.script =
       function() {
-        var source = this.bindingSource
-
-        if (this.asapSource.length) {
-          source += "\n\n// Stuff to do ASAP:\n\n"
-
-          source += this.asapSource
-        }
-
-        return source
+        return this.bindingSource
       }
 
     function definitionComment() {
@@ -156,7 +147,7 @@ module.exports = library.export(
           source += ";"+bindingSource(binding, {callNow: true})
         }
 
-        this.asapSource += source + "\n\n"
+        this.bindingSource += "\n"+source+"\n"
       }
 
     BrowserBridge.prototype.defineSingleton =
