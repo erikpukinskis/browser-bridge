@@ -235,8 +235,9 @@ module.exports = library.export(
 
         if (collective) {
           var deps = "null, "+JSON.stringify(collective.attributes)
+
           if (dependencies.length > 1) {
-            deps += functionCall.argumentString(dependencies.slice(1))
+            deps += ", "+functionCall.argumentString(dependencies.slice(1))
           }
         } else if (hasDependencies) {
           var deps = "null, "+
