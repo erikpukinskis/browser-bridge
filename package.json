@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "function-call": "*",
-    "nrtv-library": "*",
+    "module-library": "*",
     "web-element": "*",
     "object-hash": "*",
     "html": "*"
