@@ -53,6 +53,12 @@ module.exports = library.export(
 
     BrowserBridge.prototype.sendPage =
       function(content) {
+        console.log("\n⚡⚡⚡ WARNING ⚡⚡⚡ bridge.sendPage() is deprecated. Use bridge.responseHandler() instead.\n")
+
+        return this.responseHandler(content)
+      }
+
+    BrowserBridge.prototype.responseHandler = function(content) {
         var html = this.toHtml(content)
 
         return function(x, response) {
@@ -204,6 +210,20 @@ module.exports = library.export(
         this.scriptSource += bindingSource(binding)
 
         return binding
+      }
+
+    BrowserBridge.prototype.forResponse = function(response) {
+      var copy = this.copy()
+      copy.response = response
+      return copy
+    }
+
+    BrowserBridge.prototype.send = function(content) {
+        if (!this.response) {
+          throw new Error("You can not call bridge.send() on an original browser bridge. Try:\n        var newBridge = brige.forResponse(response)\n        newBridge.send()\n")
+        }
+
+        this.responseHandler(content)(null, this.response)
       }
 
     function deIndent(string) {

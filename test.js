@@ -1,8 +1,9 @@
 var runTest = require("run-test")(require)
 
 // runTest.only("bridge handles bindings sent in AJAX responses")
-// runTest.only("copy a bridge")
+// runTest.only("pre-bind response")
 
+runTest.failAfter(3000)
 runTest(
   "sending an element",
 
@@ -14,7 +15,7 @@ runTest(
 
     var el = element("body", "Hello, world!")
 
-    var middleware = bridge.sendPage(el)
+    var middleware = bridge.responseHandler(el)
 
     var response = {
       send: function(html) {
@@ -146,7 +147,7 @@ runTest(
     var site = new WebSite()
 
     site.addRoute("get", "/",
-      bridge.sendPage(
+      bridge.responseHandler(
         element([button, ".out"])
       )
     )
@@ -167,7 +168,7 @@ runTest(
 
 
 runTest(
-  "bridge.sendPage passes along javascript",
+  "bridge.responseHandler passes along javascript",
 
   ["./"],
   function(expect, done, BrowserBridge) {
@@ -189,7 +190,7 @@ runTest(
       }
     }
 
-    bridge.sendPage()(null, response)
+    bridge.responseHandler()(null, response)
   }
 )
 
@@ -236,7 +237,7 @@ runTest(
     })
 
     site.addRoute("get", "/",
-      bridge.sendPage(button)
+      bridge.responseHandler(button)
     )
 
     site.start(10101)
@@ -292,7 +293,7 @@ runTest(
     var site = new WebSite()
 
     site.addRoute("get", "/",
-      bridge.sendPage(button)
+      bridge.responseHandler(button)
     )
 
     site.start(7662)
@@ -343,7 +344,7 @@ runTest(
     var site = new WebSite()
 
     site.addRoute("get", "/",
-      bridge.sendPage([
+      bridge.responseHandler([
         button,
         counter
       ])
@@ -379,7 +380,7 @@ runTest(
       document.getElementsByTagName("body")[0].innerHTML = "hola"
     })
 
-    site.addRoute("get", "/", bridge.sendPage())
+    site.addRoute("get", "/", bridge.responseHandler())
 
     site.start(9876)
 
@@ -447,7 +448,7 @@ runTest(
 
     bridge.asap(check)
 
-    site.addRoute("get", "/", bridge.sendPage())
+    site.addRoute("get", "/", bridge.responseHandler())
     site.start(7000)
 
     browserTask("http://localhost:7000",
@@ -468,7 +469,7 @@ runTest(
 
     var bridge = new BrowserBridge()
 
-    var handler = bridge.sendPage(
+    var handler = bridge.responseHandler(
       element("body", {up: "down"})
     )
 
@@ -569,7 +570,7 @@ runTest(
         return 2
       }
     )
-    console.log("\n===========\n"+bridge.script()+"\n=============\n")
+    console.log("\n\n\n--------------\nSAMPLE SOURCE:\n"+bridge.script()+"\n--------------\n\n\n")
 
     expect(bridge.script()).to.contain("var singleton = (function (argless) {\n  return 2\n}).call(null, arglessSingleton)")
 
@@ -600,6 +601,26 @@ runTest(
     expect(copy.script()).to.contain("hello")
 
     expect(base.script()).not.to.contain("human")
+
+    done()
+  }
+)
+
+
+
+runTest(
+  "pre-bind response",
+  ["./", "sinon"],
+  function(expect, done, BrowserBridge, sinon) {
+    var response = {
+      send: sinon.spy()
+    }
+
+    var bridge = new BrowserBridge().forResponse(response)
+
+    bridge.send()
+
+    expect(response.send).to.have.been.called
 
     done()
   }
