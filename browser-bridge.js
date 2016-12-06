@@ -5,14 +5,40 @@ module.exports = library.export(
   [library.collective({}), "web-element", "html", "function-call"],
   function(collective, element, html, functionCall) {
 
-    function BrowserBridge(instance) {
-      this.instance = instance
+    function BrowserBridge() {
       this.id = Math.random().toString(36).substr(2,4)
       this.previousBindingStacks = {}
       this.identifiers = {}
       this.bindingSource = ""
       this.head = ""
     }
+
+    function getValue(bridge, attribute, key) {
+      var object = bridge[attribute]
+      if (bridge.DTRACE_NET_SERVER_CONNECTION) {
+        throw new Error("bridge is not a bridge")
+      }
+      var value = object[key]
+      if (!value && bridge.base) {
+        value = getValue(bridge.base, attribute, key)
+      }
+      return value
+    }
+
+    function getFullString(bridge, attribute) {
+      if (bridge.base) {
+        var string = getFullString(bridge.base, attribute)
+      } else {
+        string = ""
+      }
+      return string + bridge[attribute]
+    }
+
+    BrowserBridge.prototype.copy = function() {
+        var copy = new BrowserBridge()
+        copy.base = this
+        return copy
+      }
 
     BrowserBridge.collective =
     BrowserBridge.prototype.collective =
@@ -56,7 +82,7 @@ module.exports = library.export(
             "display": "none"
           })
 
-        var headSource = '<meta name="viewport" content="width=device-width, initial-scale=1">\n'+element.stylesheet(hidden).html() + this.head
+        var headSource = '<meta name="viewport" content="width=device-width, initial-scale=1">\n'+element.stylesheet(hidden).html() + getFullString(this, "head")
 
         var head = element("head", 
           element.raw(headSource)
@@ -109,7 +135,7 @@ module.exports = library.export(
 
     BrowserBridge.prototype.script =
       function() {
-        return this.bindingSource
+        return getFullString(this, "bindingSource")
       }
 
     function definitionComment() {
@@ -278,7 +304,7 @@ module.exports = library.export(
 
       var functionHash = hash(func.toString())
 
-      var stack = bridge.previousBindingStacks[functionHash]
+      var stack = getValue(bridge, "previousBindingStacks", functionHash)
 
       if (stack) {
         console.log("Duplicate function:\n", func)
@@ -297,7 +323,8 @@ module.exports = library.export(
 
       var identifier = original = name || func.name || "f"
 
-      while(identifier in bridge.identifiers) {
+
+      while(getValue(bridge, "identifiers", identifier)) {
 
         identifier = original+"_"+Math.random().toString(36).split(".")[1].substr(0,4)
       }

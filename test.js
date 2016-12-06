@@ -1,6 +1,7 @@
 var runTest = require("run-test")(require)
 
 // runTest.only("bridge handles bindings sent in AJAX responses")
+// runTest.only("copy a bridge")
 
 runTest(
   "sending an element",
@@ -575,4 +576,33 @@ runTest(
     done()
   }
 )
+
+
+runTest(
+  "copy a bridge",
+  ["./"],
+  function(expect, done, BrowserBridge) {
+    var base = new BrowserBridge()
+    var hi = base.defineFunction(
+      function hi() {
+        return "hello"
+      }
+    )
+
+    var copy = base.copy()
+    copy.defineFunction(
+      [hi],
+      function(hi) {
+        return hi+", human"
+      }
+    )
+
+    expect(copy.script()).to.contain("hello")
+
+    expect(base.script()).not.to.contain("human")
+
+    done()
+  }
+)
+
 
