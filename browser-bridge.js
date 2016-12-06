@@ -9,7 +9,7 @@ module.exports = library.export(
       this.id = Math.random().toString(36).substr(2,4)
       this.previousBindingStacks = {}
       this.identifiers = {}
-      this.bindingSource = ""
+      this.scriptSource = ""
       this.head = ""
     }
 
@@ -135,7 +135,7 @@ module.exports = library.export(
 
     BrowserBridge.prototype.script =
       function() {
-        return getFullString(this, "bindingSource")
+        return getFullString(this, "scriptSource")
       }
 
     function definitionComment() {
@@ -176,7 +176,7 @@ module.exports = library.export(
           source += ";"+bindingSource(binding, {callNow: true})
         }
 
-        this.bindingSource += "\n"+source+"\n"
+        this.scriptSource += "\n"+source+"\n"
       }
 
     BrowserBridge.prototype.defineSingleton =
@@ -190,7 +190,7 @@ module.exports = library.export(
         binding.dependencies = deps
         binding.definitionComment = definitionComment()
 
-        this.bindingSource += bindingSource(binding)
+        this.scriptSource += bindingSource(binding)
 
         return binding
       }
@@ -201,7 +201,7 @@ module.exports = library.export(
 
         binding.definitionComment = definitionComment()
 
-        this.bindingSource += bindingSource(binding)
+        this.scriptSource += bindingSource(binding)
 
         return binding
       }

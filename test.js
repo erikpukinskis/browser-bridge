@@ -547,14 +547,14 @@ runTest(
 
     })
 
-    expect(bridge.bindingSource).to.contain("\nfunction noDeps(x) {\n\n}")
+    expect(bridge.script()).to.contain("\nfunction noDeps(x) {\n\n}")
 
 
     bridge.defineFunction([noDeps], function hasDeps(x) {
       x()
     })
 
-    expect(bridge.bindingSource).to.contain("var hasDeps = (function hasDeps(x) {\n  x()\n}).bind(null, noDeps)")
+    expect(bridge.script()).to.contain("var hasDeps = (function hasDeps(x) {\n  x()\n}).bind(null, noDeps)")
 
     var argless = bridge.defineSingleton("arglessSingleton", function() {
         return 1
