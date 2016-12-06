@@ -28,13 +28,13 @@ bridge.asap(function() {
 site.addRoute(
   "get",
   "/",
-  bridge.sendPage(button)
+  bridge.responseHandler(button)
 )
 
 site.start(2090)
 ```
 
-That bridge.sendPage(button) call returns a handler that will send a page with all of those functions glued up, something like:
+bridge.responseHandler returns a handler that will send a page with all of those functions glued up, something like:
 
 ```html
 <!DOCTYPE html>
@@ -72,6 +72,69 @@ var maybeGreet = bridge.defineFunction(
 ```
 
 You can then pass maybeGreet.evalable() down to the browser, and the button will be broken half the time. :)
+
+## Re-using a bridge
+
+If you want to get a page mostly assembled and then add different details, you can copy a bridge:
+
+```javascript
+var baseBridge = new BrowserBridge()
+
+baseBridge.addToHead("<style>body { font-family: sans-serif; }</style>")
+
+var hello = baseBridge.copy()
+
+hello.asap(function() {
+  alert("hi!")
+})
+
+app.get("/", hello.responseHandler())
+
+var goodbye = baseBridge.copy()
+
+goodbye.asap(function() {
+  alert("bye!")
+})
+
+app.get("/logout", goodbye.responseHandler())
+```
+
+Although if the only difference is the page content, you can just re-use the original bridge:
+
+```javascript
+var bridge = new BrowserBridge()
+
+bridge.defineFunction(...)
+
+app.get("/item/:name", function(request, response) {
+  var handler = bridge.responseHandler(request.name)
+  handler(request, response)
+})
+```
+
+If need to copy a bridge for each request, you can use bridge.forResponse. That will give you a copied bridge that is pre-bound to a response, so you can just call bridge.send() without worrying about the response object. That allows you to pass the bridge on to a renderer while keeping all of the code that deals with the response object in the route handler:
+
+```javascript
+var baseBridge = new BrowserBridge()
+
+baseBridge.addToHead(...)
+
+app.get("/item/:id", function(request, response) {
+  var bridge = baseBridge.forResponse(response)
+  var item = findItem(request.params.id)
+  renderItem(item, bridge)
+})
+
+function renderItem(item, bridge) {
+  bridge.defineFunction(function saveItem() {
+    ...
+  })
+  var el = element(".item", item.name)
+  bridge.send(el)
+}
+```
+
+It's just good separation of concerns to keep all of the HTTP-related stuff in the route so the renderer can just focus on the domain object and the browser.
 
 ## Why
 
