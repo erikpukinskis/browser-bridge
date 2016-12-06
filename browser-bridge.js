@@ -35,8 +35,11 @@ module.exports = library.export(
       }
 
     BrowserBridge.prototype.addToHead =
-      function(html) {
-        this.head = this.head+html
+      function(stuff) {
+        if (typeof stuff.html == "function") {
+          stuff = stuff.html()
+        }
+        this.head = this.head+stuff
       }
 
     BrowserBridge.prototype.toHtml =
