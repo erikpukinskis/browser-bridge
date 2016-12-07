@@ -227,7 +227,7 @@ module.exports = library.export(
       }
 
     BrowserBridge.prototype.changePath = function(path) {
-      bridge.asap([path], function(path) {
+      this.asap([path], function(path) {
         history.pushState(null, null, path)
       })
     }
