@@ -226,6 +226,12 @@ module.exports = library.export(
         this.responseHandler(content)(null, this.response)
       }
 
+    BrowserBridge.prototype.changePath = function(path) {
+      bridge.asap([path], function(path) {
+        history.pushState(null, null, path)
+      })
+    }
+
     function deIndent(string) {
       var lines = string.split("\n")
       var shave = 100
