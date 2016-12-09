@@ -53,12 +53,12 @@ module.exports = library.export(
 
     BrowserBridge.prototype.sendPage =
       function(content) {
-        console.log("\n⚡⚡⚡ WARNING ⚡⚡⚡ bridge.sendPage() is deprecated. Use bridge.responseHandler() instead.\n")
+        console.log("\n⚡⚡⚡ WARNING ⚡⚡⚡ bridge.sendPage() is deprecated. Use bridge.requestHandler() instead.\n")
 
-        return this.responseHandler(content)
+        return this.requestHandler(content)
       }
 
-    BrowserBridge.prototype.responseHandler = function(content) {
+    BrowserBridge.prototype.requestHandler = function(content) {
         var html = this.toHtml(content)
 
         return function(x, response) {
@@ -227,6 +227,10 @@ module.exports = library.export(
       }
 
     BrowserBridge.prototype.changePath = function(path) {
+      if (this.__changedPath) {
+        throw new Error("Already set path on bridge "+this.id+" to "+this.__changedPath)
+      }
+      this.__changedPath = path
       this.asap([path], function(path) {
         history.pushState(null, null, path)
       })
