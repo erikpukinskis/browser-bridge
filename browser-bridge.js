@@ -94,7 +94,6 @@ module.exports = library.export(
           element.raw(headSource)
         )
 
-
         var needsBody = content && typeof(content) != "string" && !hasBody(content, 2)
 
         if (!content) {
@@ -131,6 +130,9 @@ module.exports = library.export(
 
       for(var i=0; i<children.length; i++) {
 
+        if (typeof children[i] == "undefined") {
+          throw new Error(i+"th child you passed to browser-bridge as the page content is undefined")
+        }
         if (hasBody(children[i], depth-1)) {
           return true
         }
@@ -417,7 +419,7 @@ module.exports = library.export(
       function() {
         return new BrowserBridge()
       },
-      ["sendPage", "asap", "defineFunction", "defineSingleton", "handle"]      
+      ["sendPage", "requestHandler", "asap", "defineFunction", "defineSingleton", "handle"]      
     )
 
     return BrowserBridge
