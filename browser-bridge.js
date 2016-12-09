@@ -223,7 +223,7 @@ module.exports = library.export(
           throw new Error("You can not call bridge.send() on an original browser bridge. Try:\n        var newBridge = brige.forResponse(response)\n        newBridge.send()\n")
         }
 
-        this.responseHandler(content)(null, this.response)
+        this.requestHandler(content)(null, this.response)
       }
 
     BrowserBridge.prototype.changePath = function(path) {

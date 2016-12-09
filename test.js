@@ -15,7 +15,7 @@ runTest(
 
     var el = element("body", "Hello, world!")
 
-    var middleware = bridge.responseHandler(el)
+    var middleware = bridge.requestHandler(el)
 
     var response = {
       send: function(html) {
@@ -147,7 +147,7 @@ runTest(
     var site = new WebSite()
 
     site.addRoute("get", "/",
-      bridge.responseHandler(
+      bridge.requestHandler(
         element([button, ".out"])
       )
     )
@@ -168,7 +168,7 @@ runTest(
 
 
 runTest(
-  "bridge.responseHandler passes along javascript",
+  "bridge.requestHandler passes along javascript",
 
   ["./"],
   function(expect, done, BrowserBridge) {
@@ -190,7 +190,7 @@ runTest(
       }
     }
 
-    bridge.responseHandler()(null, response)
+    bridge.requestHandler()(null, response)
   }
 )
 
@@ -237,7 +237,7 @@ runTest(
     })
 
     site.addRoute("get", "/",
-      bridge.responseHandler(button)
+      bridge.requestHandler(button)
     )
 
     site.start(10101)
@@ -293,7 +293,7 @@ runTest(
     var site = new WebSite()
 
     site.addRoute("get", "/",
-      bridge.responseHandler(button)
+      bridge.requestHandler(button)
     )
 
     site.start(7662)
@@ -344,7 +344,7 @@ runTest(
     var site = new WebSite()
 
     site.addRoute("get", "/",
-      bridge.responseHandler([
+      bridge.requestHandler([
         button,
         counter
       ])
@@ -380,7 +380,7 @@ runTest(
       document.getElementsByTagName("body")[0].innerHTML = "hola"
     })
 
-    site.addRoute("get", "/", bridge.responseHandler())
+    site.addRoute("get", "/", bridge.requestHandler())
 
     site.start(9876)
 
@@ -448,7 +448,7 @@ runTest(
 
     bridge.asap(check)
 
-    site.addRoute("get", "/", bridge.responseHandler())
+    site.addRoute("get", "/", bridge.requestHandler())
     site.start(7000)
 
     browserTask("http://localhost:7000",
@@ -469,7 +469,7 @@ runTest(
 
     var bridge = new BrowserBridge()
 
-    var handler = bridge.responseHandler(
+    var handler = bridge.requestHandler(
       element("body", {up: "down"})
     )
 
