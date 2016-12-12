@@ -419,7 +419,7 @@ module.exports = library.export(
       function() {
         return new BrowserBridge()
       },
-      ["sendPage", "requestHandler", "asap", "defineFunction", "defineSingleton", "handle"]      
+      ["sendPage", "requestHandler", "asap", "defineFunction", "defineSingleton", "handle", "addToHead", "forResponse"]      
     )
 
     return BrowserBridge
