@@ -40,6 +40,26 @@ module.exports = library.export(
         return copy
       }
 
+    BrowserBridge.prototype.partial = function() {
+      return new PartialBridge(this)
+    }
+
+    function PartialBridge(base) {
+      this.base = base
+    }
+
+    PartialBridge.prototype.send = function(content) {
+      this.content = content
+    }
+
+    PartialBridge.prototype.html = function() {
+      if (this.content.html) {
+        return this.content.html()
+      } else {
+        return element(this.content).html()
+      }
+    }
+
     BrowserBridge.collective =
     BrowserBridge.prototype.collective =
       function(attributes) {
