@@ -28,7 +28,7 @@ bridge.asap(function() {
 site.addRoute(
   "get",
   "/",
-  bridge.responseHandler(button)
+  bridge.requestHandler(button)
 )
 
 site.start(2090)
