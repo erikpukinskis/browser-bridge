@@ -84,13 +84,13 @@ var hello = baseBridge.copy()
 hello.asap(function() {
   alert("hi!")
 })
-app.get("/", hello.responseHandler())
+app.get("/", hello.requestHandler())
 
 var goodbye = baseBridge.copy()
 goodbye.asap(function() {
   alert("bye!")
 })
-app.get("/logout", goodbye.responseHandler())
+app.get("/logout", goodbye.requestHandler())
 ```
 
 Although if the only difference is the page content, you can just re-use the original bridge:
@@ -102,7 +102,7 @@ bridge.defineFunction(...)
 
 app.get("/item/:name", function(request, response) {
   var name = request.params.name
-  var handler = bridge.responseHandler("<body>Hello, "+name+"</body>")
+  var handler = bridge.requestHandler("<body>Hello, "+name+"</body>")
   handler(request, response)
 })
 ```
