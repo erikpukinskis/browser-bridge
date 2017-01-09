@@ -11,11 +11,12 @@ module.exports = library.export(
       this.identifiers = {}
       this.scriptSource = ""
       this.head = ""
+      this.__isNrtvBrowserBridge = true
     }
 
     function getValue(bridge, attribute, key) {
       var object = bridge[attribute]
-      if (bridge.DTRACE_NET_SERVER_CONNECTION) {
+      if (!bridge.__isNrtvBrowserBridge) {
         throw new Error("bridge is not a bridge")
       }
       var value = object[key]

@@ -4,8 +4,8 @@ The **browser bridge** lets you achieve the same ends more directly. You define 
 
 ```javascript
 var BrowserBridge = require("browser-bridge")
-var site = require("web-site")
 var element = require("web-element")
+var app = require("express")()
 
 var bridge = new BrowserBridge()
 
@@ -25,16 +25,12 @@ bridge.asap(function() {
   console.log("Everything is awesome")
 })
 
-site.addRoute(
-  "get",
-  "/",
-  bridge.requestHandler(button)
-)
+app.get("/", bridge.requestHandler(button))
 
-site.start(2090)
+app.start(2090)
 ```
 
-bridge.responseHandler returns a handler that will send a page with all of those functions glued up, something like:
+bridge.requestHandler returns a handler that will send a page with all of those functions glued up, something like:
 
 ```html
 <!DOCTYPE html>
@@ -78,24 +74,22 @@ You can then pass maybeGreet.evalable() down to the browser, and the button will
 If you want to get a page mostly assembled and then add different details, you can copy a bridge:
 
 ```javascript
+var app = require("express")()
+
 var baseBridge = new BrowserBridge()
 
 baseBridge.addToHead("<style>body { font-family: sans-serif; }</style>")
 
 var hello = baseBridge.copy()
-
 hello.asap(function() {
   alert("hi!")
 })
-
 app.get("/", hello.responseHandler())
 
 var goodbye = baseBridge.copy()
-
 goodbye.asap(function() {
   alert("bye!")
 })
-
 app.get("/logout", goodbye.responseHandler())
 ```
 
@@ -107,7 +101,8 @@ var bridge = new BrowserBridge()
 bridge.defineFunction(...)
 
 app.get("/item/:name", function(request, response) {
-  var handler = bridge.responseHandler(request.name)
+  var name = request.params.name
+  var handler = bridge.responseHandler("<body>Hello, "+name+"</body>")
   handler(request, response)
 })
 ```
