@@ -9,14 +9,14 @@ module.exports = library.export(
       this.id = Math.random().toString(36).substr(2,4)
       this.previousBindingStacks = {}
       this.identifiers = {}
+      this.partials = []
       this.scriptSource = ""
       this.head = ""
-      this.__isNrtvBrowserBridge = true
     }
 
     function getValue(bridge, attribute, key) {
       var object = bridge[attribute]
-      if (!bridge.__isNrtvBrowserBridge) {
+      if (bridge.DTRACE_NET_SERVER_CONNECTION) {
         throw new Error("bridge is not a bridge")
       }
       var value = object[key]
@@ -32,7 +32,16 @@ module.exports = library.export(
       } else {
         string = ""
       }
-      return string + bridge[attribute]
+
+      string += bridge[attribute]
+
+      bridge.partials.forEach(function(partial) {
+        if (partial[attribute]) {
+          string += partial[attribute]
+        }
+      })
+
+      return string
     }
 
     BrowserBridge.prototype.copy = function() {
@@ -47,6 +56,8 @@ module.exports = library.export(
 
     function PartialBridge(base) {
       this.base = base
+      base.partials.push(this)
+      this.head = ""
     }
 
     PartialBridge.prototype.send = function(content) {
@@ -60,6 +71,15 @@ module.exports = library.export(
         return element(this.content).html()
       }
     }
+
+    PartialBridge.prototype.addToHead = function(content) {
+      if (typeof content.html == "function") {
+        content = content.html()
+      }
+      this.head += content
+    }
+
+
 
     BrowserBridge.collective =
     BrowserBridge.prototype.collective =
