@@ -12,7 +12,6 @@ module.exports = library.export(
       this.partials = []
       this.scriptSource = ""
       this.head = ""
-      this.__isNrtvBrowserBridge = true
     }
 
     function getValue(bridge, attribute, key) {
@@ -43,6 +42,10 @@ module.exports = library.export(
       })
 
       return string
+    }
+
+    BrowserBridge.prototype.isBrowserBridge = function() {
+      return true
     }
 
     BrowserBridge.prototype.copy = function() {
