@@ -2,7 +2,7 @@ var library = require("module-library")(require)
 
 module.exports = library.export(
   "browser-bridge",
-  [library.collective({}), "web-element", "html", "function-call"],
+  [library.collective({}), "web-element", "html", "function-call", "./partial-bridge"],
   function(collective, element, html, functionCall) {
 
     // Schema
