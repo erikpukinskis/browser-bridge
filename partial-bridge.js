@@ -34,14 +34,32 @@ module.exports = library.export(
     }
 
     PartialBridge.prototype.defineFunction = function() {
-      this.base.defineFunction.apply(this.base, arguments)
+      return this.base.defineFunction.apply(this.base, arguments)
     }
 
-    var interface = ["collective", "copy", "partial", "sendPage", "requestHandler", "toHtml", "script", "asap", "defineSingleton", "forResponse", "changePath", "handle", "copy", "partial", "remember", "see"]
+    PartialBridge.prototype.remember = function() {
+      return this.base.remember.apply(this.base, arguments)
+    }
+
+    PartialBridge.prototype.see = function() {
+      return this.base.see.apply(this.base, arguments)
+    }
+
+    PartialBridge.prototype.defineSingleton = function() {
+      return this.base.defineSingleton.apply(this.base, arguments)
+    }
+
+    PartialBridge.prototype.asap = function() {
+      return this.base.asap.apply(this.base, arguments)
+    }
+
+    var interface = ["defineFunction", "remember", "see", "defineSingleton", "asap", "collective", "partial", "requestHandler", "toHtml", "script", "forResponse", "changePath", "handle", "copy", "partial"]
 
 
     interface.forEach(function(method) {
-      PartialBridge.prototype[method] = notWrittenYet.bind(null, method)
+      if (!PartialBridge.prototype[method]) {
+        PartialBridge.prototype[method] = notWrittenYet.bind(null, method)
+      }
     })
 
     function notWrittenYet(method) {
