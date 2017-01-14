@@ -3,32 +3,7 @@ var library = require("module-library")(require)
 module.exports = library.export(
   "browser-bridge",
   [library.collective({}), "web-element", "html", "function-call", "./partial-bridge"],
-  function(collective, element, html, functionCall) {
-
-    // Schema
-
-    // Bridge-like-thing.prototype.collective = notWrittenYet
-    // Bridge-like-thing.prototype.copy = notWrittenYet
-    // Bridge-like-thing.prototype.partial = notWrittenYet
-    // Bridge-like-thing.prototype.sendPage = notWrittenYet
-    // Bridge-like-thing.prototype.requestHandler = notWrittenYet
-    // Bridge-like-thing.prototype.toHtml = notWrittenYet
-    // Bridge-like-thing.prototype.script = notWrittenYet
-    // Bridge-like-thing.prototype.asap = notWrittenYet
-    // Bridge-like-thing.prototype.defineSingleton = notWrittenYet
-    // Bridge-like-thing.prototype.defineFunction = notWrittenYet
-    // Bridge-like-thing.prototype.forResponse = notWrittenYet
-    // Bridge-like-thing.prototype.send = notWrittenYet
-    // Bridge-like-thing.prototype.changePath = notWrittenYet
-    // Bridge-like-thing.prototype.handle = notWrittenYet
-    // Bridge-like-thing.prototype.addToHead = notWrittenYet
-    // Bridge-like-thing.prototype.copy = notWrittenYet
-    // Bridge-like-thing.prototype.partial = notWrittenYet
-
-    function notWrittenYet() {
-      console.log("My bridge like thing don't have that method yet")
-    }
-
+  function(collective, element, html, functionCall, PartialBridge) {
 
     function BrowserBridge() {
       this.id = Math.random().toString(36).substr(2,4)
@@ -86,59 +61,9 @@ module.exports = library.export(
       }
 
 
-
-    // Partial
-
     BrowserBridge.prototype.partial = function() {
       return new PartialBridge(this)
     }
-
-    function PartialBridge(base) {
-      this.base = base
-      base.partials.push(this)
-      this.head = ""
-      this.__isNrtvBrowserBridge = true
-    }
-
-    PartialBridge.prototype.send = function(content) {
-      this.content = content
-    }
-
-    // This is so this can be embedded as an element
-    PartialBridge.prototype.html = function() {
-      if (this.content.html) {
-        return this.content.html()
-      } else {
-        return element(this.content).html()
-      }
-    }
-
-    PartialBridge.prototype.addToHead = function(content) {
-      if (typeof content.html == "function") {
-        content = content.html()
-      }
-      this.head += content
-    }
-
-    PartialBridge.prototype.defineFunction = function() {
-      this.base.defineFunction.apply(this.base, arguments)
-    }
-
-    PartialBridge.prototype.collective = notWrittenYet
-    PartialBridge.prototype.copy = notWrittenYet
-    PartialBridge.prototype.partial = notWrittenYet
-    PartialBridge.prototype.sendPage = notWrittenYet
-    PartialBridge.prototype.requestHandler = notWrittenYet
-    PartialBridge.prototype.toHtml = notWrittenYet
-    PartialBridge.prototype.script = notWrittenYet
-    PartialBridge.prototype.asap = notWrittenYet
-    PartialBridge.prototype.defineSingleton = notWrittenYet
-    PartialBridge.prototype.forResponse = notWrittenYet
-    PartialBridge.prototype.changePath = notWrittenYet
-    PartialBridge.prototype.handle = notWrittenYet
-    PartialBridge.prototype.copy = notWrittenYet
-    PartialBridge.prototype.partial = notWrittenYet
-
 
     BrowserBridge.collective =
     BrowserBridge.prototype.collective =
@@ -521,7 +446,7 @@ module.exports = library.export(
       function() {
         return new BrowserBridge()
       },
-      ["sendPage", "requestHandler", "asap", "defineFunction", "defineSingleton", "handle", "addToHead", "forResponse"]      
+      ["sendPage", "requestHandler", "asap", "defineFunction", "defineSingleton", "handle", "addToHead", "forResponse", "remember", "see"]      
     )
 
     return BrowserBridge
