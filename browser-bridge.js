@@ -12,6 +12,7 @@ module.exports = library.export(
       this.partials = []
       this.scriptSource = ""
       this.head = ""
+      this.memories = []
     }
 
     function getValue(bridge, attribute, key) {
@@ -44,8 +45,12 @@ module.exports = library.export(
       return string
     }
 
-    BrowserBridge.prototype.isBrowserBridge = function() {
-      return true
+    BrowserBridge.prototype.remember = function(key) {
+      return this.memories[key]
+    }
+
+    BrowserBridge.prototype.see = function(key, object) {
+      this.memories[key] = object
     }
 
     BrowserBridge.prototype.copy = function() {
