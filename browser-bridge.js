@@ -135,11 +135,12 @@ module.exports = library.export(
           element.raw(headSource)
         )
 
-        var needsBody = content && typeof(content) != "string" && !hasBody(content, 2)
+        var isString = typeof(content) == "string"
+        var needsBody = content && !isString && !hasBody(content, 2)
 
         if (!content) {
           content = element("body")
-        } else if (needsBody) {
+        } else if (needsBody || isString) {
           content = element("body", content)
         }
 
