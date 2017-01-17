@@ -7,6 +7,7 @@ module.exports = library.export(
     // Partial
 
     function PartialBridge(base) {
+      this.id = "partial-"+Math.random().toString(36).substr(2,4)+"-on-"+base.id
       this.base = base
       base.partials.push(this)
       this.head = ""

@@ -57,6 +57,7 @@ module.exports = library.export(
     BrowserBridge.prototype.copy = function() {
         var copy = new BrowserBridge()
         copy.base = this
+        copy.id = "copy-"+Math.random().toString(36).substr(2,4)+"-of-"+this.id
         return copy
       }
 
