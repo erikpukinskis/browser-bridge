@@ -2,7 +2,8 @@ var library = require("module-library")(require)
 
 module.exports = library.export(
   "partial-bridge",
-  function() {
+  ["web-element"],
+  function(element) {
 
     // Partial
 
