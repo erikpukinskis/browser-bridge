@@ -19,6 +19,10 @@ module.exports = library.export(
       this.content = content
     }
 
+    PartialBridge.prototype.changePath = function(path) {
+      this.__changedPath = path
+    }
+
     // This is so this can be embedded as an element
     PartialBridge.prototype.html = function() {
       if (this.content.html) {
