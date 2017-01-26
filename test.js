@@ -2,6 +2,7 @@ var runTest = require("run-test")(require)
 
 // runTest.only("bridge handles bindings sent in AJAX responses")
 // runTest.only("pre-bind response")
+// runTest.only("bridge.requestHandler passes along javascript")
 
 runTest.failAfter(3000)
 runTest(

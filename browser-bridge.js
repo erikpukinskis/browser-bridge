@@ -6,12 +6,13 @@ module.exports = library.export(
   function(collective, element, html, functionCall, PartialBridge) {
 
     function BrowserBridge() {
-      this.id = Math.random().toString(36).substr(2,4)
+      this.id = "brg"+Math.random().toString(36).substr(2,4)
       this.previousBindingStacks = {}
       this.identifiers = {}
       this.partials = []
       this.scriptSource = ""
       this.head = ""
+      this.children = []
       this.memories = []
       this.__isNrtvBrowserBridge = true
     }
@@ -77,6 +78,10 @@ module.exports = library.export(
 
     // Rename sendPageHandler? #todo
 
+    BrowserBridge.prototype.addToBody = function(content) {
+      this.children.push(content)
+    }
+
     BrowserBridge.prototype.sendPage =
       function(content) {
         console.log("\n⚡⚡⚡ WARNING ⚡⚡⚡ bridge.sendPage() is deprecated. Use bridge.requestHandler() instead.\n")
@@ -100,14 +105,33 @@ module.exports = library.export(
         this.head = this.head+stuff
       }
 
+    BrowserBridge.prototype.bodyPlus = function(content) {
+        if (content && this.children.length) {
+          if (typeof content != "array") {
+            content = [content]
+          }
+
+          content = this.children.concat(content)
+        } else if (this.children.length) {
+          content = this.children
+        }
+
+        if (this.base) {
+          content = this.base.bodyPlus(content)
+        }
+
+        return content
+      }
+
     BrowserBridge.prototype.toHtml =
       function(content) {
+
+        content = this.bodyPlus(content)
 
         var bindings = element(
           "script",
           this.script()
         )
-
         
         var hidden = element.style(
           ".hidden", {
