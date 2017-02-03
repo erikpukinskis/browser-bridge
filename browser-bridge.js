@@ -244,15 +244,12 @@ module.exports = library.export(
 
         var binding = buildBinding(arguments, this)
 
-        var deps = binding.dependencies
-
-        binding = binding.singleton()
-        binding.dependencies = deps
         binding.definitionComment = definitionComment()
+        binding.isGenerator = true
 
         this.scriptSource += bindingSource(binding)
 
-        return binding
+        return functionCall(binding.identifier).singleton()
       }
 
     BrowserBridge.prototype.defineFunction =
@@ -263,7 +260,7 @@ module.exports = library.export(
 
         this.scriptSource += bindingSource(binding)
 
-        return binding
+        return functionCall(binding.identifier)
       }
 
     BrowserBridge.prototype.forResponse = function(response) {
@@ -320,7 +317,7 @@ module.exports = library.export(
 
     function bindingSource(binding, options) {
 
-      var funcSource = deIndent(binding.binding.func.toString())
+      var funcSource = deIndent(binding.func.toString())
 
       var dependencies = binding.dependencies
       var hasDependencies = dependencies.length > 0
@@ -330,7 +327,7 @@ module.exports = library.export(
       if (isPlainFunction) {
         var source = funcSource.replace(
           /^function[^(]*\(/,
-          "function "+binding.binding.identifier+"("
+          "function "+binding.identifier+"("
         )
       } else {
         if (dependencies[0] &&dependencies[0].__dependencyType == "browser collective") {
@@ -355,7 +352,7 @@ module.exports = library.export(
         if (callNow) {
           var source = ""
         } else {
-          var source = "var "+binding.binding.identifier+" = "
+          var source = "var "+binding.identifier+" = "
         }
 
         source += "("+funcSource+")."+callOrBind+"("+deps+")"
@@ -415,9 +412,12 @@ module.exports = library.export(
 
       bridge.identifiers[identifier] = true
 
-      var binding = functionCall(func, identifier)
 
-      binding.dependencies = dependencies
+      var binding = {
+        dependencies: dependencies,
+        func: func,
+        identifier: identifier,
+      }
 
       return binding
     }
