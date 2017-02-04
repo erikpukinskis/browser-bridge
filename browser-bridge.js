@@ -8,9 +8,7 @@ module.exports = library.export(
     function BrowserBridge() {
       this.id = "brg"+Math.random().toString(36).substr(2,4)
       this.previousBindingStacks = {}
-      this.identifiers = {
-        functionCall: true,
-      }
+      this.identifiers = {}
       this.partials = []
       this.scriptSource = ""
       this.head = ""
@@ -246,15 +244,12 @@ module.exports = library.export(
 
         var binding = buildBinding(arguments, this)
 
-        var deps = binding.dependencies
-
-        binding = binding.singleton()
-        binding.dependencies = deps
         binding.definitionComment = definitionComment()
+        binding.isGenerator = true
 
         this.scriptSource += bindingSource(binding)
 
-        return binding
+        return functionCall(binding.identifier).singleton()
       }
 
     BrowserBridge.prototype.defineFunction =
@@ -265,7 +260,7 @@ module.exports = library.export(
 
         this.scriptSource += bindingSource(binding)
 
-        return binding
+        return functionCall(binding.identifier)
       }
 
     BrowserBridge.prototype.forResponse = function(response) {
@@ -322,7 +317,7 @@ module.exports = library.export(
 
     function bindingSource(binding, options) {
 
-      var funcSource = deIndent(binding.binding.func.toString())
+      var funcSource = deIndent(binding.func.toString())
 
       var dependencies = binding.dependencies
       var hasDependencies = dependencies.length > 0
@@ -332,7 +327,7 @@ module.exports = library.export(
       if (isPlainFunction) {
         var source = funcSource.replace(
           /^function[^(]*\(/,
-          "function "+binding.binding.identifier+"("
+          "function "+binding.identifier+"("
         )
       } else {
         if (dependencies[0] &&dependencies[0].__dependencyType == "browser collective") {
@@ -357,22 +352,13 @@ module.exports = library.export(
         if (callNow) {
           var source = ""
         } else {
-          var source = "var "+binding.binding.identifier+" = "
+          var source = "var "+binding.identifier+" = "
         }
 
         source += "("+funcSource+")."+callOrBind+"("+deps+")"
       }
 
       return "\n"+binding.definitionComment+"\n"+source+"\n"
-    }
-
-    function find(array, test) {
-      for(var i=0; i<array.length; i++) {
-        var item = array[i]
-        if (test(item)) {
-          return item
-        }
-      }
     }
 
     function buildBinding(args, bridge) {
@@ -392,17 +378,6 @@ module.exports = library.export(
       }
 
       dependencies = dependencies || []
-
-      if (!bridge.remember("function-call")) {
-
-        var needsFunctionCall = find(dependencies, function(dep) {
-          return dep.__isBoundBinding
-        })
-
-        if (needsFunctionCall) {
-          functionCall.defineOn(bridge)
-        }
-      }
 
       if (!func) {
         throw new Error("You need to pass a function to bridge.defineFunction, but you passed "+JSON.stringify(args)+".")
@@ -437,9 +412,12 @@ module.exports = library.export(
 
       bridge.identifiers[identifier] = true
 
-      var binding = functionCall(func, identifier)
 
-      binding.dependencies = dependencies
+      var binding = {
+        dependencies: dependencies,
+        func: func,
+        identifier: identifier,
+      }
 
       return binding
     }
