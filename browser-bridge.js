@@ -383,6 +383,9 @@ module.exports = library.export(
         var needsFunctionCall = find(dependencies, function(x) {
           return x.__isBoundBinding
         })
+        if (needsFunctionCall) {
+          functionCall.defineOn(bridge)
+        }
       }
 
       if (!func) {
