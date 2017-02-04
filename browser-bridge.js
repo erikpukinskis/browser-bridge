@@ -379,6 +379,12 @@ module.exports = library.export(
 
       dependencies = dependencies || []
 
+      if (!bridge.remember("function-call")) {
+        var needsFunctionCall = find(dependencies, function(x) {
+          return x.__isBoundBinding
+        })
+      }
+
       if (!func) {
         throw new Error("You need to pass a function to bridge.defineFunction, but you passed "+JSON.stringify(args)+".")
       }
@@ -420,6 +426,15 @@ module.exports = library.export(
       }
 
       return binding
+    }
+
+    function find(array, test) {
+      for(var i=0; i<array.length; i++) {
+        var item = array[i]
+        if (test(item)) {
+          return item
+        }
+      }
     }
 
     function preventUndefinedDeps(dependencies, func) {
