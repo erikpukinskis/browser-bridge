@@ -8,7 +8,15 @@ module.exports = library.export(
     function BrowserBridge() {
       this.id = "brg"+Math.random().toString(36).substr(2,4)
       this.previousBindingStacks = {}
-      this.identifiers = {}
+
+      // Reserved identifiers:
+      this.identifiers = {
+        functionCall: true,
+        Library: true,
+        library: true,
+        Tree: true,
+      }
+
       this.partials = []
       this.scriptSource = ""
       this.head = ""
@@ -45,6 +53,10 @@ module.exports = library.export(
       })
 
       return string
+    }
+
+    BrowserBridge.prototype.claimIdentifier = function(identifier) {
+      this.identifiers[identifier] = null
     }
 
     BrowserBridge.prototype.remember = function(key) {
