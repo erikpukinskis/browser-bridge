@@ -19,9 +19,11 @@ var button = element("button", "Hi there", {
   onclick: greet.withArgs("Tam").evalable()
 })
 
-bridge.asap(function() {
-  console.log("Everything is awesome")
-})
+bridge.asap(
+  function() {
+    console.log("Everything is awesome")
+  }
+)
 
 app.get("/", bridge.requestHandler(button))
 
