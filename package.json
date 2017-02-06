@@ -1,6 +1,6 @@
 {
   "name": "browser-bridge",
-  "version": "0.107.0",
+  "version": "0.108.0",
   "description": "Move code and state between Node and the browser",
   "main": "browser-bridge.js",
   "repository": {
