@@ -63,9 +63,13 @@ var maybeGreet = bridge.defineFunction(
     if (Math.random() < 0.5) { greet() }
   }
 )
+
+var flakyButton = element("button", "Hi there?", {
+  onclick: maybeGreet.withArgs("Tam?").evalable()
+})
 ```
 
-You can then pass maybeGreet.evalable() down to the browser, and the button will be broken half the time. :)
+And now you have a button that's randomly broken half the time. :)
 
 ## Re-using a bridge
 
