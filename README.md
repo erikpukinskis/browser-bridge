@@ -60,9 +60,7 @@ You can also pass data between functions on the client by passing references on 
 var maybeGreet = bridge.defineFunction(
   [greet],
   function(greet) {
-    if (Math.random() < 0.5) {
-      greet()
-    }
+    if (Math.random() < 0.5) { greet() }
   }
 )
 ```
