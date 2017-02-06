@@ -15,11 +15,9 @@ var greet = bridge.defineFunction(
   }
 )
 
-var button = element(
-  "button",
-  "Hi there", 
-  {onclick: greet.withArgs("Tam").evalable()}
-)
+var button = element("button", "Hi there", {
+  onclick: greet.withArgs("Tam").evalable()
+})
 
 bridge.asap(function() {
   console.log("Everything is awesome")
