@@ -60,7 +60,7 @@ module.exports = library.export(
     }
 
     BrowserBridge.prototype.remember = function(key) {
-      return this.memories[key]
+      return this.memories[key] || this.base && this.base.remember(key)
     }
 
     BrowserBridge.prototype.see = function(key, object) {
