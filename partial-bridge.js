@@ -19,6 +19,10 @@ module.exports = library.export(
       this.content = content
     }
 
+    PartialBridge.prototype.partial = function() {
+      return this.base.partial()
+    }
+
     PartialBridge.prototype.forResponse = function(response) {
       return this.base.forResponse(response)
     }
