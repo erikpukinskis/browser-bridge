@@ -55,6 +55,10 @@ module.exports = library.export(
       return this.base.remember.apply(this.base, arguments)
     }
 
+    PartialBridge.prototype.claimIdentifier = function(name) {
+      this.base.claimIdentifier(name)
+    }
+
     PartialBridge.prototype.see = function() {
       return this.base.see.apply(this.base, arguments)
     }
@@ -67,7 +71,7 @@ module.exports = library.export(
       return this.base.asap.apply(this.base, arguments)
     }
 
-    var interface = ["defineFunction", "remember", "see", "defineSingleton", "asap", "collective", "partial", "requestHandler", "toHtml", "script", "forResponse", "changePath", "handle", "copy", "partial"]
+    var interface = ["defineFunction", "remember", "see", "defineSingleton", "asap", "collective", "partial", "requestHandler", "toHtml", "script", "forResponse", "changePath", "handle", "copy", "partial", "claimIdentifier"]
 
 
     interface.forEach(function(method) {
