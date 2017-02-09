@@ -13,14 +13,16 @@ module.exports = library.export(
       base.partials.push(this)
       this.head = ""
       this.__isNrtvBrowserBridge = true
+
+      try {
+        throw new Error("The partial was created here:")
+      } catch(e) {
+        this.initializeStack = e.stack
+      }
     }
 
     PartialBridge.prototype.send = function(content) {
       this.content = content
-    }
-
-    PartialBridge.prototype.partial = function() {
-      return this.base.partial()
     }
 
     PartialBridge.prototype.forResponse = function(response) {
@@ -33,6 +35,11 @@ module.exports = library.export(
 
     // This is so this can be embedded as an element
     PartialBridge.prototype.html = function() {
+      if (!this.content) {
+        console.log(this.initializeStack)
+        throw new Error("Getting content of bridge partial, but you never called partial.send(someContent)")
+      }
+
       if (this.content.html) {
         return this.content.html()
       } else {
@@ -55,10 +62,6 @@ module.exports = library.export(
       return this.base.remember.apply(this.base, arguments)
     }
 
-    PartialBridge.prototype.claimIdentifier = function(name) {
-      this.base.claimIdentifier(name)
-    }
-
     PartialBridge.prototype.see = function() {
       return this.base.see.apply(this.base, arguments)
     }
@@ -71,7 +74,7 @@ module.exports = library.export(
       return this.base.asap.apply(this.base, arguments)
     }
 
-    var interface = ["defineFunction", "remember", "see", "defineSingleton", "asap", "collective", "partial", "requestHandler", "toHtml", "script", "forResponse", "changePath", "handle", "copy", "partial", "claimIdentifier"]
+    var interface = ["defineFunction", "remember", "see", "defineSingleton", "asap", "collective", "partial", "requestHandler", "toHtml", "script", "forResponse", "changePath", "handle", "copy", "partial"]
 
 
     interface.forEach(function(method) {
