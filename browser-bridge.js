@@ -56,7 +56,12 @@ module.exports = library.export(
     }
 
     BrowserBridge.prototype.claimIdentifier = function(identifier) {
+
       this.identifiers[identifier] = null
+
+      if (this.base) {
+        this.base.claimIdentifier(identifier)
+      }
     }
 
     BrowserBridge.prototype.remember = function(key) {
