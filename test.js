@@ -1,10 +1,9 @@
 var runTest = require("run-test")(require)
 
-// runTest.only("bridge handles bindings sent in AJAX responses")
-// runTest.only("pre-bind response")
-// runTest.only("bridge.requestHandler passes along javascript")
-
 runTest.failAfter(3000)
+
+// runTest.only("remember bindings in the browser")
+
 runTest(
   "sending an element",
 
@@ -162,6 +161,44 @@ runTest(
     function checkText() {
       browser.assertText(".out", "foo 3 rabbit", site.stop, browser.done, done)
     }
+
+  }
+)
+
+
+
+runTest(
+  "remember bindings in the browser",
+  ["./", "browser-task", "web-site"],
+  function(expect, done, BrowserBridge, browserTask, WebSite) {
+
+    var site = new WebSite()
+
+    var bridge = new BrowserBridge()
+
+    var names = bridge.defineFunction(function names() { return ["Old Scratch", "Prince of Darkness", "Beelzebub"] })
+
+    bridge.see("some-names", names)
+
+    bridge.asap(
+      [bridge.asBinding()],
+      function(bridge) {
+        var memory = bridge.remember("some-names")
+        var name = eval(memory.evalable())[1]
+        document.write(name)
+      }
+    )
+
+    site.addRoute("get", "/", bridge.requestHandler())
+
+    site.start(9881)
+
+    browserTask(
+      "http://localhost:9881",
+      function(browser) {
+        browser.assertText("body", "Prince", site.stop, browser.done, done)
+      }
+    )
 
   }
 )

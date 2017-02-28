@@ -6,6 +6,7 @@ module.exports = library.export(
   generator
 )
 
+
 function generator(collective, element, html, functionCall, PartialBridge) {
 
   function BrowserBridge() {
@@ -18,14 +19,18 @@ function generator(collective, element, html, functionCall, PartialBridge) {
       Library: true,
       library: true,
       Tree: true,
+      BRIDGE_DATA: true,
     }
 
     this.partials = []
-    this.scriptSource = ""
     this.head = ""
     this.children = []
     this.memories = []
     this.__isNrtvBrowserBridge = true
+
+    this.scriptSource = ""
+    functionCall.defineOn(this)
+    this.scriptSource += "\n// Bridge data: ### BRIDGE DATA GOES HERE ###\n\n"
   }
 
   function getValue(bridge, attribute, key) {
@@ -152,7 +157,7 @@ function generator(collective, element, html, functionCall, PartialBridge) {
         "script",
         this.script()
       )
-      
+
       var hidden = element.style(
         ".hidden", {
           "display": "none"
@@ -183,8 +188,34 @@ function generator(collective, element, html, functionCall, PartialBridge) {
 
       var source = "<!DOCTYPE html>\n" + page.html()
 
+      if (this.needsBridgeData) {
+        source = prependBridgeData(this, source)
+      }
+
       return html.prettyPrint(source)
     }
+
+  function prependBridgeData(bridge, content) {
+
+    bridge.claimIdentifier("BRIDGE_DATA")
+
+    var binding = buildBinding([
+      "BRIDGE_DATA",
+      ["### BRIDGE DATA ###"],
+      function(data) {
+        return data
+      }
+    ], bridge)
+
+    binding.definitionComment = definitionComment()
+    binding.isGenerator = true
+
+    var source = bindingSource(binding)
+
+    source = source.replace("\"### BRIDGE DATA ###\"", bridgeDataSource(bridge))
+
+    return content.replace("// Bridge data: ### BRIDGE DATA GOES HERE ###", "// Bridge data:\n\n"+source)
+  }
 
   function hasBody(content, depth) {
     if (depth < 1) { return false }
@@ -210,6 +241,75 @@ function generator(collective, element, html, functionCall, PartialBridge) {
     }
 
     return false
+  }
+
+  BrowserBridge.prototype.asBinding = function() {
+    var clientBridge = this.remember("browser-bridge/clientBridge")
+
+    if (clientBridge) { return clientBridge }
+
+    var BrowserBridgeBinding = this.defineSingleton(
+      "BrowserBridge",
+      [null, null, null, functionCall.defineOn(this), PartialBridge.defineOn(this)],
+      generator
+    )
+
+    var clientBridge = this.defineSingleton(
+      "localBridge",
+      [BrowserBridgeBinding, this.data()],
+      function(BrowserBridge, data) {
+        return BrowserBridge.fromData(data)
+      }
+    )
+
+    this.see("browser-bridge/clientBridge", clientBridge)
+
+    return clientBridge
+  }
+
+  BrowserBridge.prototype.data = function() {
+    this.needsBridgeData = true
+    return functionCall("BRIDGE_DATA")
+  }
+
+  function bridgeDataSource(bridge) {
+
+    var data = {
+      identifiers: bridge.identifiers,
+      memories: "XXXXX"
+    }
+
+    var memoriesJSON = "{\n"
+
+    for(key in bridge.memories) {
+      var binding = bridge.memories[key]
+      if (!binding.__isFunctionCallBinding) {
+        debugger
+        throw new Error("Remembered a memory that's not a function call?")
+      }
+
+      memoriesJSON += "    "+"\""+key+"\""+": "+binding.asCall().callable()+",\n"
+    }
+
+    memoriesJSON += "  },"
+
+    var dataJSON = JSON.stringify(data, null, 2)
+
+    dataJSON = dataJSON.replace("\"memories\": \"XXXXX\"", "\"memories\": "+memoriesJSON)
+
+    return dataJSON
+  }
+
+
+  BrowserBridge.fromData = function(data) {
+    var bridge = new BrowserBridge()
+    bridge.identifiers = data.identifiers
+    bridge.memories = data.memories
+    return bridge
+  }
+
+  function memoryToBinding(memory) {
+    return memory.asBinding()
   }
 
   BrowserBridge.prototype.script =
@@ -362,7 +462,7 @@ function generator(collective, element, html, functionCall, PartialBridge) {
         }
       } else if (hasDependencies) {
         var deps = "null, "+
-        functionCall.argumentString(dependencies)
+        functionCall.argumentString(dependencies, {expand: true})
       } else {
         var deps = ""
       }
@@ -399,15 +499,6 @@ function generator(collective, element, html, functionCall, PartialBridge) {
 
     dependencies = dependencies || []
 
-    if (!bridge.remember("function-call")) {
-      var needsFunctionCall = find(dependencies, function(x) {
-        return x.__isBoundBinding
-      })
-      if (needsFunctionCall) {
-        functionCall.defineOn(bridge)
-      }
-    }
-
     if (!func) {
       throw new Error("You need to pass a function to bridge.defineFunction, but you passed "+JSON.stringify(args)+".")
     }
@@ -429,7 +520,7 @@ function generator(collective, element, html, functionCall, PartialBridge) {
       }
     }
     
-    preventUndefinedDeps(dependencies, func)
+    // preventUndefinedDeps(dependencies, func)
 
     var identifier = original = name || func.name || "f"
 
@@ -503,14 +594,16 @@ function generator(collective, element, html, functionCall, PartialBridge) {
     return hval >>> 0;
   }
 
-  library.collectivize(
-    BrowserBridge,
-    collective,
-    function() {
-      return new BrowserBridge()
-    },
-    ["sendPage", "requestHandler", "asap", "defineFunction", "defineSingleton", "handle", "addToHead", "forResponse", "remember", "see"]      
-  )
+  if (typeof library != "undefined") {
+    library.collectivize(
+      BrowserBridge,
+      collective,
+      function() {
+        return new BrowserBridge()
+      },
+      ["sendPage", "requestHandler", "asap", "defineFunction", "defineSingleton", "handle", "addToHead", "forResponse", "remember", "see"]      
+    )
+  }
 
   return BrowserBridge
 }
