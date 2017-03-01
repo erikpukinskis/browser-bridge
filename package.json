@@ -14,8 +14,7 @@
     "function-call": "*",
     "module-library": "*",
     "web-element": "*",
-    "object-hash": "*",
-    "html": "*"
+    "object-hash": "*"
   },
   "devDependencies": {
     "run-test": "*",

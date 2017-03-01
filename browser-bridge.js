@@ -2,12 +2,12 @@ var library = require("module-library")(require)
 
 module.exports = library.export(
   "browser-bridge",
-  [library.collective({}), "web-element", "html", "function-call", "./partial-bridge"],
+  [library.collective({}), "web-element", "function-call", "./partial-bridge"],
   generator
 )
 
 
-function generator(collective, element, html, functionCall, PartialBridge) {
+function generator(collective, element, functionCall, PartialBridge) {
 
   function BrowserBridge() {
     this.id = "brg"+Math.random().toString(36).substr(2,4)
@@ -192,7 +192,7 @@ function generator(collective, element, html, functionCall, PartialBridge) {
         source = prependBridgeData(this, source)
       }
 
-      return html.prettyPrint(source)
+      return source
     }
 
   function prependBridgeData(bridge, content) {
