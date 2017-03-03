@@ -29,7 +29,7 @@ function generator(collective, element, functionCall, PartialBridge) {
     this.__isNrtvBrowserBridge = true
 
     this.scriptSource = ""
-    functionCall.defineOn(this)
+    functionCall && functionCall.defineOn(this)
     this.scriptSource += "\n// Bridge data: ### BRIDGE DATA GOES HERE ###\n\n"
   }
 
