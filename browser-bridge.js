@@ -176,7 +176,10 @@ function generator(collective, element, functionCall, PartialBridge) {
       var headSource = '<meta name="viewport" content="width=device-width, initial-scale=1">\n'+element.stylesheet(hidden).html()+bindings.html()+getFullString(this, "head")
 
       if (isPartial) {
-        var source = "\n// HEAD\n\n"+headSource+"\n\n\n//BODY\n\n"+content+"\n"
+        if (content.html) {
+          content = content.html()
+        }
+        var source = "\n<!-- HEAD -->\n\n"+headSource+"\n\n\n<!-- BODY -->\n\n"+content+"\n"
       } else {
         var page = element("html", [
           element("head", element.raw(headSource)),
