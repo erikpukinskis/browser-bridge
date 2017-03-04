@@ -130,7 +130,7 @@ function generator(collective, element, functionCall, PartialBridge) {
       this.head = this.head+stuff
     }
 
-  BrowserBridge.prototype.bodyPlus = function(content) {
+  BrowserBridge.prototype.withChildren = function(content) {
       if (content && this.children.length) {
         if (typeof content != "array") {
           content = [content]
@@ -142,16 +142,16 @@ function generator(collective, element, functionCall, PartialBridge) {
       }
 
       if (this.base) {
-        content = this.base.bodyPlus(content)
+        content = this.base.withChildren(content)
       }
 
       return content
     }
 
   BrowserBridge.prototype.toHtml =
-    function(content) {
+    function(content, isPartial) {
 
-      content = this.bodyPlus(content)
+      content = this.withChildren(content)
 
       var bindings = element(
         "script",
@@ -163,30 +163,28 @@ function generator(collective, element, functionCall, PartialBridge) {
           "display": "none"
         })
 
-      var headSource = '<meta name="viewport" content="width=device-width, initial-scale=1">\n'+element.stylesheet(hidden).html() + getFullString(this, "head")
-
-      var head = element("head", 
-        element.raw(headSource)
-      )
+      if (!content) { content = "<body></body>" }
 
       var isString = typeof(content) == "string"
-      var needsBody = content && !isString && !hasBody(content, 2)
 
-      if (!content) {
-        content = element("body")
-      } else if (needsBody || isString) {
+      var needsBody = !isString && !hasBody(content, 2)
+
+      if (!isPartial && needsBody) {
         content = element("body", content)
       }
 
-      if (Array.isArray(content)) {
-        content.push(bindings)
+      var headSource = '<meta name="viewport" content="width=device-width, initial-scale=1">\n'+element.stylesheet(hidden).html()+bindings.html()+getFullString(this, "head")
+
+      if (isPartial) {
+        var source = "\n// HEAD\n\n"+headSource+"\n\n\n//BODY\n\n"+content+"\n"
       } else {
-        content.addChild(bindings)
+        var page = element("html", [
+          element("head", element.raw(headSource)),
+          content
+        ])
+        var source = "<!DOCTYPE html>\n" + page.html()
       }
 
-      var page = element("html", [head, content])
-
-      var source = "<!DOCTYPE html>\n" + page.html()
 
       if (this.needsBridgeData) {
         source = prependBridgeData(this, source)

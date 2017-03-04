@@ -33,11 +33,17 @@ function generator(element) {
   }
 
   PartialBridge.prototype.send = function(content) {
-    this.content = content
+    if (this.response) {
+      var partial = this.base.toHtml(content, true)
+      this.response.send(partial)
+    } else {
+      this.content = content
+    }
   }
 
   PartialBridge.prototype.forResponse = function(response) {
-    return this.base.forResponse(response)
+    this.response = response
+    return this
   }
 
   PartialBridge.prototype.partial = function() {
