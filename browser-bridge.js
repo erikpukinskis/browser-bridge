@@ -500,6 +500,12 @@ function generator(collective, element, functionCall, PartialBridge) {
 
     dependencies = dependencies || []
 
+    dependencies.forEach(function(dep, i) {
+      if (!dep) {
+        throw new Error("Dependency "+i+" you passed to the bridge is undefined") 
+      }
+    })
+    
     if (!func) {
       throw new Error("You need to pass a function to bridge.defineFunction, but you passed "+JSON.stringify(args)+".")
     }
