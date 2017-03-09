@@ -59,18 +59,20 @@ function generator(element) {
   }
 
   // This is so this can be embedded as an element
-  PartialBridge.prototype.html = function() {
+  PartialBridge.prototype.html = function(previousIds) {
+
     if (!this.content) {
       console.log(this.initializeStack)
       throw new Error("Getting content of bridge partial, but you never called partial.send(someContent)")
     }
 
     if (this.content.html) {
-      return this.content.html()
+      return this.content.html(previousIds)
     } else {
-      return element(this.content).html()
+      return element(this.content).html(previousIds)
     }
   }
+
 
   PartialBridge.prototype.addToHead = function(content) {
     if (typeof content.html == "function") {
