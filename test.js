@@ -401,6 +401,9 @@ runTest(
 )
 
 
+runTest("domReady")
+
+
 
 // Browser tests:
 

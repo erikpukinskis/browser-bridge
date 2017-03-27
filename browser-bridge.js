@@ -20,6 +20,7 @@ function generator(collective, element, functionCall, PartialBridge) {
       library: true,
       Tree: true,
       BRIDGE_DATA: true,
+      onDomReady: true,
     }
 
     this.partials = []
@@ -30,7 +31,8 @@ function generator(collective, element, functionCall, PartialBridge) {
 
     this.scriptSource = ""
     functionCall && functionCall.defineOn(this)
-    this.scriptSource += "\n// Bridge data: ### BRIDGE DATA GOES HERE ###\n\n"
+    this.addSource("\n// Bridge data: ### BRIDGE DATA GOES HERE ###\n\n")
+    this.domReadySource = ""
   }
 
   function getValue(bridge, attribute, key) {
@@ -163,14 +165,15 @@ function generator(collective, element, functionCall, PartialBridge) {
           "display": "none"
         })
 
-      if (!content) { content = "<body></body>" }
-
       var isString = typeof(content) == "string"
 
       var needsBody = !isString && !hasBody(content, 2)
 
       if (!isPartial && needsBody) {
-        content = element("body", content)
+        content = element("body", content||"")
+        if (this.domReadySource) {
+          content.addAttribute("onload", "onDomReady()")
+        }
       }
 
       var headSource = '<meta name="viewport" content="width=device-width, initial-scale=1">\n'+element.stylesheet(hidden).html()+bindings.html()+getFullString(this, "head")
@@ -208,7 +211,7 @@ function generator(collective, element, functionCall, PartialBridge) {
       }
     ], bridge)
 
-    binding.definitionComment = definitionComment()
+    binding.definitionComment = definitionComment(1)
     binding.isGenerator = true
 
     var source = bindingSource(binding)
@@ -219,6 +222,12 @@ function generator(collective, element, functionCall, PartialBridge) {
   }
 
   function hasBody(content, depth) {
+    if (!content) {
+      return false
+    } else if (typeof content == "string") {
+      return !!content.match(/<body/g)
+    }
+
     if (depth < 1) { return false }
 
     if (content.tagName == "body") {
@@ -285,7 +294,6 @@ function generator(collective, element, functionCall, PartialBridge) {
     for(key in bridge.memories) {
       var binding = bridge.memories[key]
       if (!binding.__isFunctionCallBinding) {
-        debugger
         throw new Error("Remembered a memory that's not a function call?")
       }
 
@@ -315,20 +323,24 @@ function generator(collective, element, functionCall, PartialBridge) {
 
   BrowserBridge.prototype.script =
     function() {
-      return getFullString(this, "scriptSource")
+      var script = getFullString(this, "scriptSource")
+
+      var domReadySource = getFullString(this, "domReadySource")
+
+      if (domReadySource) {
+        script += "\n// The mind is willing but the body is not ready:\n\nfunction onDomReady() {\n"+domReadySource+"\n}\n"
+      }
+
+      return script
     }
 
-  function definitionComment() {
+  function definitionComment(depth) {
+    depth = (depth||0)+3
+
     try {
       throw new Error("browser-bridge induced this error for introspection purposes")
     } catch (e) {
       var stack = e.stack.split("\n")
-
-      if (stack[3].match("callCollectiveMethod")) {
-        var depth = 4
-      } else {
-        var depth = 3
-      }
 
       var origin = stack[depth].substr(7)
 
@@ -337,28 +349,42 @@ function generator(collective, element, functionCall, PartialBridge) {
   }
 
   BrowserBridge.prototype.asap =
-    function(binding) {
+    function() {
+      var source = argumentToSource.apply(null, arguments)
 
-      var source = ""
-      var isCall = !!binding.__isFunctionCallBinding
-      var isSource = typeof(binding) == "string" && typeof(arguments[1]) == "undefined"
-
-      if (isCall) {
-        source += definitionComment() + "\n"
-        source += binding.evalable ? binding.evalable({expand: true}): binding
-
-      } else if (isSource) {
-        source = binding
-
-      } else {
-        var binding = buildBinding(arguments, this)
-        binding.definitionComment = definitionComment()
-        source += ";"+bindingSource(binding, {callNow: true})
-      }
-
-      this.scriptSource += "\n"+source+"\n"
+      this.addSource(source)
     }
 
+  BrowserBridge.prototype.addSource = function(source) {
+    this.scriptSource += source
+  }
+
+  BrowserBridge.prototype.domReady =
+    function() {
+      this.domReadySource += argumentToSource.apply(null, arguments)
+    }
+
+  function argumentToSource(whatnot, etc) {
+    var isCall = !!whatnot.__isFunctionCallBinding
+    var isSource = typeof(whatnot) == "string" && typeof(etc) == "undefined"
+    var source = ""
+
+    if (isCall) {
+      var binding = whatnot
+      source += definitionComment(1) + "\n"
+      source += binding.evalable ? binding.evalable({expand: true}): binding
+
+    } else if (isSource) {
+      source = whatnot
+
+    } else {
+      var binding = buildBinding(arguments, this)
+      binding.definitionComment = definitionComment(1)
+      source += ";"+bindingSource(binding, {callNow: true})
+    }
+
+    return "\n"+source+"\n"
+  }
 
   BrowserBridge.prototype.defineSingleton =
     function() {
@@ -368,7 +394,7 @@ function generator(collective, element, functionCall, PartialBridge) {
       binding.definitionComment = definitionComment()
       binding.isGenerator = true
 
-      this.scriptSource += bindingSource(binding)
+      this.addSource(bindingSource(binding))
 
       return functionCall(binding.identifier).singleton()
     }
@@ -379,7 +405,7 @@ function generator(collective, element, functionCall, PartialBridge) {
 
       binding.definitionComment = definitionComment()
 
-      this.scriptSource += bindingSource(binding)
+      this.addSource(bindingSource(binding))
 
       return functionCall(binding.identifier)
     }
