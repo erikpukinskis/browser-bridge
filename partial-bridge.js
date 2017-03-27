@@ -58,8 +58,15 @@ function generator(element) {
     this.__changedPath = path
   }
 
+  PartialBridge.prototype.selector = function() {
+    if (!this.partialClass) {
+      this.partialClass = "partial-"+element().assignId()
+    }
+    return "."+this.partialClass
+  }
+
   // This is so this can be embedded as an element
-  PartialBridge.prototype.html = function(previousIds) {
+  PartialBridge.prototype.html = function() {
 
     if (!this.content) {
       console.log(this.initializeStack)
@@ -67,10 +74,16 @@ function generator(element) {
     }
 
     if (this.content.html) {
-      return this.content.html(previousIds)
+      var el = this.content
     } else {
-      return element(this.content).html(previousIds)
+      var el = element(this.content)
     }
+
+    if (this.partialClass) {
+      el.addSelector(this.selector())
+    }
+
+    return el.html()
   }
 
 
@@ -101,7 +114,11 @@ function generator(element) {
     return this.base.asap.apply(this.base, arguments)
   }
 
-  var interface = ["defineFunction", "remember", "see", "defineSingleton", "asap", "collective", "partial", "requestHandler", "toHtml", "script", "forResponse", "changePath", "handle", "copy", "partial", "claimIdentifier"]
+  PartialBridge.prototype.getSite = function() {
+    return this.base.getSite.apply(this.base, arguments)
+  }
+
+  var interface = ["defineFunction", "remember", "see", "defineSingleton", "asap", "collective", "partial", "requestHandler", "toHtml", "script", "forResponse", "changePath", "handle", "copy", "partial", "claimIdentifier", "getSite"]
 
 
   interface.forEach(function(method) {
