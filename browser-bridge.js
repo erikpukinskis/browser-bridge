@@ -350,7 +350,7 @@ function generator(collective, element, functionCall, PartialBridge) {
 
   BrowserBridge.prototype.asap =
     function() {
-      var source = argumentToSource.apply(null, arguments)
+      var source = argumentsToSource.apply(this, arguments)
 
       this.addSource(source)
     }
@@ -361,10 +361,10 @@ function generator(collective, element, functionCall, PartialBridge) {
 
   BrowserBridge.prototype.domReady =
     function() {
-      this.domReadySource += argumentToSource.apply(null, arguments)
+      this.domReadySource += argumentsToSource.apply(this, arguments)
     }
 
-  function argumentToSource(whatnot, etc) {
+  function argumentsToSource(whatnot, etc) {
     var isCall = !!whatnot.__isFunctionCallBinding
     var isSource = typeof(whatnot) == "string" && typeof(etc) == "undefined"
     var source = ""
