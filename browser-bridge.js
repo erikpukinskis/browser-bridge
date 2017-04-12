@@ -260,7 +260,7 @@ function generator(collective, element, functionCall, PartialBridge) {
 
     var BrowserBridgeBinding = this.defineSingleton(
       "BrowserBridge",
-      [null, null, null, functionCall.defineOn(this), PartialBridge.defineOn(this)],
+      [{}, function() {}, functionCall.defineOn(this), PartialBridge.defineOn(this)],
       generator
     )
 
@@ -294,7 +294,8 @@ function generator(collective, element, functionCall, PartialBridge) {
     for(key in bridge.memories) {
       var binding = bridge.memories[key]
       if (!binding.__isFunctionCallBinding) {
-        throw new Error("Remembered a memory that's not a function call?")
+        continue
+        // throw new Error("Remembered in "+key+" a memory that's not a function call?")
       }
 
       memoriesJSON += "    "+"\""+key+"\""+": "+binding.asCall().callable()+",\n"

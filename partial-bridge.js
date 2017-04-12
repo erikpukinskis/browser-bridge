@@ -46,6 +46,10 @@ function generator(element) {
     return this
   }
 
+  PartialBridge.prototype.asBinding = function() {
+    return this.base.asBinding()
+  }
+
   PartialBridge.prototype.partial = function() {
     return this.base.partial()
   }
