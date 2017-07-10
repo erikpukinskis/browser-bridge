@@ -171,7 +171,10 @@ function generator(collective, element, functionCall, PartialBridge) {
 
       if (!isPartial && needsBody) {
         content = element("body", content||"")
-        if (this.domReadySource) {
+
+        var needsDomReady = !!getFullString(this, "domReadySource")
+
+        if (needsDomReady) {
           content.addAttribute("onload", "onDomReady()")
         }
       }
