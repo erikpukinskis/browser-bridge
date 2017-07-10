@@ -140,7 +140,7 @@ bridge.asap(function() {
   // runs before page elements are available
 })
 
-bridge.domready(function() {
+bridge.domReady(function() {
   document.querySelector(".whatever")
   // work with page elements here
 })
