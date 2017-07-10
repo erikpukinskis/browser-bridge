@@ -133,6 +133,19 @@ function renderItem(item, bridge) {
 
 It's just good separation of concerns to keep all of the HTTP-related stuff in the route so the renderer can just focus on the domain object and the browser.
 
+## Page lifecycle
+
+```javascript
+bridge.asap(function() {
+  // runs before page elements are available
+})
+
+bridge.domready(function() {
+  document.querySelector(".whatever")
+  // work with page elements here
+})
+```
+
 ## Why
 
 * you only send down the javascript that you actually need on a specific page, for faster first visit load times
