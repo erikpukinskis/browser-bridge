@@ -403,6 +403,8 @@ function generator(collective, element, functionCall, PartialBridge) {
       return functionCall(binding.identifier).singleton()
     }
 
+  BrowserBridge.prototype.event = functionCall.raw("event")
+
   BrowserBridge.prototype.defineFunction =
     function() {
       var binding = buildBinding(arguments, this)

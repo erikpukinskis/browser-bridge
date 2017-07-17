@@ -57,19 +57,34 @@ See [demo.js](demo.js).
 You can also pass data between functions on the client by passing references on the server:
 
 ```javascript
-var maybeGreet = bridge.defineFunction(
+var endearment = bridge.defineFunction(
   [greet],
-  function(greet) {
-    if (Math.random() < 0.5) { greet() }
+  function(greet, name) {
+    var termOfEnearment = name+"ino"
+    greet(termOfEndearment)
   }
 )
 
-var flakyButton = element("button", "Hi there?", {
-  onclick: maybeGreet.withArgs("Tam?").evalable()
+var friendlyButton = element("button", "Hi there?", {
+  onclick: endearment.withArgs("Tam").evalable()
 })
 ```
 
-And now you have a button that's randomly broken half the time. :)
+And now the greeting is a touch friendlier.
+
+## Javascript events
+
+```javascript
+var plot = bridge.defineFunction(
+  function(event) {
+    console.log("Mouse is at", event.offsetX+",", "event.offsetY)
+  }
+)
+
+body.addAttributes({
+  onclick: plot.withArgs(bridge.event).evalable()
+})
+```
 
 ## Re-using a bridge
 
