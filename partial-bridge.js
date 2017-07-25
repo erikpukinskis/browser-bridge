@@ -2,11 +2,11 @@ var library = require("module-library")(require)
 
 module.exports = library.export(
   "partial-bridge",
-  ["web-element"],
+  ["web-element", "function-call"],
   generator
 )
 
-function generator(element) {
+function generator(element, functionCall) {
 
   // Partial
 
@@ -30,6 +30,28 @@ function generator(element) {
     binding = bridge.defineSingleton("PartialBridge", generator)
     bridge.see("browser-bridge/PartialBridge", binding)
     return binding
+  }
+
+  PartialBridge.prototype.addToBody = function() {
+    throw new Error("Can't add to partial bridge body. Try just doing partial.send(yourContent) or grabbing another partial with partial.partial() and doing .send(yourContent) on that")
+  }
+
+  PartialBridge.prototype.claimIdentifier = no("claimIdentifier")
+
+  PartialBridge.prototype.withChildren = no("withChildren")
+
+  PartialBridge.prototype.data = no("data")
+
+  PartialBridge.prototype.data = no("data")
+
+  PartialBridge.prototype.data = no("data")
+
+  PartialBridge.prototype.event = functionCall.raw("event")
+
+  function no(method) {
+    return function() {
+      throw new Error("Partial bridge hasn't implemeneted "+method+" yet.")
+    }
   }
 
   PartialBridge.prototype.send = function(content) {

@@ -31,7 +31,7 @@ function generator(collective, element, functionCall, PartialBridge) {
 
     this.scriptSource = ""
     functionCall && functionCall.defineOn(this)
-    this.addSource("\n// Bridge data: ### BRIDGE DATA GOES HERE ###\n\n")
+    addSource(this, "\n// Bridge data: ### BRIDGE DATA GOES HERE ###\n\n")
     this.domReadySource = ""
   }
 
@@ -108,13 +108,6 @@ function generator(collective, element, functionCall, PartialBridge) {
   BrowserBridge.prototype.addToBody = function(content) {
     this.children.push(content)
   }
-
-  BrowserBridge.prototype.sendPage =
-    function(content) {
-      console.log("\n⚡⚡⚡ WARNING ⚡⚡⚡ bridge.sendPage() is deprecated. Use bridge.requestHandler() instead.\n")
-
-      return this.requestHandler(content)
-    }
 
   BrowserBridge.prototype.requestHandler = function(content) {
       var html = this.toHtml(content)
@@ -356,11 +349,11 @@ function generator(collective, element, functionCall, PartialBridge) {
     function() {
       var source = argumentsToSource.apply(this, arguments)
 
-      this.addSource(source)
+      addSource(this, source)
     }
 
-  BrowserBridge.prototype.addSource = function(source) {
-    this.scriptSource += source
+  function addSource(bridge, source) {
+    bridge.scriptSource += source
   }
 
   BrowserBridge.prototype.domReady =
@@ -398,7 +391,7 @@ function generator(collective, element, functionCall, PartialBridge) {
       binding.definitionComment = definitionComment()
       binding.isGenerator = true
 
-      this.addSource(bindingSource(binding))
+      addSource(this, bindingSource(binding))
 
       return functionCall(binding.identifier).singleton()
     }
@@ -411,7 +404,7 @@ function generator(collective, element, functionCall, PartialBridge) {
 
       binding.definitionComment = definitionComment()
 
-      this.addSource(bindingSource(binding))
+      addSource(this, bindingSource(binding))
 
       return functionCall(binding.identifier)
     }

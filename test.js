@@ -4,6 +4,32 @@ runTest.failAfter(3000)
 
 
 runTest(
+  "partials have everything bridges do",
+  ["."],
+  function(expect, done, BrowserBridge) {
+    var keys = Object.keys(BrowserBridge.prototype)
+    var partial = new BrowserBridge().partial()
+
+    keys.forEach(function(key) {
+      if (typeof partial[key] == "undefined") {
+        throw new Error("Partial bridge doesn't have "+key)
+      }
+    })
+
+    var one = partial.defineFunction(function one() {})
+
+    var two = partial.defineFunction(
+      [one],
+      function two() {}
+    )
+
+    expect(two.withArgs(partial.event).evalable()).to.equal("two(event)")
+
+    done()
+  }
+)
+
+runTest(
   "sending partials as responses",
   ["./", "web-element"],
   function(expect, done, BrowserBridge, element) {
