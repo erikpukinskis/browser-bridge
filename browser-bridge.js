@@ -174,16 +174,18 @@ function generator(collective, element, functionCall, PartialBridge) {
 
       var needsBody = isString || !hasBody(content, 2)
 
-      if (!isPartial && needsBody) {
-        content = element("body", content||"")
+      var needsDomReady = !!getFullString(this, "domReadySource")
 
-        var needsDomReady = !!getFullString(this, "domReadySource")
+      if (!isPartial) {
+        if (needsBody) {
+          content = element("body", content||"")
+        }
 
         if (needsDomReady) {
           content.addAttribute("onload", "onDomReady()")
         }
       }
-
+      
       var headSource = '<meta name="viewport" content="width=device-width, initial-scale=1">\n'+element.stylesheet(hidden).html()+bindings.html()+getFullString(this, "head")
 
       if (isPartial) {
