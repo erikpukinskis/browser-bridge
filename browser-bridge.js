@@ -172,7 +172,7 @@ function generator(collective, element, functionCall, PartialBridge) {
 
       var isString = typeof(content) == "string"
 
-      var needsBody = !isString && !hasBody(content, 2)
+      var needsBody = isString || !hasBody(content, 2)
 
       if (!isPartial && needsBody) {
         content = element("body", content||"")
