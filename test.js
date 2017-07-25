@@ -4,6 +4,22 @@ runTest.failAfter(3000)
 
 
 runTest(
+  "defining functions with strings",
+  ["./", "web-element"],
+  function(expect, done, BrowserBridge, element) {
+
+    var bridge = new BrowserBridge()
+
+    var func = bridge.defineFunction("hi", 
+      bridge.rawSource("function() { return true }"))
+
+    expect(bridge.script()).to.contain("function hi")
+    done()
+  }
+)
+
+
+runTest(
   "partials have everything bridges do",
   ["."],
   function(expect, done, BrowserBridge) {

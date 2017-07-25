@@ -125,6 +125,15 @@ function generator(collective, element, functionCall, PartialBridge) {
       this.head = this.head+stuff
     }
 
+  BrowserBridge.rawSource =
+  BrowserBridge.prototype.rawSource = 
+  PartialBridge.prototype.rawSource = function(source) {
+    return {
+      __isNrtvSource: true,
+      source: source
+    }
+  }
+
   BrowserBridge.prototype.withChildren = function(content) {
       if (content && this.children.length) {
         if (typeof content != "array") {
@@ -463,7 +472,7 @@ function generator(collective, element, functionCall, PartialBridge) {
 
   function bindingSource(binding, options) {
 
-    var funcSource = deIndent(binding.func.toString())
+    var funcSource = deIndent(functionToString(binding.func))
 
     var dependencies = binding.dependencies
     var hasDependencies = dependencies.length > 0
@@ -507,11 +516,21 @@ function generator(collective, element, functionCall, PartialBridge) {
     return "\n"+binding.definitionComment+"\n"+source+"\n"
   }
 
+  function functionToString(value) {
+    if (typeof value == "string") {
+      return value
+    } else {
+      return value.toString()
+    }
+  }
+
   function buildBinding(args, bridge) {
     for (var i=0; i<args.length; i++) {
       var arg = args[i]
 
-      if (typeof arg == "string") {
+      if (arg.__isNrtvSource == true) {
+        func = arg.source
+      } else if (typeof arg == "string") {
         var name = arg
       } else if (typeof arg == "function") {
         var func = arg
@@ -535,7 +554,7 @@ function generator(collective, element, functionCall, PartialBridge) {
       throw new Error("You need to pass a function to bridge.defineFunction, but you passed "+JSON.stringify(args)+".")
     }
 
-    var functionHash = hash(func.toString())
+    var functionHash = hash(functionToString(func))
 
     var stack = getValue(bridge, "previousBindingStacks", functionHash)
 
@@ -591,7 +610,7 @@ function generator(collective, element, functionCall, PartialBridge) {
 
       if (typeof dependencies[i] == "undefined") {
 
-        var description = (func.name || func.toString().substr(0,60)+"...").replace(/(\n| )+/g, " ")
+        var description = (func.name || functionToString(func).substr(0,60)+"...").replace(/(\n| )+/g, " ")
 
         throw new Error("The "+i+"th dependency you passed for "+description+" was undefined. We're currently prohibiting that because it seems sketchy.")
       }
