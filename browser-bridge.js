@@ -128,6 +128,9 @@ function generator(collective, element, functionCall, PartialBridge) {
   BrowserBridge.rawSource =
   BrowserBridge.prototype.rawSource = 
   PartialBridge.prototype.rawSource = function(source) {
+    if (!source) {
+      throw new Error("Raw source is empty")
+    }
     return {
       __isNrtvSource: true,
       source: source
