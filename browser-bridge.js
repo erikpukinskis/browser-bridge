@@ -162,7 +162,7 @@ function generator(collective, element, functionCall, PartialBridge) {
 
       var bindings = element(
         "script",
-        this.script()
+        "<!--\n"+this.script()+"\n-->"
       )
 
       var hidden = element.style(
