@@ -77,7 +77,7 @@ And now the greeting is a touch friendlier.
 ```javascript
 var plot = bridge.defineFunction(
   function(event) {
-    console.log("Mouse is at", event.offsetX+",", "event.offsetY)
+    console.log("Mouse is at", event.offsetX+", "+event.offsetY)
   }
 )
 
