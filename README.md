@@ -86,6 +86,24 @@ body.addAttributes({
 })
 ```
 
+## Persisting data across calls
+
+It's common to want to track data across multiple calls to bridge functions. For this you can define a singleton:
+
+```javascript
+var counters = bridge.defineSingleton("counters", function() {
+  return {call: 0}
+})
+
+var increment = bridge.defineFunction(
+  [counters],
+  function(counters) {
+    counters.call++
+    console.log("Called "+counters.call+" times")
+  }
+)
+```
+
 ## Re-using a bridge
 
 If you want to get a page mostly assembled and then add different details, you can copy a bridge:
