@@ -339,7 +339,7 @@ function generator(collective, element, functionCall, PartialBridge) {
       var domReadySource = getFullString(this, "domReadySource")
 
       if (domReadySource) {
-        script += "\n// The mind is willing but the body is not ready:\n\nfunction onDomReady() {\n"+domReadySource+"\n}\n"
+        script += "\n// The mind is willing but the body is not ready:\n\nfunction onDomReady() { setTimeout(function giveItASec() {\n"+domReadySource+"\n}, 0) }\n"
       }
 
       return script
