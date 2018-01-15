@@ -179,6 +179,21 @@ bridge.domReady(function() {
 })
 ```
 
+## Calling stuff in the browser
+
+Sometimes you may want to add new elements on the browser, you can pass a function or singleton declaration down to the browser in its raw [function-call](https://github.com/erikpukinskis/function-call) form, rather than as an actual reference to the client function:
+
+```javascript
+
+var addPerson = bridge.defineFunction(
+  [greet.asFunctionCall()],
+  function(greetBinding, name) {
+    var button = "<button onclick=\""+greet.withArgs(name).evalable()+"\">Greet "+name+"</button>"
+    document.write(button)
+  }
+)
+```
+
 ## Why
 
 * you only send down the javascript that you actually need on a specific page, for faster first visit load times
