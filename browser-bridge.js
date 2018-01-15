@@ -264,6 +264,11 @@ function generator(collective, element, functionCall, PartialBridge) {
   }
 
   BrowserBridge.prototype.asBinding = function() {
+    console.log(" ⚡⚡⚡ WARNING ⚡⚡⚡ calling asBinding() on a browser-bridge function definition is deprecated. Try yourBridgeFunction.asFunctionCall()")
+  }
+
+  BrowserBridge.prototype.asFunctionCall = function() {
+
     var clientBridge = this.remember("browser-bridge/clientBridge")
 
     if (clientBridge) { return clientBridge }
