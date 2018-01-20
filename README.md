@@ -179,12 +179,11 @@ bridge.domReady(function() {
 })
 ```
 
-## Calling stuff in the browser
+## Generating new evalable strings from the browser
 
-Sometimes you may want to add new elements on the browser, you can pass a function or singleton declaration down to the browser in its raw [function-call](https://github.com/erikpukinskis/function-call) form, rather than as an actual reference to the client function:
+Sometimes you may want to add new elements on the browser. If those have events that need to call your bridge functions, you can pass a function or singleton declaration down to the browser in its raw [function-call](https://github.com/erikpukinskis/function-call) form, rather than as an actual reference to the client function:
 
 ```javascript
-
 var addPerson = bridge.defineFunction(
   [greet.asFunctionCall()],
   function(greetBinding, name) {
