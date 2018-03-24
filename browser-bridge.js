@@ -2,12 +2,12 @@ var library = require("module-library")(require)
 
 module.exports = library.export(
   "browser-bridge",
-  [library.collective({}), "web-element", "function-call", "./partial-bridge"],
+  ["web-element", "function-call", "./partial-bridge"],
   generator
 )
 
 
-function generator(collective, element, functionCall, PartialBridge) {
+function generator(element, functionCall, PartialBridge) {
 
   function BrowserBridge() {
     this.id = "brg"+Math.random().toString(36).substr(2,4)
@@ -94,14 +94,6 @@ function generator(collective, element, functionCall, PartialBridge) {
     return new PartialBridge(this)
   }
 
-  BrowserBridge.collective =
-  BrowserBridge.prototype.collective =
-    function(attributes) {
-      return {
-        __dependencyType: "browser collective",
-        attributes: attributes
-      }
-    }
 
   // Rename sendPageHandler? #todo
 
@@ -495,17 +487,8 @@ function generator(collective, element, functionCall, PartialBridge) {
         "function "+binding.identifier+"("
       )
     } else {
-      if (dependencies[0] &&dependencies[0].__dependencyType == "browser collective") {
-        var collective = dependencies[0]
-      }
 
-      if (collective) {
-        var deps = "null, "+JSON.stringify(collective.attributes)
-
-        if (dependencies.length > 1) {
-          deps += ", "+functionCall.argumentString(dependencies.slice(1))
-        }
-      } else if (hasDependencies) {
+      if (hasDependencies) {
         var deps = "null, "+
         functionCall.argumentString(dependencies, {expand: true})
       } else {
@@ -653,17 +636,6 @@ function generator(collective, element, functionCall, PartialBridge) {
       hval += (hval << 1) + (hval << 4) + (hval << 7) + (hval << 8) + (hval << 24);
     }
     return hval >>> 0;
-  }
-
-  if (typeof library != "undefined") {
-    library.collectivize(
-      BrowserBridge,
-      collective,
-      function() {
-        return new BrowserBridge()
-      },
-      ["sendPage", "requestHandler", "asap", "defineFunction", "defineSingleton", "handle", "addToHead", "forResponse", "remember", "see"]      
-    )
   }
 
   return BrowserBridge

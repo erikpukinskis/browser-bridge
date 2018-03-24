@@ -152,7 +152,7 @@ function generator(element, functionCall) {
     return this.base.domReady.apply(this.base, arguments)
   }
 
-  var interface = ["defineFunction", "remember", "see", "defineSingleton", "asap", "collective", "partial", "requestHandler", "toHtml", "script", "forResponse", "changePath", "handle", "copy", "partial", "claimIdentifier", "getSite", "domReady"]
+  var interface = ["defineFunction", "remember", "see", "defineSingleton", "asap", "partial", "requestHandler", "toHtml", "script", "forResponse", "changePath", "handle", "copy", "partial", "claimIdentifier", "getSite", "domReady"]
 
 
   interface.forEach(function(method) {

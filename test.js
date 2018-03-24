@@ -632,57 +632,6 @@ runTest(
 )
 
 
-runTest(
-  "client functions can have collectives",
-
-  ["./", "web-site", "browser-task", "web-element"],
-  function(expect, done, BrowserBridge, WebSite, browserTask, element) {
-
-    var bridge = new BrowserBridge()
-
-    var increment = bridge.defineFunction(
-
-      [bridge.collective({count: 0})],
-
-      function inc(collective) {
-        collective.count++
-
-        document.getElementsByClassName("counter")[0].innerHTML =collective.count
-      }
-    )
-
-    var button = element("button", {
-      onclick: increment.evalable()
-    })
-
-    var counter = element(".counter")
-
-    var site = new WebSite()
-
-    site.addRoute("get", "/",
-      bridge.requestHandler([
-        button,
-        counter
-      ])
-    )
-
-    site.start(4488)
-
-    browserTask("http://localhost:4488",function(browser) {
-
-      browser.pressButton("button",function() {
-
-        browser.pressButton("button", function() {
-
-          browser.assertText(".counter", "2", site.stop, browser.done, done)
-        })
-      })
-    })
-
-  }
-)
-
-
 // runTest(
 //   "define a singleton generator",
 
