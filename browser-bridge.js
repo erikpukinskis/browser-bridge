@@ -564,7 +564,7 @@ function generator(element, functionCall, PartialBridge) {
       }
     }
     
-    // preventUndefinedDeps(dependencies, func)
+    preventBadDeps(dependencies, func)
 
     var identifier = original = name || func.name || "f"
 
@@ -595,17 +595,18 @@ function generator(element, functionCall, PartialBridge) {
     }
   }
 
-  function preventUndefinedDeps(dependencies, func) {
+  function preventBadDeps(dependencies, func) {
 
     if (!dependencies) { return }
 
     for(var i=0; i<dependencies.length; i++) {
 
-      if (typeof dependencies[i] == "undefined") {
+      var mod = dependencies[i].__nrtvModule
+      if (mod) {
 
         var description = (func.name || functionToString(func).substr(0,60)+"...").replace(/(\n| )+/g, " ")
 
-        throw new Error("The "+i+"th dependency you passed for "+description+" was undefined. We're currently prohibiting that because it seems sketchy.")
+        throw new Error("The "+i+"th dependency you passed for "+description+" was a module-library module called "+mod.name+". You probably meant to do bridgeModule(lib, \""+mod.name+"\", bridge) and you just passed the singleton.")
       }
     }
 
