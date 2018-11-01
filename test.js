@@ -378,7 +378,7 @@ runTest(
       })
 
 
-    expect(bridge.script()).to.contain("var arglessSingleton = (function () {\n  return 1\n}).call()")
+    expect(bridge.script()).to.contain("var arglessSingleton = (function() {\n  return 1\n}).call()")
 
     bridge.defineSingleton("singleton",
       [argless],
@@ -388,7 +388,7 @@ runTest(
     )
     console.log("\n\n\n--------------\nSAMPLE SOURCE:\n"+bridge.script()+"\n--------------\n\n\n")
 
-    expect(bridge.script()).to.contain("var singleton = (function (argless) {\n  return 2\n}).call(null, arglessSingleton)")
+    expect(bridge.script()).to.contain("var singleton = (function(argless) {\n  return 2\n}).call(null, arglessSingleton)")
 
     done()
   }

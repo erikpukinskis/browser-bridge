@@ -14,7 +14,8 @@
     "function-call": "*",
     "module-library": "*",
     "web-element": "*",
-    "object-hash": "*"
+    "object-hash": "*",
+    "global-wait": "*"
   },
   "devDependencies": {
     "run-test": "*",

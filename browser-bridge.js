@@ -2,12 +2,12 @@ var library = require("module-library")(require)
 
 module.exports = library.export(
   "browser-bridge",
-  ["web-element", "function-call", "./partial-bridge"],
+  ["web-element", "function-call", "./partial-bridge", "global-wait"],
   generator
 )
 
 
-function generator(element, functionCall, PartialBridge) {
+function generator(element, functionCall, PartialBridge, globalWait) {
 
   function BrowserBridge() {
     this.id = "brg"+Math.random().toString(36).substr(2,4)
@@ -369,7 +369,27 @@ function generator(element, functionCall, PartialBridge) {
 
   BrowserBridge.prototype.domReady =
     function() {
+      var needsWait = !getFullString(this, "domReadySource")
+
       this.domReadySource += argumentsToSource.apply(this, arguments)
+
+      if (!needsWait) {
+        return
+      }
+
+      var wait = globalWait.defineOn(this)
+
+      var domReadyTicket = bridge.defineSingleton(
+        "domReadyTicket",
+        [wait],
+        function(wait) {
+          return wait.start("dom ready")})
+
+      this.domReady(
+        [wait, domReadyTicket],
+        function(wait, ticket) {
+          wait.finish(ticket)})
+
     }
 
   function argumentsToSource(whatnot, etc) {
