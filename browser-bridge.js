@@ -335,8 +335,30 @@ function generator(element, functionCall, PartialBridge, globalWait) {
 
       var domReadySource = getFullString(this, "domReadySource")
 
+
       if (domReadySource) {
-        script += "\n// The mind is willing but the body is not ready:\n\nfunction onDomReady() { setTimeout(function giveItASec() {\n"+domReadySource+"\n}, 0) }\n"
+        var wait = globalWait.defineOn(this)
+
+        var domReadyTicket = buildBinding([
+          "domReadyTicket",
+          [wait],
+          function(wait) {
+            return wait.start("dom ready")}
+          ],
+          this)
+
+        domReadyTicket.isGenerator = true
+
+        script += "\n\n// The mind is willing but the body is not ready:"
+
+        script += "\n"
+        script += bindingSource(domReadyTicket)
+
+        domReadyTicket = functionCall(domReadyTicket.identifier).singleton()
+
+        var finish = wait.methodCall("finish").withArgs(domReadyTicket).evalable()
+
+        script += "\n\nfunction onDomReady() { setTimeout(function giveItASec() {\n"+domReadySource+"\n\n}, 0) }\n"
       }
 
       return script
@@ -369,27 +391,7 @@ function generator(element, functionCall, PartialBridge, globalWait) {
 
   BrowserBridge.prototype.domReady =
     function() {
-      var needsWait = !getFullString(this, "domReadySource")
-
       this.domReadySource += argumentsToSource.apply(this, arguments)
-
-      if (!needsWait) {
-        return
-      }
-
-      var wait = globalWait.defineOn(this)
-
-      var domReadyTicket = this.defineSingleton(
-        "domReadyTicket",
-        [wait],
-        function(wait) {
-          return wait.start("dom ready")})
-
-      this.domReady(
-        [wait, domReadyTicket],
-        function(wait, ticket) {
-          wait.finish(ticket)})
-
     }
 
   function argumentsToSource(whatnot, etc) {
