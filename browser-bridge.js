@@ -331,13 +331,15 @@ function generator(element, functionCall, PartialBridge, globalWait) {
 
   BrowserBridge.prototype.script =
     function() {
-      var script = getFullString(this, "scriptSource")
-
       var domReadySource = getFullString(this, "domReadySource")
-
 
       if (domReadySource) {
         var wait = globalWait.defineOn(this)
+      }
+
+      var script = getFullString(this, "scriptSource")
+
+      if (domReadySource) {
 
         var domReadyTicket = buildBinding([
           "domReadyTicket",
@@ -358,9 +360,9 @@ function generator(element, functionCall, PartialBridge, globalWait) {
 
         domReadyTicket = functionCall(domReadyTicket.identifier).singleton()
 
-        var finish = wait.methodCall("finish").withArgs(domReadyTicket).evalable()
+        var finish = wait.methodCall("finish").withArgs(domReadyTicket)
 
-        script += "\n\nfunction onDomReady() { setTimeout(function giveItASec() {\n"+domReadySource+"\n\n}, 0) }\n"
+        script += "\n\nfunction onDomReady() { setTimeout(function giveItASec() {\n"+domReadySource+"\n\n"+finish.evalable()+"\n}, 0) }\n"
       }
 
       return script
