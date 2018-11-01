@@ -379,7 +379,7 @@ function generator(element, functionCall, PartialBridge, globalWait) {
 
       var wait = globalWait.defineOn(this)
 
-      var domReadyTicket = bridge.defineSingleton(
+      var domReadyTicket = this.defineSingleton(
         "domReadyTicket",
         [wait],
         function(wait) {
