@@ -349,6 +349,8 @@ function generator(element, functionCall, PartialBridge, globalWait) {
 
         domReadyTicket.isGenerator = true
 
+        domReadyTicket.definitionComment = definitionComment()
+
         script += "\n\n// The mind is willing but the body is not ready:"
 
         script += "\n"
