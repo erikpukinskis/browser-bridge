@@ -24,7 +24,7 @@ function generator(element, functionCall, PartialBridge, globalWait) {
     }
 
     this.partials = []
-    this.head = ""
+    this.headSource = ""
     this.children = []
     this.memories = []
     this.__isNrtvBrowserBridge = true
@@ -114,7 +114,7 @@ function generator(element, functionCall, PartialBridge, globalWait) {
       if (typeof stuff.html == "function") {
         stuff = stuff.html()
       }
-      this.head = this.head+stuff
+      this.headSource = this.headSource+stuff
     }
 
   BrowserBridge.rawSource =
@@ -178,7 +178,7 @@ function generator(element, functionCall, PartialBridge, globalWait) {
         }
       }
       
-      var headSource = '<meta name="viewport" content="width=device-width, initial-scale=1">\n'+element.stylesheet(hidden).html()+bindings.html()+getFullString(this, "head")
+      var headSource = '<meta http-equiv="Content-Language" content="en">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n'+element.stylesheet(hidden).html()+bindings.html()+getFullString(this, "headSource")
 
       if (isPartial) {
         if (content.html) {
