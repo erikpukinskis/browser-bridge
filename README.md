@@ -193,6 +193,93 @@ var addPerson = bridge.defineFunction(
 )
 ```
 
+## Recursive functions
+
+You may want to call a function from itself:
+
+```javascript
+var sort = bridge.defineFunction(
+  function sort(array) {
+    var biggest = 0
+    for(var i=0; i<array.length; i++) {
+      if (array[i] < array[biggest]) {
+        return array.prototype.slice(0, biggest).concat(
+          HOW_DO_WE_REFERENCE_SORT_HERE(array.slice(biggest))
+      } else {
+        biggest = i
+      }
+    }
+    return array
+  })
+```
+
+But since the browser bridge requires you to have a reference to every function you intend to use in the function, and the `sort` variable only exists on the server, there's no way to reference it on the client.
+
+The solution is to use a singleton to generate the function:
+
+```javascript
+var sort = bridge.defineSingeton(
+  function() {
+    function sort(array) {
+      var biggest = 0
+      for(var i=0; i<array.length; i++) {
+        if (array[i] < array[biggest]) {
+          return array.prototype.slice(0, biggest).concat(
+          sort(array.slice(biggest))
+        } else {
+          biggest = i
+        }
+      }
+      return array
+    }
+    return sort
+  })
+```
+
+## Using `bind` with bridge functions
+
+The same solution is useful if you want to be able to bind bridge functions with dependencies in your code. If you wanted to do something like this:
+
+```javascript
+var showError = bridge.defineFunction([
+  bridgeModule(lib, "add-html", bridge),
+  bridgeModule(lib, "web-element", bridge),
+  function showError(addHtml, element, message) {
+    addHtml(
+      element(".error",
+        element(".inner", 
+          "There was an error: "+message)))
+  })
+
+bridge.asap([
+  showError],
+  function(showError) {
+    setTimeout(
+      showError.bind(null, "Crash won best picture in 2004"),
+      1000)
+  })
+```
+
+You'll get an error, since `showError` was pre-bound to add-html and web-element, when you call `showError.bind`, `addHtml` will now refer to your message.
+
+The way to fix this is to define it as a singleton instead of a function:
+
+```javascript
+var showError = bridge.defineSingleton([
+  bridgeModule(lib, "add-html", bridge),
+  bridgeModule(lib, "web-element", bridge),
+  function (addHtml, element) {
+
+    function showError(error) {
+      addHtml(
+        element(".error",
+          element(".inner", 
+            "There was an error: "+message)))}
+
+    return showError
+  })
+```
+
 ## Why
 
 * you only send down the javascript that you actually need on a specific page, for faster first visit load times
