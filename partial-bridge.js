@@ -72,8 +72,8 @@ function generator(element, functionCall) {
     return this.base.asBinding()
   }
 
-  PartialBridge.prototype.asFunctionCall = function() {
-    return this.base.asFunctionCall()
+  PartialBridge.prototype.asCall = function() {
+    return this.base.asCall()
   }
 
   PartialBridge.prototype.partial = function() {

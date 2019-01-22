@@ -256,10 +256,10 @@ function generator(element, functionCall, PartialBridge, globalWait) {
   }
 
   BrowserBridge.prototype.asBinding = function() {
-    console.log(" ⚡⚡⚡ WARNING ⚡⚡⚡ calling asBinding() on a browser-bridge function definition is deprecated. Try yourBridgeFunction.asFunctionCall()")
+    console.log(" ⚡⚡⚡ WARNING ⚡⚡⚡ calling asBinding() on a browser-bridge function definition is deprecated. Try yourBridgeFunction.asCall()")
   }
 
-  BrowserBridge.prototype.asFunctionCall = function() {
+  BrowserBridge.prototype.asCall = function() {
 
     var clientBridge = this.remember("browser-bridge/clientBridge")
 
