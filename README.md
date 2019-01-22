@@ -185,7 +185,7 @@ Sometimes you may want to add new elements on the browser. If those have events 
 
 ```javascript
 var addPerson = bridge.defineFunction(
-  [greet.asFunctionCall()],
+  [greet.asCall()],
   function(greetBinding, name) {
     var button = "<button onclick=\""+greet.withArgs(name).evalable()+"\">Greet "+name+"</button>"
     document.write(button)
