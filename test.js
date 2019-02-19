@@ -2,6 +2,8 @@ var runTest = require("run-test")(require)
 
 runTest.failAfter(3000)
 
+runTest.only(
+  "partial bridges can be added to an existing page")
 
 runTest(
   "defining functions with strings",
@@ -180,6 +182,80 @@ runTest(
     done()
   }
 )
+
+
+runTest.failAfter(10000000)
+
+runTest(
+  "partial bridges can be added to an existing page",
+
+  ["web-element", "./", "web-site", "browser-task"],
+  function(expect, done, element, BrowserBridge, WebSite, browserTask) {
+
+    var baseBridge = new BrowserBridge()
+
+    var foo = baseBridge.defineFunction(
+      function(number) {
+        return "foo "+number
+      }
+    )
+
+    var loadMore = baseBridge.defineFunction([
+      baseBridge.loadPartial.asCall()],
+      function(loadPartial) {
+        loadPartial(
+          "/more",
+          ".partial-target",
+          function() {
+            document.querySelector(".target")
+          })
+      })
+
+    var button = element("button", {onclick: loadMore.evalable()}, "More")
+
+    var site = new WebSite()
+
+    site.addRoute("get", "/",
+      baseBridge.requestHandler(
+        element([button, ".partial-target"])
+      )
+    )
+
+    site.addRoute("get", "/more",
+      function(request, response) {
+        var partial = baseBridge.copy().forResponse(response)
+
+        var more = element([
+          "partial content",
+          ".script-target"])
+
+        partial.asap(
+          function() {
+            document.querySelector(".script-target").innerText = "asap text"
+          })
+
+        partial.sendPartial(more)
+      })
+
+    site.start(5111)
+
+    var browser = browserTask("http://localhost:5111", function() {
+      browser.pressButton("button", checkPartialText)
+    })
+
+    function checkPartialText() {
+      browser.assertText(".partial-target", "partial content", checkScriptText)
+    }
+
+    function checkScriptText() {
+      browser.assertText(".script-target", "asap text", site.stop, browser.done, done)
+    }
+
+  }
+)
+
+
+
 
 
 runTest(

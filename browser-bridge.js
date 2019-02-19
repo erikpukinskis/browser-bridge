@@ -23,6 +23,8 @@ function generator(element, functionCall, PartialBridge, globalWait) {
       onDomReady: true,
     }
 
+    this.loadPartial.asCall = loadPartialFromBrowser.bind(this)
+
     this.partials = []
     this.headSource = ""
     this.children = []
@@ -129,6 +131,99 @@ function generator(element, functionCall, PartialBridge, globalWait) {
     }
   }
 
+  BrowserBridge.prototype.loadPartial = function(path) {
+    throw new Error("Can't load partials on the server yet")
+  }
+
+  function loadPartialFromBrowser() {
+    var load = this.remember(
+      "browser-bridge/loadPartial")
+
+    if (load) {
+      return load }
+
+    var requestPartial = this.defineFunction(
+      function requestPartial(path, callback) {
+
+        var wait = typeof __nrtvWaitContext == "undefined" ? null : __nrtvWaitContext
+        var method = "GET"
+
+        // Code from https://gist.github.com/Xeoncross/7663273
+
+        if (wait) {
+          var activityName = "browser-brige/load-partial/" + path
+          var ticket = wait.start(activityName)}
+
+        try {
+          var x = new(window.XMLHttpRequest || ActiveXObject)('MSXML2.XMLHTTP.3.0');
+          x.open(method, path, 1);
+          x.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+          x.setRequestHeader('Content-type', 'application/json');
+          x.onreadystatechange = handlePartial.bind(x, ticket)
+
+          x.send()
+
+        } catch (e) {
+          console.log(e);
+        }
+
+        function handlePartial(ticket, response) {
+
+          var isComplete = this.readyState > 3 
+
+          if (!isComplete) {
+            return }
+
+          if (typeof this.responseText == "undefined") {
+            throw new Error(
+              "No response from partial request "+path)
+
+          } else if (this.status >= 400) {
+            throw new Error(
+              this.responseText)}
+
+          wait && wait.finish(ticket)
+
+          try {
+            var object = JSON.parse(this.responseText)
+          } catch(e) {
+            throw new Error("Was expecting "+path+" to serve a browser-bridge partial, but it returned this: "+this.responseText)
+          }
+
+          callback(object.body, object.script)
+        }
+      })
+
+    var load = this.defineFunction(
+      [requestPartial],
+      function loadPartial(requestPartial, path, selector) {
+
+        function addHtml(container, html) {
+          var crucible = document.createElement("div")
+          crucible.innerHTML = html
+          crucible.childNodes.forEach(function(node) {
+            container.appendChild(
+              node)})}
+
+        requestPartial(
+          path,
+          function(bodyContent, source) {
+            var container = selector ? document.querySelector(selector) : document.body
+            addHtml(
+              container,
+              bodyContent)
+            var script = document.createElement("script")
+            script.text = source
+            document.head.appendChild(script)})
+      })
+
+    this.see(
+      "browser-bridge/loadPartial",
+      load)
+
+    return load
+  }
+
   BrowserBridge.prototype.withChildren = function(content) {
       if (content && this.children.length) {
         if (typeof content != "array") {
@@ -147,6 +242,49 @@ function generator(element, functionCall, PartialBridge, globalWait) {
       return content
     }
 
+  BrowserBridge.prototype.sendPartial = function(content) {
+    if (!this.response) {
+      throw new Error("You have to provide a response for a bridge before you can send it as a partial: try bridge.forResponse(response).sendPartial()")
+    }
+
+    var script = this.scriptSource
+
+    if (this.domReadySource) {
+      script = (script ? script+"\n\n" : "") + this.domReadySource
+    }
+
+    var isString = typeof(content) == "string"
+
+    var body = hasBody(content, 2)
+
+    if (body === true) {
+      // then we matched <body in the string:
+      content = content.replace(/<body/, "<div")
+
+    } else if (body) {
+      // then we matched an element
+      body.tagName = "div"
+
+    } else {
+      // no body tag to sanitize out
+    }
+
+    if (Array.isArray(content)) {
+      content = element(content).html()
+    } else if (typeof content.html == "function") {
+      content = content.html()
+    }
+
+    if (this.headSource) {
+      content += headSource
+    }
+
+    this.response.send({
+      script: script,
+      body: content
+    })
+  }
+
   BrowserBridge.prototype.toHtml =
     function(content, isPartial) {
 
@@ -156,11 +294,6 @@ function generator(element, functionCall, PartialBridge, globalWait) {
         "script",
         "<!--\n"+this.script()+"\n-->"
       )
-
-      var hidden = element.style(
-        ".hidden", {
-          "display": "none"
-        })
 
       var isString = typeof(content) == "string"
 
@@ -178,7 +311,7 @@ function generator(element, functionCall, PartialBridge, globalWait) {
         }
       }
       
-      var headSource = '<meta http-equiv="Content-Language" content="en">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n'+element.stylesheet(hidden).html()+bindings.html()+getFullString(this, "headSource")
+      var headSource = '<meta http-equiv="Content-Language" content="en">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n'+bindings.html()+getFullString(this, "headSource")
 
       if (isPartial) {
         if (content.html) {
@@ -202,7 +335,7 @@ function generator(element, functionCall, PartialBridge, globalWait) {
     }
 
   function prependBridgeData(bridge, content) {
-
+    throw new Error("bridge.data() is deprecated")
     bridge.claimIdentifier("BRIDGE_DATA")
 
     var binding = buildBinding([
@@ -225,21 +358,21 @@ function generator(element, functionCall, PartialBridge, globalWait) {
 
   function hasBody(content, depth) {
     if (!content) {
-      return false
+      return null
     } else if (typeof content == "string") {
       return !!content.match(/<body/g)
     }
 
-    if (depth < 1) { return false }
+    if (depth < 1) { return null }
 
     if (content.tagName == "body") {
-      return true
+      return content
     }
 
     var children = content.children || content
 
     if (!Array.isArray(children)) {
-      return false
+      return null
     }
 
     for(var i=0; i<children.length; i++) {
@@ -248,11 +381,11 @@ function generator(element, functionCall, PartialBridge, globalWait) {
         throw new Error(i+"th child you passed to browser-bridge as the page content is undefined")
       }
       if (hasBody(children[i], depth-1)) {
-        return true
+        return children[i]
       }
     }
 
-    return false
+    return null
   }
 
   BrowserBridge.prototype.asBinding = function() {
@@ -285,6 +418,7 @@ function generator(element, functionCall, PartialBridge, globalWait) {
   }
 
   BrowserBridge.prototype.data = function() {
+    throw new Error("bridge.data() is deprecated")
     this.needsBridgeData = true
     return functionCall("BRIDGE_DATA")
   }
@@ -457,7 +591,9 @@ function generator(element, functionCall, PartialBridge, globalWait) {
         throw new Error("You can not call bridge.send() on an original browser bridge. Try:\n        var newBridge = bridge.forResponse(response)\n        newBridge.send(content)\nor use bridge.requestHandler(content)")
       }
 
-      this.requestHandler(content)(null, this.response)
+      this.response.send(
+        this.toHtml(
+          content))
     }
 
   BrowserBridge.prototype.changePath = function(path) {

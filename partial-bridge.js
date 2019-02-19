@@ -56,8 +56,7 @@ function generator(element, functionCall) {
 
   PartialBridge.prototype.send = function(content) {
     if (this.response) {
-      var partial = this.base.toHtml(content, true)
-      this.response.send(partial)
+      throw new Error("Using partials to send HTTP responses is no longer supported. Try bridge.copy().forResponse(response).send() instead")
     } else {
       this.content = content
     }
