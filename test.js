@@ -1,10 +1,5 @@
 var runTest = require("run-test")(require)
 
-runTest.failAfter(3000)
-
-runTest.only(
-  "partial bridges can be added to an existing page")
-
 runTest(
   "defining functions with strings",
   ["./", "web-element"],
@@ -47,25 +42,6 @@ runTest(
   }
 )
 
-runTest(
-  "sending partials as responses",
-  ["./", "web-element"],
-  function(expect, done, BrowserBridge, element) {
-
-    var bridge = new BrowserBridge()
-
-    var response = {
-      send: function(content) {
-        expect(content).not.to.contain("<body>")
-        done()
-      }
-    }
-
-    var partial = bridge.partial().forResponse(response)
-
-    partial.send(element(".foo", "bar"))
-  }
-)
 
 runTest(
   "sending an element",
@@ -183,8 +159,6 @@ runTest(
   }
 )
 
-
-runTest.failAfter(10000000)
 
 runTest(
   "partial bridges can be added to an existing page",

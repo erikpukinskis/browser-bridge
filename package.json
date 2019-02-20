@@ -15,7 +15,8 @@
     "module-library": "*",
     "web-element": "*",
     "object-hash": "*",
-    "global-wait": "*"
+    "global-wait": "*",
+    "make-request": "*"
   },
   "devDependencies": {
     "run-test": "*",

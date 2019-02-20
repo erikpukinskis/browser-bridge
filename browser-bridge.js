@@ -2,12 +2,12 @@ var library = require("module-library")(require)
 
 module.exports = library.export(
   "browser-bridge",
-  ["web-element", "function-call", "./partial-bridge", "global-wait"],
+  ["web-element", "function-call", "make-request", "./partial-bridge", "global-wait"],
   generator
 )
 
 
-function generator(element, functionCall, PartialBridge, globalWait) {
+function generator(element, functionCall, makeRequest, PartialBridge, globalWait) {
 
   function BrowserBridge() {
     this.id = "brg"+Math.random().toString(36).substr(2,4)
@@ -142,61 +142,9 @@ function generator(element, functionCall, PartialBridge, globalWait) {
     if (load) {
       return load }
 
-    var requestPartial = this.defineFunction(
-      function requestPartial(path, callback) {
-
-        var wait = typeof __nrtvWaitContext == "undefined" ? null : __nrtvWaitContext
-        var method = "GET"
-
-        // Code from https://gist.github.com/Xeoncross/7663273
-
-        if (wait) {
-          var activityName = "browser-brige/load-partial/" + path
-          var ticket = wait.start(activityName)}
-
-        try {
-          var x = new(window.XMLHttpRequest || ActiveXObject)('MSXML2.XMLHTTP.3.0');
-          x.open(method, path, 1);
-          x.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
-          x.setRequestHeader('Content-type', 'application/json');
-          x.onreadystatechange = handlePartial.bind(x, ticket)
-
-          x.send()
-
-        } catch (e) {
-          console.log(e);
-        }
-
-        function handlePartial(ticket, response) {
-
-          var isComplete = this.readyState > 3 
-
-          if (!isComplete) {
-            return }
-
-          if (typeof this.responseText == "undefined") {
-            throw new Error(
-              "No response from partial request "+path)
-
-          } else if (this.status >= 400) {
-            throw new Error(
-              this.responseText)}
-
-          wait && wait.finish(ticket)
-
-          try {
-            var object = JSON.parse(this.responseText)
-          } catch(e) {
-            throw new Error("Was expecting "+path+" to serve a browser-bridge partial, but it returned this: "+this.responseText)
-          }
-
-          callback(object.body, object.script)
-        }
-      })
-
     var load = this.defineFunction(
-      [requestPartial],
-      function loadPartial(requestPartial, path, selector) {
+      [makeRequest.defineOn(this)],
+      function loadPartial(makeRequest, path, selector) {
 
         function addHtml(container, html) {
           var crucible = document.createElement("div")
@@ -205,16 +153,23 @@ function generator(element, functionCall, PartialBridge, globalWait) {
             container.appendChild(
               node)})}
 
-        requestPartial(
-          path,
-          function(bodyContent, source) {
-            var container = selector ? document.querySelector(selector) : document.body
-            addHtml(
-              container,
-              bodyContent)
-            var script = document.createElement("script")
-            script.text = source
-            document.head.appendChild(script)})
+        var activityName = "browser-brige/load-partial/" + path
+
+        makeRequest({
+          method: "get",
+          path: path},
+          handlePartial)
+
+        function handlePartial(response) {
+          var partial = JSON.parse(response)
+          var container = selector ? document.querySelector(selector) : document.body
+          addHtml(
+            container,
+            partial.body)
+          var script = document.createElement("script")
+          script.text = partial.script
+          document.head.appendChild(script)
+        }
       })
 
     this.see(

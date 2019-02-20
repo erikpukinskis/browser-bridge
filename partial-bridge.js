@@ -36,6 +36,14 @@ function generator(element, functionCall) {
     throw new Error("Can't add to partial bridge body. Try just doing partial.send(yourContent) or grabbing another partial with partial.partial() and doing .send(yourContent) on that")
   }
 
+  PartialBridge.prototype.loadPartial = function() {
+    throw new Error("Partial bridges can't load partials. You need to do bridge.copy().loadPartial.asCall() to get a loadPartial function on the bridge. I know, it's confusing. Sorry.")
+  }
+
+  PartialBridge.prototype.sendPartial = function() {
+    throw new Error("Partial bridges can't send as a partial. I know, it's confusing. Sorry. Do bridge.copy().forResponse(response).sendPartial(partialBody)")
+  }
+
   PartialBridge.prototype.claimIdentifier = no("claimIdentifier")
 
   PartialBridge.prototype.withChildren = no("withChildren")
