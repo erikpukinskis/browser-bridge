@@ -179,11 +179,7 @@ runTest(
       function(loadPartial) {
         loadPartial(
           "/more",
-          ".partial-target",
-          function() {
-            document.querySelector(".target")
-          })
-      })
+          ".partial-target")})
 
     var button = element("button", {onclick: loadMore.evalable()}, "More")
 

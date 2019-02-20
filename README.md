@@ -193,6 +193,53 @@ var addPerson = bridge.defineFunction(
 )
 ```
 
+## Loading more bridge-aware content after page load
+
+If you want to add additional content after the page has already loaded, you can copy a base bridge, and send it as a partial:
+
+```javascript
+var baseBridge = new BrowserBridge()
+var site = new WebSite()
+
+// ... build up base bridge here
+
+var loadMore = baseBridge.defineFunction([
+  baseBridge.loadPartial.asCall()],
+  function(loadPartial) {
+    loadPartial(
+      "/more",
+      ".target")})
+
+var button = element("button", {onclick: loadMore.evalable()}, "More")
+
+site.addRoute("get", "/",
+  baseBridge.requestHandler([
+    button,
+    ".target"]))
+
+site.addRoute("get", "/more",
+  function(request, response) {
+    var partial = baseBridge.copy().forResponse(response)
+
+    var more = element(
+      "new content")
+
+    partial.asap(
+      function() {
+        console.log(
+          "more code running in the browser")})
+
+    partial.sendPartial(
+      more)})
+```
+
+The `requestPartial` function will make an AJAX request to `/more`, which forks the bridge and sends the fork as a partial.
+
+This means scripts and content added to the fork can reference functions that are already in the browser because they're on the base bridge, so the partial doesn't have to send the functions again.
+
+And, the partial can add any new functions it likes.
+
+
 ## Recursive functions
 
 You may want to call a function from itself:
