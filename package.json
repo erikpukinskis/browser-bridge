@@ -21,8 +21,8 @@
     "web-element": "*"
   },
   "devDependencies": {
-    "browser-task": "*",
-    "run-test": "*",
+    "browser-task": "^0.47.0",
+    "run-test": "^0.55.0",
     "sinon": "*",
     "web-site": "*"
   },
