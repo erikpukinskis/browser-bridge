@@ -22,7 +22,8 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
   var bridgeCache = {}
   var cachedBridgeCount = 0
 
-  function BrowserBridge() {
+  function BrowserBridge(base) {
+    this.base = base
     this.id = identifiable.assignId(bridgeCache, null, "brg")
     this.previousBindingStacks = {}
 
@@ -45,7 +46,9 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
     this.__isNrtvBrowserBridge = true
 
     this.scriptSource = ""
-    functionCall && functionCall.defineOn(this)
+    if (functionCall && !this.base) {
+      functionCall.defineOn(this) }
+
     addSource(this, "\n// Bridge data: ### BRIDGE DATA GOES HERE ###\n\n")
     this.domReadySource = ""
   }
@@ -98,8 +101,7 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
   }
 
   BrowserBridge.prototype.copy = function() {
-      var copy = new BrowserBridge()
-      copy.base = this
+      var copy = new BrowserBridge(this)
       copy.id = "copy-"+Math.random().toString(36).substr(2,4)+"-of-"+this.id
       return copy
     }
