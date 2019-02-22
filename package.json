@@ -16,11 +16,11 @@
     "web-element": "*",
     "object-hash": "*",
     "global-wait": "*",
-    "identifiable": "*"
+    "identifiable": "*",
+    "make-request": "^0.42.0"
   },
   "devDependencies": {
     "browser-task": "*",
-    "make-request": "^0.42.0",
     "run-test": "*",
     "sinon": "*",
     "web-site": "*"
