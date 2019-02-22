@@ -156,7 +156,7 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
       return load.withArgs(this.id) }
 
     var load = this.defineFunction(
-      [makeRequest.defineOn(this)],
+      [makeRequest.defineOn(this), this.id],
       function loadPartial(makeRequest, bridgeId, path, selector) {
 
         function addHtml(container, html) {
