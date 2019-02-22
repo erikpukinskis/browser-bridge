@@ -157,7 +157,7 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
 
     var load = this.defineFunction(
       [makeRequest.defineOn(this)],
-      function loadPartial(makeRequest, bridgeId, path, selector) {
+      function loadPartial(makeRequest, bridgeId, path, elementId) {
 
         function addHtml(container, html) {
           var crucible = document.createElement("div")
@@ -181,7 +181,11 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
           } catch (e) {
             throw new Error("The AJAX response from getting a partial doesn't look like JSON with a script and body attribute: "+response)
           }
-          var container = selector ? document.querySelector(selector) : document.body
+          if (elementId) {
+            var container = document.getElementById(elementId) || document.querySelector(elementId)           
+          } else {
+            var container = document.body
+          }
           addHtml(
             container,
             partial.body)
@@ -195,6 +199,7 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
       "browser-bridge/loadPartial",
       load)
 
+    debugger
     return load.withArgs(this.id)
   }
 
