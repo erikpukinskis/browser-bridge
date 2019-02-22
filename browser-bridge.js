@@ -395,8 +395,8 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
     return clientBridge
   }
 
+  // This is all of the memories and identifiers, etc that the client bridge will need
   BrowserBridge.prototype.data = function() {
-    throw new Error("bridge.data() is deprecated")
     this.needsBridgeData = true
     return functionCall("BRIDGE_DATA")
   }
