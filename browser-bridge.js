@@ -199,7 +199,6 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
       "browser-bridge/loadPartial",
       load)
 
-    debugger
     return load.withArgs(this.id)
   }
 
