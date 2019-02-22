@@ -149,7 +149,7 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
   }
 
   BrowserBridge.prototype.noop = function() {
-    var call = remember("browser-bridge/noop")
+    var call = this.remember("browser-bridge/noop")
     if (call) { return call }
     call = this.defineFunction(function noop() {})
     this.see("browser-bridge/noop", call)
