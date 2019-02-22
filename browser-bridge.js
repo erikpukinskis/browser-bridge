@@ -46,8 +46,6 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
     this.__isNrtvBrowserBridge = true
 
     this.scriptSource = ""
-    if (functionCall && !this.base) {
-      functionCall.defineOn(this) }
 
     addSource(this, "\n// Bridge data: ### BRIDGE DATA GOES HERE ###\n\n")
     this.domReadySource = ""
