@@ -148,6 +148,14 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
     throw new Error("Can't load partials on the server yet")
   }
 
+  BrowserBridge.prototype.noop = function() {
+    var call = remember("browser-bridge/noop")
+    if (call) { return call }
+    call = this.defineFunction(function noop() {})
+    this.see("browser-bridge/noop", call)
+    return call
+  }
+
   function loadPartialFromBrowser() {
     var load = this.remember(
       "browser-bridge/loadPartial")

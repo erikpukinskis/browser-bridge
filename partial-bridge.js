@@ -155,6 +155,10 @@ function generator(element, functionCall) {
     return this.base.asap.apply(this.base, arguments)
   }
 
+  PartialBridge.prototype.noop = function() {
+    return this.base.noop()
+  }
+
   PartialBridge.prototype.getSite = function() {
     return this.base.getSite.apply(this.base, arguments)
   }
