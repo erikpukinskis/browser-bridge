@@ -156,7 +156,7 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
       return load.withArgs(this.id) }
 
     var load = this.defineFunction(
-      [makeRequest.defineOn(this), this.id],
+      [makeRequest.defineOn(this)],
       function loadPartial(makeRequest, bridgeId, path, selector) {
 
         function addHtml(container, html) {
@@ -176,7 +176,11 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
           handlePartial)
 
         function handlePartial(response) {
-          var partial = JSON.parse(response)
+          try {
+            var partial = JSON.parse(response)
+          } catch (e) {
+            throw new Error("The AJAX response from getting a partial doesn't look like JSON with a script and body attribute: "+response)
+          }
           var container = selector ? document.querySelector(selector) : document.body
           addHtml(
             container,
