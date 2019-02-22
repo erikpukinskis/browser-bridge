@@ -71,12 +71,12 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
     }
 
     string += bridge[attribute]
-
-    bridge.partials.forEach(function(partial) {
-      if (partial[attribute]) {
-        string += partial[attribute]
-      }
-    })
+    
+    bridge.partials.forEach(
+      function(partial) {
+        var value = partial[attribute]
+        if (value) {
+          string += value }})
 
     return string
   }

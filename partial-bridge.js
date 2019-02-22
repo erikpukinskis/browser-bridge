@@ -14,7 +14,7 @@ function generator(element, functionCall) {
     this.id = "partial-"+Math.random().toString(36).substr(2,4)+"-on-"+base.id
     this.base = base
     base.partials.push(this)
-    this.head = ""
+    this.headSource = ""
     this.__isNrtvBrowserBridge = true
 
     try {
@@ -132,7 +132,7 @@ function generator(element, functionCall) {
     if (typeof content.html == "function") {
       content = content.html()
     }
-    this.head += content
+    this.headSource += content
   }
 
   PartialBridge.prototype.defineFunction = function() {
