@@ -44,6 +44,10 @@ function generator(element, functionCall) {
     throw new Error("Partial bridges can't send as a partial. I know, it's confusing. Sorry. Do bridge.copy().forResponse(response).sendPartial(partialBody)")
   }
 
+  PartialBridge.prototype.cache = function() {
+    throw new Error("Partial bridges can't be cached. Use a copy")
+  }
+
   PartialBridge.prototype.claimIdentifier = no("claimIdentifier")
 
   PartialBridge.prototype.withChildren = no("withChildren")

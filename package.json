@@ -16,14 +16,14 @@
     "web-element": "*",
     "object-hash": "*",
     "global-wait": "*",
-    "make-request": "*"
+    "identifiable": "*"
   },
   "devDependencies": {
+    "browser-task": "*",
+    "make-request": "^0.42.0",
     "run-test": "*",
     "sinon": "*",
-    "web-site": "*",
-    "browser-task": "*",
-    "make-request": "*"
+    "web-site": "*"
   },
   "license": "ISC",
   "homepage": "https://github.com/erikpukinskis/browser-bridge"

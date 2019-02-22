@@ -1,5 +1,7 @@
 var runTest = require("run-test")(require)
 
+
+
 runTest(
   "defining functions with strings",
   ["./", "web-element"],
@@ -159,10 +161,8 @@ runTest(
   }
 )
 
-
 runTest(
   "partial bridges can be added to an existing page",
-
   ["web-element", "./", "web-site", "browser-task"],
   function(expect, done, element, BrowserBridge, WebSite, browserTask) {
 
@@ -185,6 +185,8 @@ runTest(
 
     var site = new WebSite()
 
+    baseBridge.cache()
+
     site.addRoute("get", "/",
       baseBridge.requestHandler(
         element([button, ".partial-target"])
@@ -193,7 +195,7 @@ runTest(
 
     site.addRoute("get", "/more",
       function(request, response) {
-        var partial = baseBridge.copy().forResponse(response)
+        var partial = BrowserBridge.fromRequest(request).forResponse(response)
 
         var more = element([
           "partial content",

@@ -2,15 +2,28 @@ var library = require("module-library")(require)
 
 module.exports = library.export(
   "browser-bridge",
-  ["web-element", "function-call", "make-request", "./partial-bridge", "global-wait"],
+  ["web-element", "function-call", "make-request", "./partial-bridge", "global-wait", "identifiable"],
   generator
 )
 
 
-function generator(element, functionCall, makeRequest, PartialBridge, globalWait) {
+function generator(element, functionCall, makeRequest, PartialBridge, globalWait, identifiable) {
+
+  function scrumBacklog(){}
+  scrumBacklog.done = function(){}
+
+  scrumBacklog(
+    "bridges can be cached and requested later",
+    "bridgeCache can be overridden")
+
+  scrumBacklog.done(
+    "forked bridges requested as partials")
+
+  var bridgeCache = {}
+  var cachedBridgeCount = 0
 
   function BrowserBridge() {
-    this.id = "brg"+Math.random().toString(36).substr(2,4)
+    this.id = identifiable.assignId(bridgeCache, null, "brg")
     this.previousBindingStacks = {}
 
     // Reserved identifiers:
@@ -140,11 +153,11 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
       "browser-bridge/loadPartial")
 
     if (load) {
-      return load }
+      return load.withArgs(this.id) }
 
     var load = this.defineFunction(
       [makeRequest.defineOn(this)],
-      function loadPartial(makeRequest, path, selector) {
+      function loadPartial(makeRequest, bridgeId, path, selector) {
 
         function addHtml(container, html) {
           var crucible = document.createElement("div")
@@ -157,7 +170,9 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
 
         makeRequest({
           method: "get",
-          path: path},
+          path: path,
+          headers: {
+            "x-browser-bridge": bridgeId}},
           handlePartial)
 
         function handlePartial(response) {
@@ -176,7 +191,7 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
       "browser-bridge/loadPartial",
       load)
 
-    return load
+    return load.withArgs(this.id)
   }
 
   BrowserBridge.prototype.withChildren = function(content) {
@@ -534,6 +549,26 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
 
       return functionCall(binding.identifier)
     }
+
+  BrowserBridge.prototype.cache = function() {
+    if (cachedBridgeCount > 100) {
+      throw new Error("The number of cache bridges is too damn high!")
+    }
+    bridgeCache[this.id] = this
+    cachedBridgeCount++
+  }
+
+  BrowserBridge.fromRequest = function(request) {
+    var bridgeId = request.header('x-browser-bridge')
+    if (bridgeId) {
+      var bridge = bridgeCache[bridgeId]
+    }
+    if (!bridge) {
+      throw new Error("don't allow cache misses yet")
+      bridge = new BrowserBridge()
+    }
+    return bridge
+  }
 
   BrowserBridge.prototype.forResponse = function(response) {
     var copy = this.copy()
