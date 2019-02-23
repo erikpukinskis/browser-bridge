@@ -2,6 +2,8 @@ var runTest = require("run-test")(require)
 
 
 
+
+
 runTest(
   "defining functions with strings",
   ["./", "web-element"],
@@ -16,6 +18,7 @@ runTest(
     done()
   }
 )
+
 
 
 runTest(
@@ -160,6 +163,68 @@ runTest(
     done()
   }
 )
+
+
+runTest(
+  "partials can be loaded via POST",
+  ["web-element", "./", "web-site", "browser-task"],
+  function(expect, done, element, BrowserBridge, WebSite, browserTask) {
+
+    var baseBridge = new BrowserBridge()
+
+    var loadMore = baseBridge.defineFunction([
+      baseBridge.loadPartial.asCall()],
+      function(loadPartial) {
+        loadPartial({
+          "method": "post",
+          "path": "/floobies",
+          "data": {
+            "name": "Tarl"}},
+          ".feed")
+      })
+
+    baseBridge.asap(loadMore)
+
+    var site = new WebSite()
+
+    baseBridge.cache()
+
+    site.addRoute(
+      "get",
+      "/",
+      baseBridge.requestHandler("ok!"))
+
+    site.addRoute(
+      "post",
+      "/floobies",
+      function(request, response) {
+
+        var bridge = BrowserBridge.fromRequest(request).forResponse(response)
+
+        var name = request.body.name
+
+        bridge.sendPartial(element(".hi", "Your name is "+name))
+      })
+
+    site.start(1919)
+
+    var browser = browserTask(
+      "http://localhost:1919",
+      checkForTarl)
+
+    function checkForTarl() {
+      debugger
+      browser.assertText(
+        ".hi",
+        "Your name is Tarl",
+        site.stop,
+        browser.done,
+        done)}
+  })
+
+
+
+
 
 runTest(
   "partial bridges can be added to an existing page",

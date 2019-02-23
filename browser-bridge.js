@@ -167,6 +167,20 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
       [makeRequest.defineOn(this)],
       function loadPartial(makeRequest, bridgeId, path, elementId) {
 
+        if (typeof path == "object") {
+          var options = path
+
+        } else {
+          var options = {
+            method: "get",
+            path: path }}
+
+        if (!options.headers) {
+          options.headers = {}
+        }
+
+        options.headers["x-browser-bridge"] = bridgeId
+
         function addHtml(container, html) {
           var crucible = document.createElement("div")
           crucible.innerHTML = html
@@ -174,25 +188,24 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
             container.appendChild(
               node)})}
 
-        var activityName = "browser-brige/load-partial/" + path
-
-        makeRequest({
-          method: "get",
-          path: path,
-          headers: {
-            "x-browser-bridge": bridgeId}},
+        makeRequest(options,
           handlePartial)
 
         function handlePartial(response) {
-          try {
-            var partial = JSON.parse(response)
-          } catch (e) {
-            throw new Error("The AJAX response from getting a partial doesn't look like JSON with a script and body attribute: "+response)
-          }
-          if (elementId) {
-            var container = document.getElementById(elementId) || document.querySelector(elementId)           
+          if (typeof response == "string") {
+            try {
+              var partial = JSON.parse(response)
+            } catch (e) {
+              throw new Error("The AJAX response from getting a partial doesn't look like JSON with a script and body attribute: "+response)
+            }
           } else {
-            var container = document.body
+            var partial = response
+          }
+
+          var container = document.querySelector(elementId) || document.getElementById(elementId) || document.body
+
+          if (!container) {
+            debugger
           }
           addHtml(
             container,
