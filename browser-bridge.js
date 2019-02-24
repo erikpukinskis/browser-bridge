@@ -184,9 +184,12 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
         function addHtml(container, html) {
           var crucible = document.createElement("div")
           crucible.innerHTML = html
+          var nodes = []
           crucible.childNodes.forEach(function(node) {
+            nodes.push(node)
             container.appendChild(
-              node)})}
+              node)})
+          return nodes}
 
         makeRequest(options,
           handlePartial)
@@ -204,6 +207,7 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
 
           var scriptSource = partial.script
           var htmlSource = partial.body
+
           var stickTo = partial.stickTo 
 
           if (scriptSource) {
@@ -214,7 +218,7 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
 
           var container = document.querySelector(elementId) || document.getElementById(elementId) || document.body
 
-          var justAddedNode = addHtml(
+          var justAddedNodes = addHtml(
             container,
             htmlSource)
 
@@ -302,9 +306,6 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
       script: script,
       body: content
     }
-
-    if (options.stickTo) {
-      partial.stickTo = options.stickTo }
 
     this.response.send(partial)
   }
