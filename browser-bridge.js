@@ -2,12 +2,12 @@ var library = require("module-library")(require)
 
 module.exports = library.export(
   "browser-bridge",
-  ["web-element", "function-call", "make-request", "./partial-bridge", "global-wait", "identifiable"],
+  ["web-element", "function-call", "make-request", "./partial-bridge", "global-wait", "identifiable", "add-html"],
   generator
 )
 
 
-function generator(element, functionCall, makeRequest, PartialBridge, globalWait, identifiable) {
+function generator(element, functionCall, makeRequest, PartialBridge, globalWait, identifiable, addHtml) {
 
   function scrumBacklog(){}
   scrumBacklog.done = function(){}
@@ -163,9 +163,10 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
     if (load) {
       return load.withArgs(this.id) }
 
-    var load = this.defineFunction(
-      [makeRequest.defineOn(this)],
-      function loadPartial(makeRequest, bridgeId, path, elementId) {
+    var load = this.defineFunction([
+      makeRequest.defineOn(this),
+      addHtml.defineOn(this)],
+      function loadPartial(makeRequest, addHtml, bridgeId, path, elementId) {
 
         if (typeof path == "object") {
           var options = path
@@ -180,16 +181,6 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
         }
 
         options.headers["x-browser-bridge"] = bridgeId
-
-        function addHtml(container, html) {
-          var crucible = document.createElement("div")
-          crucible.innerHTML = html
-          var nodes = []
-          crucible.childNodes.forEach(function(node) {
-            nodes.push(node)
-            container.appendChild(
-              node)})
-          return nodes}
 
         makeRequest(options,
           handlePartial)
@@ -216,13 +207,12 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
 
           var container = document.querySelector(elementId) || document.getElementById(elementId) || document.body
 
-          var justAddedNodes = addHtml(
+          var justAddedNodes = addHtml.inside(
             container,
             htmlSource)
 
           var feed = document.querySelector(".feed")
 
-          debugger
           justAddedNodes.forEach(
             function(newOne) {
 
@@ -238,7 +228,7 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
               if (matches) {
                 var last = newOne
                 matches.forEach(function(similarOne) {
-                  feed.insertAfter(similarOne, last)
+                  addHtml.after(last, similarOne)
                   last = similarOne})}
             })
 

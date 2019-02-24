@@ -18,7 +18,8 @@
     "module-library": "*",
     "object-hash": "*",
     "single-use-socket": "^0.28.0",
-    "web-element": "*"
+    "web-element": "*",
+    "add-html": "*"
   },
   "devDependencies": {
     "browser-task": "^0.47.0",
