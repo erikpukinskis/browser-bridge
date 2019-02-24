@@ -184,12 +184,9 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
         function addHtml(container, html) {
           var crucible = document.createElement("div")
           crucible.innerHTML = html
-          var nodes = []
           crucible.childNodes.forEach(function(node) {
-            nodes.push(node)
             container.appendChild(
-              node)})
-          return nodes}
+              node)})}
 
         makeRequest(options,
           handlePartial)
@@ -208,8 +205,6 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
           var scriptSource = partial.script
           var htmlSource = partial.body
 
-          var stickTo = partial.stickTo 
-
           if (scriptSource) {
             var script = document.createElement("script")
             script.text = scriptSource
@@ -222,18 +217,27 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
             container,
             htmlSource)
 
-          if (stickTo) {
-            container.childNodes.forEach(
-              moveUpAsNecessary)
-          }
+          var feed = document.querySelector(".feed")
 
-          function moveUpAsNecessary(matchingNode, i) {
-           var category = matchingNode.getAttribute(
-            "stick-to-category")
-            if (category == stickTo) {
-              container.insertAfter(
-                matchingNode,
-                justAddedNode)}}
+          debugger
+          justAddedNodes.forEach(
+            function(newOne) {
+
+              var stickTo = newOne.getAttribute(
+                "data-stick-to")
+
+              if (!stickTo) {
+                return }
+
+              var toHoist = []
+              var matches = feed.querySelector("[data-stick-to="+stickTo+"]").reverse()
+
+              if (matches) {
+                var last = newOne
+                matches.forEach(function(similarOne) {
+                  feed.insertAfter(similarOne, last)
+                  last = similarOne})}
+            })
 
           // done with handlePartial
         }
@@ -293,7 +297,13 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
     }
 
     if (Array.isArray(content)) {
-      content = element(content).html()
+      content = content.map(function(x) {
+        if (typeof x == "string") {
+          return x
+        } else if (typeof x.html == "function") {
+          return x.html()
+        }
+      }).join("\n\n")
     } else if (typeof content.html == "function") {
       content = content.html()
     }
