@@ -184,9 +184,12 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
         function addHtml(container, html) {
           var crucible = document.createElement("div")
           crucible.innerHTML = html
+          var nodes = []
           crucible.childNodes.forEach(function(node) {
+            nodes.push(node)
             container.appendChild(
-              node)})}
+              node)})
+          return nodes}
 
         makeRequest(options,
           handlePartial)
