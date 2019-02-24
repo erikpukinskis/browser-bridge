@@ -32,6 +32,13 @@ function generator(element, functionCall) {
     return binding
   }
 
+  PartialBridge.prototype.addAttribute = function(key, value) {
+    if (!this.htmlAttributes) {
+      this.htmlAttributes = {}
+    }
+    this.htmlAttributes[key] = value
+  }
+
   PartialBridge.prototype.addToBody = function() {
     throw new Error("Can't add to partial bridge body. Try just doing partial.send(yourContent) or grabbing another partial with partial.partial() and doing .send(yourContent) on that")
   }
@@ -118,6 +125,10 @@ function generator(element, functionCall) {
       var el = this.content
     } else {
       var el = element(this.content)
+    }
+
+    if (this.htmlAttributes) {
+      el.addAttributes(this.htmlAttributes)
     }
 
     if (this.partialClass) {

@@ -202,18 +202,38 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
             var partial = response
           }
 
+          var scriptSource = partial.script
+          var htmlSource = partial.body
+          var stickTo = partial.stickTo 
+
+          if (scriptSource) {
+            var script = document.createElement("script")
+            script.text = scriptSource
+            document.head.appendChild(script)
+          }
+
           var container = document.querySelector(elementId) || document.getElementById(elementId) || document.body
 
-          if (!container) {
-            debugger
-          }
-          addHtml(
+          var justAddedNode = addHtml(
             container,
-            partial.body)
-          var script = document.createElement("script")
-          script.text = partial.script
-          document.head.appendChild(script)
+            htmlSource)
+
+          if (stickTo) {
+            container.children.forEach(
+              moveUpAsNecessary)
+          }
+
+          function moveUpAsNecessary(matchingNode, i) {
+           var category = matchingNode.attr(
+            "stick-to-category")
+            if (category == stickTo) {
+              container.insertAfter(
+                matchingNode,
+                justAddedNode)}}
+
+          // done with handlePartial
         }
+        // done with loadPartialFrom Browser
       })
 
     this.see(
@@ -241,7 +261,7 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
       return content
     }
 
-  BrowserBridge.prototype.sendPartial = function(content) {
+  BrowserBridge.prototype.sendPartial = function(content, options) {
     if (!this.response) {
       throw new Error("You have to provide a response for a bridge before you can send it as a partial: try bridge.forResponse(response).sendPartial()")
     }
@@ -278,10 +298,15 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
       content += headSource
     }
 
-    this.response.send({
+    var partial = {
       script: script,
       body: content
-    })
+    }
+
+    if (options.stickTo) {
+      partial.stickTo = options.stickTo }
+
+    this.response.send(partial)
   }
 
   BrowserBridge.prototype.toHtml =
