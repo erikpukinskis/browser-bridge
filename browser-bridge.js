@@ -223,15 +223,15 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
                 return }
 
               var toHoist = []
-              var matches = Array.prototype.slice.call(
-                feed.querySelector("[data-stick-to="+stickTo+"]"))
-              .reverse()
+              var matches = feed.querySelectorAll(
+                "[data-stick-to="+stickTo+"]")
 
               if (matches) {
-                var last = newOne
                 matches.forEach(function(similarOne) {
-                  addHtml.after(last, similarOne)
-                  last = similarOne})}
+                  if (similarOne == newOne) {
+                    return
+                  }
+                  addHtml.before(newOne, similarOne)})}
             })
 
           // done with handlePartial
