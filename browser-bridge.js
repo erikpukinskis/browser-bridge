@@ -224,7 +224,7 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
           }
 
           function moveUpAsNecessary(matchingNode, i) {
-           var category = matchingNode.attr(
+           var category = matchingNode.getAttribute(
             "stick-to-category")
             if (category == stickTo) {
               container.insertAfter(
