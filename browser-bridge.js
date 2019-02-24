@@ -216,14 +216,16 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
           justAddedNodes.forEach(
             function(newOne) {
 
-              var stickTo = newOne.getAttribute(
+              var stickTo = newOne.getAttribute && newOne.getAttribute(
                 "data-stick-to")
 
               if (!stickTo) {
                 return }
 
               var toHoist = []
-              var matches = feed.querySelector("[data-stick-to="+stickTo+"]").reverse()
+              var matches = Array.prototype.slice.call(
+                feed.querySelector("[data-stick-to="+stickTo+"]"))
+              .reverse()
 
               if (matches) {
                 var last = newOne
