@@ -219,7 +219,7 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
             htmlSource)
 
           if (stickTo) {
-            container.children.forEach(
+            container.childNodes.forEach(
               moveUpAsNecessary)
           }
 
