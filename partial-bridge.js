@@ -90,6 +90,10 @@ function generator(element, functionCall) {
     return this.base.asBinding()
   }
 
+  PartialBridge.prototype.addBodyEvent = function() {
+    return this.base.addBodyEvent.apply(this.base, arguments)
+  }
+
   PartialBridge.prototype.asCall = function() {
     return this.base.asCall()
   }

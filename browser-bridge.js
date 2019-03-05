@@ -116,6 +116,19 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
     this.children.push(content)
   }
 
+  BrowserBridge.prototype.addBodyEvent = function(eventName, script) {
+    if (this.base) {
+      this.base.addBodyEvent(eventName, script)
+      return }
+
+    if (!this.bodyEvents) {
+      this.bodyEvents = {}}
+
+    if (!this.bodyEvents[eventName]) {
+      this.bodyEvents[eventName] = script
+    } else {
+      this.bodyEvents[eventName] += ";"+script }}
+
   BrowserBridge.prototype.requestHandler = function(content) {
       var html = this.toHtml(content)
 
@@ -325,15 +338,24 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
         "<!--\n"+this.script()+"\n-->"
       )
 
-      var isString = typeof(content) == "string"
-
-      var needsBody = isString || !hasBody(content, 2)
-
-      var needsDomReady = !!getFullString(this, "domReadySource")
-
       if (!isPartial) {
+        // This should probably be the main part of this function, and everything else should be done in some partial-relevant method
+
+        var needsBody = !hasBody(content, 2)
+        var needsDomReady = !!getFullString(this, "domReadySource")
+
         if (needsBody) {
           content = element("body", content||"")
+          copyScripts(this.bodyEvents, content)
+        } else {
+          var body = hasBody(content, 2)
+          var isElement = !!body.__isNrtvElement
+
+          if (this.bodyEvents && !isElement) {
+            throw new Error("You wanted to add body events to this bridge, but the content you passed to the browser bridge seems to already have a body tag and that's just too complicated for me.")
+          }
+
+          copyScripts(this.bodyEvents, body)
         }
 
         if (needsDomReady) {
@@ -364,6 +386,20 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
       return source
     }
 
+  function copyScripts(scripts, el) {
+    if (!scripts) {
+      return
+    }
+    for(var eventName in scripts) {
+      var script = scripts[eventName]
+      var existing = el.attributes[eventName]
+      if (existing) {
+        el.attributes[eventName] += ";"+script
+      } else {
+        el.addAttribute(eventName, script)
+      }
+    }
+  }
   function prependBridgeData(bridge, content) {
     throw new Error("bridge.data() is deprecated")
     bridge.claimIdentifier("BRIDGE_DATA")
