@@ -121,10 +121,6 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
   }
 
   BrowserBridge.prototype.addBodyEvent = function(eventName, script) {
-    if (this.base) {
-      this.base.addBodyEvent(eventName, script)
-      return }
-
     if (!this.bodyEvents) {
       this.bodyEvents = {}}
 
