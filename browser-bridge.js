@@ -94,6 +94,10 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
     return this.memories[key] || this.base && this.base.remember(key)
   }
 
+  BrowserBridge.prototype.iRemember = function(key) {
+    return this.memories[key]
+  }
+
   BrowserBridge.prototype.see = function(key, object) {
     this.memories[key] = object
   }
@@ -387,24 +391,24 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
     }
 
   function copyBodyEvents(bridge, el) {
-    var target = bridge
-    var scripts = {}
-    do {
-      if (target.bodyEvents) {
-        Object.assign(scripts, target.bodyEvents)
-      }
-      target = target.base
-    } while(target)
 
-    if (Object.keys(scripts).length == 0) {
-      return }
-
-    if (el.__alreadyCopiedBodyEvents) {
-      throw new Error("Trying to copy body events to "+shorten(el.html(), 50)+" but we already did that once. If your bridge has body events, you need to send a fresh body element each time you render the page. Or just don't provide a body element and let the bridge add it.")
+    if (bridge.base) {
+      copyBodyEvents(bridge.base, el)
     }
 
-    for(var eventName in scripts) {
-      var script = scripts[eventName]
+    var alreadyCopied = bridge.iRemember("browser-bridge/alreadyCopiedBodyEvents")
+
+    if (!alreadyCopied) {
+      alreadyCopied = {}
+      bridge.see("browser-bridge/alreadyCopiedBodyEvents", alreadyCopied)
+    }
+
+    if (alreadyCopied[el.assignId()]) {
+      return
+    }
+
+    for(var eventName in this.bodyEvents) {
+      var script = this.bodyEvents[eventName]
       var existing = el.attributes[eventName]
       if (existing) {
         el.attributes[eventName] += ";"+script
@@ -413,7 +417,7 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
       }
     }
 
-    el.__alreadyCopiedBodyEvents = true
+    alreadyCopied[el.id] = true
   }
 
   function prependBridgeData(bridge, content) {
