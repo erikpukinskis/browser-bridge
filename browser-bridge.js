@@ -346,7 +346,7 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
 
         if (needsBody) {
           content = element("body", content||"")
-          copyScripts(this.bodyEvents, content)
+          copyBodyEvents(this, content)
         } else {
           var body = hasBody(content, 2)
           var isElement = !!body.__isNrtvElement
@@ -355,7 +355,7 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
             throw new Error("You wanted to add body events to this bridge, but the content you passed to the browser bridge seems to already have a body tag and that's just too complicated for me.")
           }
 
-          copyScripts(this.bodyEvents, body)
+          copyBodyEvents(this, body)
         }
 
         if (needsDomReady) {
@@ -386,10 +386,23 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
       return source
     }
 
-  function copyScripts(scripts, el) {
-    if (!scripts) {
-      return
+  function copyBodyEvents(bridge, el) {
+    var target = bridge
+    var scripts = {}
+    do {
+      if (target.bodyEvents) {
+        Object.assign(scripts, target.bodyEvents)
+      }
+      target = target.base
+    } while(target)
+
+    if (Object.keys(scripts).length == 0) {
+      return }
+
+    if (el.__alreadyCopiedBodyEvents) {
+      throw new Error("Trying to copy body events to "+shorten(el.html(), 50)+" but we already did that once. If your bridge has body events, you need to send a fresh body element each time you render the page. Or just don't provide a body element and let the bridge add it.")
     }
+
     for(var eventName in scripts) {
       var script = scripts[eventName]
       var existing = el.attributes[eventName]
@@ -399,7 +412,10 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
         el.addAttribute(eventName, script)
       }
     }
+
+    el.__alreadyCopiedBodyEvents = true
   }
+
   function prependBridgeData(bridge, content) {
     throw new Error("bridge.data() is deprecated")
     bridge.claimIdentifier("BRIDGE_DATA")
@@ -886,6 +902,12 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
     }
     return hval >>> 0;
   }
+
+  function shorten(string, size) {
+    if (string.length < size - 3) {
+      return string
+    } else {
+      return string.substr(0, size - 3)+"..." }}
 
   return BrowserBridge
 }
