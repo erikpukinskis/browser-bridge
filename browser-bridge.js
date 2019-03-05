@@ -407,8 +407,8 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
       return
     }
 
-    for(var eventName in this.bodyEvents) {
-      var script = this.bodyEvents[eventName]
+    for(var eventName in bridge.bodyEvents) {
+      var script = bridge.bodyEvents[eventName]
       var existing = el.attributes[eventName]
       if (existing) {
         el.attributes[eventName] += ";"+script
