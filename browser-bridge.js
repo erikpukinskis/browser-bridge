@@ -471,7 +471,7 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
   }
 
   BrowserBridge.prototype.asBinding = function() {
-    console.log(" ⚡⚡⚡ WARNING ⚡⚡⚡ calling asBinding() on a browser-bridge function definition is deprecated. Try yourBridgeFunction.asCall()")
+    console.log(" ⚡⚡⚡ WARNING ⚡⚡⚡ calling asBinding() on a browser-bridge function definition is deprecated. Try bridge.asCall()")
   }
 
   BrowserBridge.prototype.asCall = function() {

@@ -577,7 +577,7 @@ runTest("domReady")
 //     bridge.see("some-names", names)
 
 //     bridge.asap(
-//       [bridge.asBinding()],
+//       [bridge.asCall()],
 //       function(bridge) {
 //         var memory = bridge.remember("some-names")
 //         var name = eval(memory.evalable())[1]
