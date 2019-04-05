@@ -600,30 +600,30 @@ runTest("domReady")
 // )
 
 
-// runTest(
-//   "do something on page load",
+runTest(
+  "do something on page load",
 
-//   ["./", "web-site", "browser-task"],
-//   function(expect, done, BrowserBridge, WebSite, browserTask) {
+  ["./", "web-site", "browser-task"],
+  function(expect, done, BrowserBridge, WebSite, browserTask) {
 
-//     var site = new WebSite()
-//     var bridge = new BrowserBridge()
+    var site = new WebSite()
+    var bridge = new BrowserBridge()
 
-//     bridge.asap(function hello() {
-//       document.getElementsByTagName("body")[0].innerHTML = "hola"
-//     })
+    bridge.domReady(function hello() {
+      document.getElementsByTagName("body")[0].innerHTML = "hola"
+    })
 
-//     site.addRoute("get", "/", bridge.requestHandler())
+    site.addRoute("get", "/", bridge.requestHandler())
 
-//     site.start(9876)
+    site.start(9876)
 
-//     browserTask("http://localhost:9876",
-//       function(browser) {
-//         browser.assertText("body", "hola", site.stop, browser.done, done)
-//       }
-//     )
-//   }
-// )
+    browserTask("http://localhost:9876",
+      function(browser) {
+        browser.assertText("body", "hola", site.stop, browser.done, done)
+      }
+    )
+  }
+)
 
 
 runTest(
