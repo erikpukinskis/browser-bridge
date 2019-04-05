@@ -158,6 +158,10 @@ function generator(element, functionCall) {
     return this.base.remember.apply(this.base, arguments)
   }
 
+  PartialBridge.prototype.iRemember = function() {
+    throw new Error("Partial bridges don't have their own memories")
+  }
+
   PartialBridge.prototype.see = function() {
     return this.base.see.apply(this.base, arguments)
   }

@@ -63,7 +63,7 @@ runTest(
 
     var response = {
       send: function(html) {
-        expect(html).to.contain("<body>")
+        expect(html).to.contain("<body")
         expect(html).to.contain("<html>")
         expect(html).to.contain("Hello, world!")
         done()

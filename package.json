@@ -11,15 +11,15 @@
     "test": "node test.js"
   },
   "dependencies": {
+    "add-html": "*",
     "function-call": "*",
     "global-wait": "*",
     "identifiable": "*",
-    "make-request": "^0.42.0",
+    "make-request": "^0.45.0",
     "module-library": "*",
     "object-hash": "*",
     "single-use-socket": "^0.28.0",
-    "web-element": "*",
-    "add-html": "*"
+    "web-element": "*"
   },
   "devDependencies": {
     "browser-task": "^0.47.0",

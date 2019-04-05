@@ -212,12 +212,6 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
           var scriptSource = partial.script
           var htmlSource = partial.body
 
-          if (scriptSource) {
-            var script = document.createElement("script")
-            script.text = scriptSource
-            document.head.appendChild(script)
-          }
-
           var container = document.querySelector(elementId) || document.getElementById(elementId) || document.body
 
           var justAddedNodes = addHtml.inside(
@@ -246,6 +240,12 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
                   }
                   addHtml.before(newOne, similarOne)})}
             })
+
+          if (scriptSource) {
+            var script = document.createElement("script")
+            script.text = scriptSource
+            document.head.appendChild(script)
+          }
 
           // done with handlePartial
         }
@@ -325,7 +325,7 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
       body: content
     }
 
-    this.response.send(partial)
+    this.response.json(partial)
   }
 
   BrowserBridge.prototype.toHtml =
@@ -555,7 +555,9 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
 
       var script = getFullString(this, "scriptSource")
 
-      if (domReadySource) {
+      var bridgeHasDomReadyTicket = this.remember("browser-bridge/domReadyTicket")
+
+      if (domReadySource && !bridgeHasDomReadyTicket) {
 
         var domReadyTicket = buildBinding([
           "domReadyTicket",
@@ -578,7 +580,13 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
 
         var finish = wait.methodCall("finish").withArgs(domReadyTicket)
 
-        script += "\n\nfunction onDomReady() { setTimeout(function giveItASec() {\n"+domReadySource+"\n\n"+finish.evalable()+"\n}, 0) }\n"
+        script += "var domReadyCallbacks = []\n\nfunction doOnDomReady(callback) {\n  domReadyCallbacks.push(callback)\n}\n\nfunction onDomReady() { setTimeout(function giveItASec() {\ndomReadyCallbacks.forEach(function(callback) { callback() })\n\n"+finish.evalable()+"\n}, 0) }\n"
+
+        this.see("browser-bridge/domReadyTicket", true)
+      }
+
+      if (domReadySource) {
+        script +="doOnDomReady(function() {\n"+domReadySource+"\n})\n\n"
       }
 
       return script
