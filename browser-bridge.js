@@ -246,7 +246,7 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
             script.text = scriptSource
             document.head.appendChild(script)
           }
-
+          
           // done with handlePartial
         }
         // done with loadPartialFrom Browser
@@ -325,7 +325,7 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
       body: content
     }
 
-    this.response.json(partial)
+    this.response.send(partial)
   }
 
   BrowserBridge.prototype.toHtml =
@@ -335,6 +335,7 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
 
       var bindings = element(
         "script",
+        // here we define the other?
         "<!--\n"+this.script()+"\n-->"
       )
 
@@ -471,7 +472,7 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
   }
 
   BrowserBridge.prototype.asBinding = function() {
-    console.log(" ⚡⚡⚡ WARNING ⚡⚡⚡ calling asBinding() on a browser-bridge function definition is deprecated. Try bridge.asCall()")
+    console.log(" ⚡⚡⚡ WARNING ⚡⚡⚡ calling asBinding() on a browser-bridge function definition is deprecated. Try yourBridgeFunction.asCall()")
   }
 
   BrowserBridge.prototype.asCall = function() {
@@ -549,48 +550,49 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
     function() {
       var domReadySource = getFullString(this, "domReadySource")
 
-      if (domReadySource) {
-        var wait = globalWait.defineOn(this)
-      }
-
       var script = getFullString(this, "scriptSource")
 
-      var bridgeHasDomReadyTicket = this.remember("browser-bridge/domReadyTicket")
-
-      if (domReadySource && !bridgeHasDomReadyTicket) {
-
-        var domReadyTicket = buildBinding([
-          "domReadyTicket",
-          [wait],
-          function(wait) {
-            return wait.start("dom ready")}
-          ],
-          this)
-
-        domReadyTicket.isGenerator = true
-
-        domReadyTicket.definitionComment = definitionComment()
-
-        script += "\n\n// The mind is willing but the body is not ready:"
-
-        script += "\n"
-        script += bindingSource(domReadyTicket)
-
-        domReadyTicket = functionCall(domReadyTicket.identifier).singleton()
-
-        var finish = wait.methodCall("finish").withArgs(domReadyTicket)
-
-        script += "var domReadyCallbacks = []\n\nfunction doOnDomReady(callback) {\n  domReadyCallbacks.push(callback)\n}\n\nfunction onDomReady() { setTimeout(function giveItASec() {\ndomReadyCallbacks.forEach(function(callback) { callback() })\n\n"+finish.evalable()+"\n}, 0) }\n"
-
-        this.see("browser-bridge/domReadyTicket", true)
-      }
-
       if (domReadySource) {
-        script +="doOnDomReady(function() {\n"+domReadySource+"\n})\n\n"
+
+        // here we define wait
+        var finish = finishDomReadyTicket(this)
+
+        script += "\n\nfunction onDomReady() { setTimeout(function giveItASec() {\n"+domReadySource+"\n\n"+finish.evalable()+"\n}, 0) }\n"
       }
 
       return script
     }
+
+  function finishDomReadyTicket(bridge) {
+    var binding = bridge.remember("browser-bridge/domReadyTicketBinding")
+
+    if (binding) {
+      return binding }
+
+    var wait = globalWait.defineOn(bridge)
+
+    var domReadyTicket = buildBinding([
+      "domReadyTicket",
+      [wait],
+      function(wait) {
+        return wait.start("dom ready")}
+      ],
+      bridge)
+
+    domReadyTicket.isGenerator = true
+
+    domReadyTicket.definitionComment = definitionComment()
+
+    addSource(bridge, "\n\n// The mind is willing but the body is not ready:\n"+bindingSource(domReadyTicket))
+
+    domReadyTicket = functionCall(domReadyTicket.identifier).singleton()
+
+    bridge.see("browser-bridge/domReadyTicketBinding", domReadyTicket)
+    
+    var finish = wait.methodCall("finish").withArgs(domReadyTicket)
+    
+    return finish
+  }
 
   function definitionComment(depth) {
     depth = (depth||0)+3
