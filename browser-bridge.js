@@ -246,7 +246,7 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
             script.text = scriptSource
             document.head.appendChild(script)
           }
-          
+
           // done with handlePartial
         }
         // done with loadPartialFrom Browser
@@ -550,21 +550,22 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
     function() {
       var domReadySource = getFullString(this, "domReadySource")
 
-      var script = getFullString(this, "scriptSource")
+      var domReadyScript = ""
 
       if (domReadySource) {
 
-        // here we define wait
         var finish = finishDomReadyTicket(this)
 
-        script += "\n\nfunction onDomReady() { setTimeout(function giveItASec() {\n"+domReadySource+"\n\n"+finish.evalable()+"\n}, 0) }\n"
+        domReadyScript += "\n\nfunction onDomReady() { setTimeout(function giveItASec() {\n"+domReadySource+"\n\n"+finish.evalable()+"\n}, 0) }\n"
       }
 
-      return script
+      var script = getFullString(this, "scriptSource")
+
+      return script + domReadyScript
     }
 
   function finishDomReadyTicket(bridge) {
-    var binding = bridge.remember("browser-bridge/domReadyTicketBinding")
+    var binding = bridge.remember("browser-bridge/finishDomReadyTicket")
 
     if (binding) {
       return binding }
@@ -586,10 +587,10 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
     addSource(bridge, "\n\n// The mind is willing but the body is not ready:\n"+bindingSource(domReadyTicket))
 
     domReadyTicket = functionCall(domReadyTicket.identifier).singleton()
-
-    bridge.see("browser-bridge/domReadyTicketBinding", domReadyTicket)
     
     var finish = wait.methodCall("finish").withArgs(domReadyTicket)
+
+    bridge.see("browser-bridge/finishDomReadyTicket", finish)
     
     return finish
   }
