@@ -796,7 +796,19 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
     for (var i=0; i<args.length; i++) {
       var arg = args[i]
 
-      if (arg.__isNrtvSource == true) {
+      if (typeof arg == "undefined") {  
+
+        console.log("\n ✿✿✿ WARNING ✿✿✿  You passed an undefined argument (#"+(i+1)+")")
+
+        try {
+          throw new Error("boo")
+        } catch(e) {
+          var stack = e.stack.split("\n").slice(2,4)
+          console.log(stack.join("\n"))
+          console.log("\n")
+        }
+
+      } else if (arg.__isNrtvSource == true) {
         func = arg.source
       } else if (typeof arg == "string") {
         var name = arg
