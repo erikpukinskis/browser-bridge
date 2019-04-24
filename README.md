@@ -331,6 +331,17 @@ var showError = bridge.defineSingleton([
 
 The basic API of browser-bridge is frozen, but there are a few things that need to be finalized before we can do a 1.0 release:
 
+* PartialBridge instances share the same API as BrowserBridge instances, and they're mostly identical except they passthrough MOST functions to the parent bridge. The class maybe should be generated from a schema, or just folded into the BrowserBridge methods, enabled by a flag. Or maybe it's fine as it is, it's just a bunch of simple passthrough functions which are self explanatory, and it's probably worth thinking through partial bridges every time I add new bridge API.
+
+* Client bridge needs to get working again, and some cruft removed... prependBridgeData is deprecated but that doesn't exactly make sense. (Though it is intriguing I've gotten this far without fixing it. Says something about the importance of bridges being able to exist on the client. I guess it's easy enough to put a module on the client and bind data into it that you don't really need a bridge abstraction. I guess the time when we'd really need it is if we are loading whole new sites in the browser and we want to boot a new component that adds things to the bridge. But even in that case... why not just load a new HTML page from the server, and iframe it or even just append it as a partial.)
+
+* Possibly withChildren and rawSource can be private?
+
+
+
+
+
+
 ## Why
 
 * you only send down the javascript that you actually need on a specific page, for faster first visit load times
