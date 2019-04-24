@@ -327,6 +327,10 @@ var showError = bridge.defineSingleton([
   })
 ```
 
+## Road to 1.0
+
+The basic API of browser-bridge is frozen, but there are a few things that need to be finalized before we can do a 1.0 release:
+
 ## Why
 
 * you only send down the javascript that you actually need on a specific page, for faster first visit load times

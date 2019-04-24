@@ -1,8 +1,6 @@
 var runTest = require("run-test")(require)
 
 
-
-
 runTest(
   "defining functions with strings",
   ["./", "web-element"],
@@ -742,6 +740,30 @@ runTest(
     )
   }
 )
+
+
+runTest(
+  "headers",
+  ["./"],
+  function(expect, done, BrowserBridge) {
+
+    var baseBridge = new BrowserBridge()
+
+    var ok
+    bridge = baseBridge.forResponse({
+      set: function() {
+        ok = "yes" },
+      send: function() {}})
+
+    bridge.addHeaders({"Foo": "bar"})
+
+    bridge.send("great")
+
+    expect(ok).to.equal("yes")
+    done()
+  }
+)
+
 
 
 // runTest(

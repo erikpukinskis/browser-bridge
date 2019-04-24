@@ -43,6 +43,7 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
     this.headSource = ""
     this.children = []
     this.memories = []
+    this.headers = {}
     this.__isNrtvBrowserBridge = true
 
     this.scriptSource = ""
@@ -63,6 +64,17 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
     return value
   }
 
+  function mergeParentObjects(bridge, key) {
+    var allAttributes = {}
+
+    while(bridge) {
+      Object.assign(allAttributes, bridge[key])
+      bridge = bridge.base
+    }
+
+    return allAttributes
+  }
+
   function getFullString(bridge, attribute) {
     if (bridge.base) {
       var string = getFullString(bridge.base, attribute)
@@ -79,6 +91,10 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
           string += value }})
 
     return string
+  }
+
+  BrowserBridge.prototype.addHeaders = function(moreHeaders) {
+    Object.assign(this.headers, moreHeaders)
   }
 
   BrowserBridge.prototype.claimIdentifier = function(identifier) {
@@ -703,6 +719,12 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
       if (!this.response) {
         throw new Error("You can not call bridge.send() on an original browser bridge. Try:\n        var newBridge = bridge.forResponse(response)\n        newBridge.send(content)\nor use bridge.requestHandler(content)")
       }
+
+      debugger
+      var headers = mergeParentObjects(this, "headers")
+
+      for(var key in headers) {
+        this.response.set(key, headers[key]) }
 
       this.response.send(
         this.toHtml(

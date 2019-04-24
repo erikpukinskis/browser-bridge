@@ -10,6 +10,8 @@ function generator(element, functionCall) {
 
   // Partial
 
+  console.log("FIXME: PartialBridge really should just be a bridge.")
+
   function PartialBridge(base) {
     this.id = "partial-"+Math.random().toString(36).substr(2,4)+"-on-"+base.id
     this.base = base
@@ -45,6 +47,10 @@ function generator(element, functionCall) {
 
   PartialBridge.prototype.loadPartial = function() {
     throw new Error("Partial bridges can't load partials. You need to do bridge.copy().loadPartial.asCall() to get a loadPartial function on the bridge. I know, it's confusing. Sorry.")
+  }
+
+  PartialBridge.prototype.addHeaders = function() {
+    this.base.addHeaders.apply(this.base, arguments)
   }
 
   PartialBridge.prototype.sendPartial = function() {
