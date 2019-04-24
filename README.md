@@ -337,6 +337,8 @@ The basic API of browser-bridge is frozen, but there are a few things that need 
 
 * Possibly withChildren and rawSource can be private?
 
+* One header in the documentation for each frozen API
+
 
 
 
