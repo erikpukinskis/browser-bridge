@@ -620,8 +620,12 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
       var stack = e.stack.split("\n")
 
       var origin = stack[depth].substr(7)
+      var origin2 = stack[depth + 1].substr(7)
+      var origin3 = stack[depth + 2].substr(7)
 
-      return "// defined at "+origin
+      return "// defined at "+origin+"\n"+
+             "//            "+origin2+"\n"+
+             "//            "+origin3
     }
   }
 
