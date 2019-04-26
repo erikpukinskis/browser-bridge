@@ -719,12 +719,28 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
     return copy
   }
 
+  function checkForBadMemories(bridge) {
+    var memoriesSeen = {}
+    var seenWhere = {}
+    while (bridge)  {
+      for(var key in bridge.memories) {
+        if (memoriesSeen[key]) {
+          throw new Error("✿✿✿ DE JA VU ✿✿✿\n\nThis is not good.\n\nYou added a "+key+" memory to bridge "+seenWhere[key]+" at one point, and then later on you must've added the same memory on its parent, "+bridge.id+". You need to think that through.\n\nIf you copy a bridge, any new memories it forms must be distinct from the parent's bridge. It's like time travel. Once you fork your path, you can't cross the streams.\n")
+        }
+        memoriesSeen[key] = bridge.memories[key]
+        seenWhere[key] = bridge.id
+      }
+      bridge = bridge.base
+    }
+  }
+
   BrowserBridge.prototype.send = function(content) {
       if (!this.response) {
         throw new Error("You can not call bridge.send() on an original browser bridge. Try:\n        var newBridge = bridge.forResponse(response)\n        newBridge.send(content)\nor use bridge.requestHandler(content)")
       }
 
-      debugger
+      checkForBadMemories(this)
+
       var headers = mergeParentObjects(this, "headers")
 
       for(var key in headers) {
