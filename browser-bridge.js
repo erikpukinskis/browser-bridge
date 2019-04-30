@@ -838,6 +838,7 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
     for (var i=0; i<args.length; i++) {
       var arg = args[i]
 
+      debugger
       if (typeof arg == "undefined") {  
 
         console.log("\n ✿✿✿ WARNING ✿✿✿  You passed an undefined argument (#"+(i+1)+")")
