@@ -920,6 +920,7 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
       .split(/[^\w]/)
       .join("_")
       .replace(/_+/g, "_")
+      .replace(/^[0-9]+/, "")
   }
 
   function find(array, test) {
