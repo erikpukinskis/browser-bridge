@@ -853,7 +853,7 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
       } else if (arg.__isNrtvSource == true) {
         func = arg.source
       } else if (typeof arg == "string") {
-        var name = arg
+        var name = variableSafe(arg)
       } else if (typeof arg == "function") {
         var func = arg
       } else if (Array.isArray(arg)) {
@@ -913,6 +913,13 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
     }
 
     return binding
+  }
+
+  function variableSafe(string) {
+    return string
+      .split(/[^\w]/)
+      .join("_")
+      .replace(/_+/g, "_")
   }
 
   function find(array, test) {
