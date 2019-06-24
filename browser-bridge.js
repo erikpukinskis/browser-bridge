@@ -873,7 +873,7 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
     })
     
     if (!func) {
-      throw new Error("You need to pass a function to bridge.defineFunction, but you passed "+JSON.stringify(args)+".")
+      throw new Error("You need to pass a function to bridge.defineFunction, but you passed "+JSON.stringify(args).slice(0,400)+".")
     }
 
     var functionHash = hash(functionToString(func))
