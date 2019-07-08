@@ -734,22 +734,24 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
     }
   }
 
-  BrowserBridge.prototype.send = function(content) {
-      if (!this.response) {
-        throw new Error("You can not call bridge.send() on an original browser bridge. Try:\n        var newBridge = bridge.forResponse(response)\n        newBridge.send(content)\nor use bridge.requestHandler(content)")
-      }
+  BrowserBridge.prototype.send = function(content, response) {
 
-      checkForBadMemories(this)
+    if (!response) {
+      response = this.response }
 
-      var headers = mergeParentObjects(this, "headers")
+    if (!response) {
+      throw new Error("You can not call bridge.send() on an original browser bridge. Try:\n        var newBridge = bridge.forResponse(response)\n        newBridge.send(content)\nor use bridge.requestHandler(content)")}
 
-      for(var key in headers) {
-        this.response.set(key, headers[key]) }
+    checkForBadMemories(this)
 
-      this.response.send(
-        this.toHtml(
-          content))
-    }
+    var headers = mergeParentObjects(this, "headers")
+
+    for(var key in headers) {
+      this.response.set(key, headers[key]) }
+
+    response.send(
+      this.toHtml(
+        content))}
 
   BrowserBridge.prototype.changePath = function(path) {
     if (this.__changedPath) {
