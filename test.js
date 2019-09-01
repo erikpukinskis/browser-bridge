@@ -1,7 +1,7 @@
 var runTest = require("run-test")(require)
 
-runTest.only(
-  "hot reloading")
+// runTest.only(
+//   "hot reloading")
 
 
 runTest(
@@ -9,13 +9,8 @@ runTest(
   ["./", "web-site", "browser-task", "fs"],
   function(expect, done, BrowserBridge, WebSite, browserTask, fs) {
 
-    done.failAfter(15000)
+    done.failAfter(5000)
 
-    function secs() {
-      var now = new Date()
-      return "(( "+now.getSeconds()+""+parseInt(now.getMilliseconds()/100)+" ))"}
-
-    console.log("GO GO GO", secs())
     var loadCount = 0
     var site = new WebSite()
 
@@ -33,37 +28,31 @@ runTest(
         bridge.reloadOnFileSave(
           __dirname, "date.TEST")
 
-        bridge.send("Loaded "+loadCount+" times " + secs())})
+        bridge.send(
+          "Loaded "+loadCount+" times")})
 
     site.start(8008)
 
     BrowserBridge.onLoad(
       function() {
-        console.log("saw a load, lets run the checks on the next one\n\n\n")
-        console.log(
-          "about to do first write ",
-          secs())
+        var timestamp = new Date()
+        .valueOf()
+
+        BrowserBridge.onLoad(
+          expectTwoLoads)
 
         fs.writeFile(
           "date.TEST",
-          new Date().valueOf(),
-          function() {
-            console.log(
-              "done writing",
-              secs())})
-
-        BrowserBridge.onLoad(
-          expectTwoLoads)})
+          timestamp,
+          function() {})})
 
     var waitingForReload = false
 
     var browser = browserTask(
       "http://localhost:8008",
-      function() {
-      })
+      function() {})
 
     function expectTwoLoads() {
-      console.log("checking", secs())
       expect(loadCount).to.equal(2)
       browser.done()
       site.stop()

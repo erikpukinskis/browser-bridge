@@ -28,11 +28,10 @@ module.exports = library.export(
       getSocket.handleConnections(
         site,
         function(socket) {
-          console.log("a wild connection appeared", secs())
+          console.log("👀 A wild connection appeared", secs())
 
           socket.listen(
             function(bridgeId) {
-              console.log("a message from the browser? "+bridgeId, secs())
               socketsByBridgeId[
                 bridgeId] = socket
 
@@ -64,10 +63,8 @@ module.exports = library.export(
           getSocket.defineOn(bridge),
           bridge.id],
           function(getSocket, bridgeId) {
-            console.log("ok getting started on the client!", secs())
             var socket = getSocket(
               function(socket) {
-                console.log("connected", secs())
                 socket.listen(
                   handleIt)
                 socket.send(bridgeId)
@@ -77,8 +74,10 @@ module.exports = library.export(
               var now = new Date()
               return "(( "+now.getSeconds()+""+parseInt(now.getMilliseconds()/100)+" ))"}
 
-            function handleIt(filename) {
-              console.log("got a message:"+filename, secs())
+            function handleIt(message) {
+              if (message != "yo file changed"){
+                throw new Error("We are listening for a notification that some file changed and we should reload, but got message: "+message)
+              }
               location.reload()}
           })
 
@@ -88,18 +87,19 @@ module.exports = library.export(
 
 
       function secs() {
+        return ""
         var now = new Date()
         return "(( "+now.getSeconds()+""+parseInt(now.getMilliseconds()/100)+" ))"}
 
       function stopWatching(bridgeId){
-        console.log("someone ded", secs())
+        console.log("👀 Websocket connection is done", secs())
         tearDownFileWatchers(
           bridgeId)
         delete socketsByBridgeId[
           bridgeId]}
 
       function setUpFileWatchers(filename, bridgeId) {
-        console.log("adding "+bridgeId+" to the list of watchers watching "+filename, secs())
+        console.log("👀 Adding "+bridgeId+" to the list of watchers watching "+filename, secs())
         var bridgeIds = bridgesToNotifyByFilename[filename]
 
         if (!bridgeIds) {
@@ -109,13 +109,13 @@ module.exports = library.export(
             handleFileChange.bind(
               null,
               filename))
-          console.log("starting up watcher for "+filename, !!watcher, secs())
+          console.log("👀 Starting up watcher for "+filename, !!watcher, secs())
           watchersByFilename[filename] = watcher}
 
         bridgeIds[bridgeId] = true}
 
       function tearDownFileWatchers(bridgeId) {
-        console.log("tearing down all watchers dependant on "+bridgeId, secs())
+        console.log("👀 Tearing down all watchers dependant on "+bridgeId, secs())
         for(var filename in bridgesToNotifyByFilename) {
           var bridgeIds = bridgesToNotifyByFilename[filename]
           var thisBridgeIsWatching = !!bridgeIds[bridgeId]
@@ -123,32 +123,31 @@ module.exports = library.export(
             return }
 
           delete(bridgeIds[bridgeId])
-          console.log("Removing bridge "+bridgeId+" from watching "+filename, "there are "+Object.keys(bridgeIds)+"watchers left", secs())
+          console.log("👀 Removing bridge "+bridgeId+" from watching "+filename, "\n ... there are "+Object.keys(bridgeIds).length+" watchers left", secs())
           var moreBridgesWatching = Object.keys(bridgeIds).length > 0
           if (moreBridgesWatching) {
             return }
 
-          console.log("No one left watching "+filename, secs())
+          console.log("👀 No one left watching "+filename, secs())
           delete bridgesToNotifyByFilename[filename]
           var watcher = watchersByFilename[filename]
           if (!watcher) {
-            console.log("No watcher for "+filename+"? weird.", secs())
-            return }
+            throw new Error("No watcher for "+filename+"? weird.")}
 
           watcher.close()}}
 
-
-      console.log("getting through the file", secs())
       var waitingForLoad = []
 
       function onLoad(callback) {
+        if (typeof callback != "function") {
+          throw new Error("Callback is not a callback")}
         waitingForLoad.push(callback)
-        console.log("now there are "+waitingForLoad.length+" callbacks waiting for a load", !!callback, secs())
+        console.log("👀 "+waitingForLoad.length+" callbacks waiting for a load", secs())
       }
 
       function aWildBrowserAppeared(bridgeId) {
         var callbacks = waitingForLoad
-        console.log("A wild browser appeared!", bridgeId, "Calling", (callbacks ? callbacks.length : 0), "callbacks", secs())
+        console.log("👀 A wild browser appeared!", bridgeId, "Calling", (callbacks ? callbacks.length : 0), "callbacks", secs())
 
         waitingForLoad = []
         callbacks.forEach(call)}
@@ -159,20 +158,20 @@ module.exports = library.export(
       function handleFileChange(filename) {
         var bridgeIds = bridgesToNotifyByFilename[filename]
 
-        console.log("\na wild file change appeared! in "+filename, secs())
-        console.log(" - there are "+Object.keys(bridgeIds).length+" bridges to notify", secs(), "\n")
+        console.log("👀 A wild file change appeared! in "+filename, secs())
+        console.log(" ... there are "+Object.keys(bridgeIds).length+" bridges to notify", secs())
 
         for(var bridgeId in bridgeIds) {
-          console.log("maybe bridge", bridgeId, "wants it?", secs())
+          console.log("👀 Maybe bridge", bridgeId, "wants it?", secs())
           var socket = socketsByBridgeId[bridgeId]
 
           // If socket is closed, stop looking for it when this file changes
           if (!socket) {
-            console.log("that bird is no more")
+            console.log("👀 That bridge is no longer connected. Weird.")
             delete bridgeIds[bridgeId]
             return}
 
-          console.log("ya lezdoit")
+          console.log("👀 Telling "+bridgeId+" to reload...")
 
           socket.send(
             "yo file changed")}}
