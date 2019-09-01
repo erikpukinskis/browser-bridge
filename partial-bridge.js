@@ -67,10 +67,6 @@ function generator(element, functionCall) {
 
   PartialBridge.prototype.data = no("data")
 
-  PartialBridge.prototype.data = no("data")
-
-  PartialBridge.prototype.data = no("data")
-
   PartialBridge.prototype.event = functionCall.raw("event")
 
   function no(method) {
@@ -90,6 +86,14 @@ function generator(element, functionCall) {
   PartialBridge.prototype.forResponse = function(response) {
     this.response = response
     return this
+  }
+
+  PartialBridge.prototype.reloadOnFileSave = function() {
+    this.base.reloadOnFileSave.apply(this.base, arguments)
+  }
+
+  PartialBridge.prototype.onLoad = function() {
+    this.base.onLoad.apply(this.base, arguments)
   }
 
   PartialBridge.prototype.asBinding = function() {

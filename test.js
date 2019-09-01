@@ -1,10 +1,15 @@
 var runTest = require("run-test")(require)
 
+runTest.only(
+  "hot reloading")
+
 
 runTest(
   "hot reloading",
   ["./", "web-site", "browser-task", "fs"],
   function(expect, done, BrowserBridge, WebSite, browserTask, fs) {
+
+    done.failAfter(15000)
 
     function secs() {
       var now = new Date()
@@ -26,8 +31,6 @@ runTest(
         bridge.forResponse(response).send("Loaded "+loadCount+" times " + secs())})
 
     site.start(8008)
-
-    done.failAfter(1000000000)
 
     var reloadCount = 0 
     bridge.onLoad(function() {
@@ -56,9 +59,15 @@ runTest(
     function expectTwoLoads() {
       console.log("checking", secs())
       expect(loadCount).to.equal(2)
-      browser.done()
-      site.stop()
-      done()}
+      console.log("\nWE ALL GOOD\n")
+      fs.unlink(
+        "foo.js",
+        function() {
+          browser.done()
+          site.stop()
+          bridge.stopWatchingForSaves()
+          done()
+        })}
   })
 
 
@@ -645,8 +654,8 @@ runTest("domReady")
 // Browser tests:
 
 
-// runTest(
-//   "remember bindings in the browser",
+runTest(
+  "remember bindings in the browser")
 //   ["./", "browser-task", "web-site"],
 //   function(expect, done, BrowserBridge, browserTask, WebSite) {
 
@@ -851,52 +860,52 @@ runTest(
 
 
 
-// runTest(
-//   "define a singleton generator",
+runTest(
+  "define a singleton generator",
 
-//   ["./", "web-site", "browser-task"],
-//   function(expect, done, BrowserBridge, WebSite, browserTask) {
+  ["./", "web-site", "browser-task"],
+  function(expect, done, BrowserBridge, WebSite, browserTask) {
 
-//     var site = new WebSite()
-//     var bridge = new BrowserBridge()
+    var site = new WebSite()
+    var bridge = new BrowserBridge()
 
-//     var jump = bridge.defineFunction(
-//       function jump() {
-//         return "so high!"
-//       }
-//     )
+    var jump = bridge.defineFunction(
+      function jump() {
+        return "so high!"
+      }
+    )
 
-//     var random = bridge.defineSingleton(
-//       "rando",
-//       [jump],
-//       function(jump) {
-//         jump()
-//         return "gonzo"
-//       }
-//     )
+    var random = bridge.defineSingleton(
+      "rando",
+      [jump],
+      function(jump) {
+        jump()
+        return "gonzo"
+      }
+    )
 
-//     var check = bridge.defineFunction(
-//       [random],
-//       function checkSingleton(random) {
-//         if (random != "gonzo") {
-//           throw new Error("expected rando to be gonzo")
-//         }
-//       }
-//     )
+    var check = bridge.defineFunction(
+      [random],
+      function checkSingleton(random) {
+        if (random != "gonzo") {
+          throw new Error("expected rando to be gonzo")
+        }
+      }
+    )
 
-//     bridge.asap(check)
+    bridge.asap(check)
 
-//     site.addRoute("get", "/", bridge.requestHandler())
-//     site.start(7000)
+    site.addRoute("get", "/", bridge.requestHandler())
+    site.start(7000)
 
-//     browserTask("http://localhost:7000",
-//       function(browser) {
-//         site.stop()
-//         browser.done()
-//         done()
-//       }
-//     )
-//   }
-// )
+    browserTask("http://localhost:7000",
+      function(browser) {
+        site.stop()
+        browser.done()
+        done()
+      }
+    )
+  }
+)
 
 

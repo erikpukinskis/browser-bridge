@@ -5,13 +5,24 @@ module.exports = library.export(
    "fs", "path", "get-socket"],
   function(fs, path, getSocket) {
 
+
+    // OK, this is sort of working, but really we shouldn't be tracking reloaders by bridgeId, we should be tracking them by connection. Waugh waugh.
+
+    // But the onLoad I think can be by bridgeId since we're really just using that for this little test check.
+
     var socketsByBridgeId = {}
     var bridgesToNotifyByFilename = {}
     var bridgeIdsWaitingForReload = {}
+    var watchersByFilename = {}
 
     return function configureReloadOnFileSave(BrowserBridge) {
       BrowserBridge.prototype.reloadOnFileSave = reloadOnFileSave
       BrowserBridge.prototype.onLoad = onLoad
+      BrowserBridge.prototype.stopWatchingForSaves = stopWatchingForSaves
+    }
+
+    function stopWatchingForSaves() {
+      tearDownFileWatchers(this.id)
     }
 
     function reloadOnFileSave(dirname, pathToFile, site) {
@@ -74,8 +85,6 @@ module.exports = library.export(
                 socketsByBridgeId[
                   bridgeId] = socket
 
-                console.log("somehow at this point tell the test to retry.")
-
                 aWildBrowserAppeared(bridgeId)
 
                 socket.onClose(
@@ -93,14 +102,36 @@ module.exports = library.export(
 
           if (!bridgeIds) {
             bridgeIds = bridgesToNotifyByFilename[filename] = {}
-            fs.watchFile(
+            var watcher = fs.watchFile(
               filename,
               handleFileChange.bind(
                 null,
-                filename))}
+                filename))
+            watchersByFilename[filename] = watcher}
 
           bridgeIds[bridgeId] = true}
 
+      function tearDownFileWatchers(bridgeId) {
+        for(var filename in bridgesToNotifyByFilename) {
+          var bridgeIds = bridgesToNotifyByFilename[filename]
+          var thisBridgeIsWatching = !!bridgeIds[bridgeId]
+          if (!thisBridgeIsWatching) {
+            return }
+
+          console.log("Removing bridge "+bridgeId+" from watching "+filename, secs())
+          delete(bridgeIds[bridgeId])
+          var moreBridgesWatching = Object.keys(bridgeIds).length > 0
+          if (moreBridgesWatching) {
+            return }
+
+          console.log("No one left watching "+filename, secs())
+          delete bridgesToNotifyByFilename[filename]
+          var watcher = watchersByFilename[filename]
+          if (!watcher) {
+            console.log("No watcher for "+filename+"? weird.", secs())
+            return }
+
+          watcher.close()}}
 
       function onLoad(callback) {
         var bridge = this
@@ -134,6 +165,7 @@ module.exports = library.export(
 
         var bridgeIds = bridgesToNotifyByFilename[filename]
 
+        console.log("there are "+Object.keys(bridgeIds).length+" bridges to notify", secs())
         for(var bridgeId in bridgeIds) {
           console.log("maybe bridge", bridgeId, "wants it?", secs())
           var socket = socketsByBridgeId[bridgeId]
