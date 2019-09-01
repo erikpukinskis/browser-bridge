@@ -2,12 +2,12 @@ var library = require("module-library")(require)
 
 module.exports = library.export(
   "browser-bridge",
-  ["web-element", "function-call", "make-request", "./partial-bridge", "global-wait", "identifiable", "add-html", "fs", "path", "get-socket"],
+  ["web-element", "function-call", "make-request", "./partial-bridge", "global-wait", "identifiable", "add-html", "./reload-on-file-save"],
   generator
 )
 
 
-function generator(element, functionCall, makeRequest, PartialBridge, globalWait, identifiable, addHtml, fs, path, getSocket) {
+function generator(element, functionCall, makeRequest, PartialBridge, globalWait, identifiable, addHtml, configureReloadOnFileSave) {
 
   function scrumBacklog(){}
   scrumBacklog.done = function(){}
@@ -38,8 +38,7 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
     }
 
     this.loadPartial.asCall = loadPartialFromBrowser.bind(this)
-    this.waitForSave = waitForSave.bind(this)
-    
+
     this.partials = []
     this.headSource = ""
     this.children = []
@@ -157,121 +156,7 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
 
   // Hot reloading
 
-  BrowserBridge.prototype.reloadOnFileSave = function(dirname, pathToFile, site) {
-      var bridge = this
-      var filename = path.join(dirname, pathToFile)
-      console.log("setting up bridge "+this.id+" and site "+site.id)
-      setUpFileWatchers(filename, bridge.id)
-      setUpBridgeReloaders(bridge)
-      setUpSiteReloaders(site)}
-
-  function setUpBridgeReloaders(bridge) {
-    if (bridge.remember(
-      "browser-bridge/listeningForReload")) {
-        return}
-
-    bridge.asap([
-      getSocket.defineOn(bridge),
-      bridge.id],
-      function(getSocket, bridgeId) {
-        console.log("ok getting started on the client!")
-        var socket = getSocket(
-          function(socket) {
-            console.log("connected")
-            socket.listen(
-              handleIt)
-            socket.send(bridgeId)
-          })
-
-        function handleIt(filename) {
-          console.log("got a message:"+filename)
-          location.reload()}
-      })
-
-    bridge.see(
-      "browser-bridge/listeningForReload",
-      true)}
-
-
-  var socketsToNotifyByBridgeId = {}
-
-  function setUpSiteReloaders(site) {
-    if (site.remember(
-      "browser-bridge/notifyReloadListeners")) {
-        return}
-        
-    getSocket.handleConnections(
-      site,
-      function(socket) {
-        console.log("a wild connection appeared")
-
-        socket.listen(
-          function(bridgeId) {
-            console.log("a message from the browser? "+bridgeId)
-            socketsToNotifyByBridgeId[
-              bridgeId] = socket
-
-            socket.onClose(
-              function(){
-
-                console.log("someone ded")
-                delete socketsToNotifyByBridgeId[
-                  bridgeId]})
-          })
-
-      })}
-
-  
-  var bridgesToNotifyByFilename = {}
-
-  function setUpFileWatchers(filename, bridgeId) {
-      var bridgeIds = bridgesToNotifyByFilename[filename]
-
-      if (!bridgeIds) {
-        bridgeIds = bridgesToNotifyByFilename[filename] = {}
-        fs.watchFile(
-          filename,
-          handleFileChange.bind(
-            null,
-            filename))}
-
-      bridgeIds[bridgeId] = true}
-
-  var callbacksWaitingForSave = {}
-
-  function waitForSave(callback) {
-    var callbacks = callbacksWaitingForSave[this.id]
-    if (!callbacks) {
-      callbacks = callbacksWaitingForSave[this.id] = []
-    }
-    callbacks.push(
-      callback)}
-
-  function call(x) {
-    x()}
-
-  function handleFileChange(filename) {
-    console.log("a wild file change appeared! in "+filename)
-    var bridgeIds = bridgesToNotifyByFilename[filename]
-
-    for(var bridgeId in bridgeIds) {
-      var socket = socketsToNotifyByBridgeId[bridgeId]
-
-      var callbacks
-      if (callbacks = callbacksWaitingForSave[bridgeId]) {
-        callbacks.forEach(call)
-        callbacksWaitingForSave[bridgeId] = []}
-
-      // If socket is closed, stop looking for it when this file changes
-      if (!socket) {
-        console.log("that bird is no more")
-        delete bridgeIds[bridgeId]
-        return}
-
-      console.log("ya lezdoit")
-
-      socket.send(
-        "yo file changed")}}
+  configureReloadOnFileSave(BrowserBridge)
 
 
   // Adding to the DOM
@@ -1088,8 +973,7 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
   }
 
   // fnv32a
-  function hash(str)
-  {
+  function hash(str) {
     // https://gist.github.com/vaiorabbit/5657561
     var FNV1_32A_INIT = 0x811c9dc5;
     var hval = FNV1_32A_INIT;

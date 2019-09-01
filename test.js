@@ -5,7 +5,12 @@ runTest(
   "hot reloading",
   ["./", "web-site", "browser-task", "fs"],
   function(expect, done, BrowserBridge, WebSite, browserTask, fs) {
-    console.log("GO GO GO")
+
+    function secs() {
+      var now = new Date()
+      return "(( "+now.getSeconds()+""+parseInt(now.getMilliseconds()/100)+" ))"}
+
+    console.log("GO GO GO", secs())
     var loadCount = 0
     var site = new WebSite()
     var bridge = new BrowserBridge()
@@ -18,41 +23,50 @@ runTest(
       "/",
       function(request, response) {
         loadCount++
-        bridge.forResponse(response).send("Loaded "+loadCount+" times")})
+        bridge.forResponse(response).send("Loaded "+loadCount+" times " + secs())})
 
     site.start(8008)
 
     done.failAfter(1000000000)
 
-    var browser = browserTask("http://localhost:8008", function() {
-      console.log("about to do first write")
-      fs.writeFile(
-        "foo.js",
-        "bleep",
-        sequence(
-          bridge.waitForSave,
-          writeAnother))})
+    var reloadCount = 0 
+    bridge.onLoad(function() {
+      reloadCount++
+      console.log("saw a load, lets run the checks on the next one")
 
-    function writeAnother() {
-      console.log("writing again")
+      bridge.onLoad(expectTwoLoads)
+    })
 
-      fs.writeFile(
-        "foo.js",
-        "bloop",
-        sequence(
-          bridge.waitForSave,
-          expectTwoLoads))}
+    var browser = browserTask(
+      "http://localhost:8008",
+      function() {
+        console.log(
+          "about to do first write ",
+          secs())
+
+        fs.writeFile(
+          "foo.js",
+          "bleep",
+          function() {
+            console.log(
+              "done writing",
+              secs())})
+      })
 
     function expectTwoLoads() {
-      console.log("checking")
+      console.log("checking", secs())
       expect(loadCount).to.equal(2)
-      done(browser.done)}
+      browser.done()
+      site.stop()
+      done()}
   })
 
 
   function sequence() {
     var handlers = arguments
     var begin = function beginSequence(done){
+      if (typeof done != "function") {
+        return }
       tryToBeDone(
         handlers,
         0,
