@@ -18,7 +18,8 @@ runTest(
     console.log("GO GO GO", secs())
     var loadCount = 0
     var site = new WebSite()
-    var basebridge = new BrowserBridge()
+
+    var baseBridge = new BrowserBridge()
 
     BrowserBridge.enableReload(site)
 
@@ -30,47 +31,43 @@ runTest(
         var bridge = baseBridge.forResponse(response)
 
         bridge.reloadOnFileSave(
-          __dirname, "foo.js")
+          __dirname, "date.TEST")
 
         bridge.send("Loaded "+loadCount+" times " + secs())})
 
     site.start(8008)
 
-    var reloadCount = 0 
-    BrowserBridge.onLoad(function() {
-      reloadCount++
-      console.log("saw a load, lets run the checks on the next one")
-
-      BrowserBridge.onLoad(expectTwoLoads)
-    })
-
-    var browser = browserTask(
-      "http://localhost:8008",
+    BrowserBridge.onLoad(
       function() {
+        console.log("saw a load, lets run the checks on the next one\n\n\n")
         console.log(
           "about to do first write ",
           secs())
 
         fs.writeFile(
-          "foo.js",
-          "bleep",
+          "date.TEST",
+          new Date().valueOf(),
           function() {
             console.log(
               "done writing",
               secs())})
+
+        BrowserBridge.onLoad(
+          expectTwoLoads)})
+
+    var waitingForReload = false
+
+    var browser = browserTask(
+      "http://localhost:8008",
+      function() {
       })
 
     function expectTwoLoads() {
       console.log("checking", secs())
       expect(loadCount).to.equal(2)
-      console.log("\nWE ALL GOOD\n")
-      fs.unlink(
-        "foo.js",
-        function() {
-          browser.done()
-          site.stop()
-          done()
-        })}
+      browser.done()
+      site.stop()
+      done()}
   })
 
 
