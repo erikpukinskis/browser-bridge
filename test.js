@@ -18,26 +18,30 @@ runTest(
     console.log("GO GO GO", secs())
     var loadCount = 0
     var site = new WebSite()
-    var bridge = new BrowserBridge()
+    var basebridge = new BrowserBridge()
 
-    bridge.reloadOnFileSave(
-      __dirname, "foo.js", site)
+    BrowserBridge.enableReload(site)
 
     site.addRoute(
       "get",
       "/",
       function(request, response) {
         loadCount++
-        bridge.forResponse(response).send("Loaded "+loadCount+" times " + secs())})
+        var bridge = baseBridge.forResponse(response)
+
+        bridge.reloadOnFileSave(
+          __dirname, "foo.js")
+
+        bridge.send("Loaded "+loadCount+" times " + secs())})
 
     site.start(8008)
 
     var reloadCount = 0 
-    bridge.onLoad(function() {
+    BrowserBridge.onLoad(function() {
       reloadCount++
       console.log("saw a load, lets run the checks on the next one")
 
-      bridge.onLoad(expectTwoLoads)
+      BrowserBridge.onLoad(expectTwoLoads)
     })
 
     var browser = browserTask(
@@ -65,7 +69,6 @@ runTest(
         function() {
           browser.done()
           site.stop()
-          bridge.stopWatchingForSaves()
           done()
         })}
   })
