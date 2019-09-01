@@ -181,41 +181,31 @@ bridge.domReady(function() {
 
 ## Hot reloading
 
+If you want to reload a bridge when file you're editing changes, you can set that up by hand:
 
 ```
-var loadCount = 0
 var site = new WebSite()
 var fs = require("fs")
 
 var bridge = new BrowserBridge()
+var site = new WebSite()
 
-bridge.reloadOnFileSave(
-  __dirname, "foo.js", site)
+BrowserBridge.enableReload(site)
 
+var loadCount = 0
 site.addRoute(
   "get",
   "/",
   function(request, response) {
     loadCount++
+    var bridge = baseBridge.forResponse(response)
+    bridge.reloadOnFileSave(__dirname, "date.TEST")
     bridge.send("Loaded "+loadCount+" times")})
 
 site.start(8008)
-
-fs.writeFile(
-  "foo.js",
-  "bleep",
-  writeAnother)
-
-function writeAnother() {
-  fs.writeFile(
-    "foo.js",
-    "bloop",
-    expectTwoLoads)}
-
-function expectTwoLoads() {
-  expect(loadCount).toEqual(2)}
 ```
 
+Run `date > date.TEST` in the console to make the page reload.
 
 ## Generating new evalable strings from the browser
 
