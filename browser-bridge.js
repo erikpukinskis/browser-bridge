@@ -2,12 +2,12 @@ var library = require("module-library")(require)
 
 module.exports = library.export(
   "browser-bridge",
-  ["web-element", "function-call", "make-request", "./partial-bridge", "global-wait", "identifiable", "add-html"],
+  ["web-element", "function-call", "make-request", "./partial-bridge", "global-wait", "identifiable", "add-html", "fs", "path", "get-socket"],
   generator
 )
 
 
-function generator(element, functionCall, makeRequest, PartialBridge, globalWait, identifiable, addHtml) {
+function generator(element, functionCall, makeRequest, PartialBridge, globalWait, identifiable, addHtml, fs, path, getSocket) {
 
   function scrumBacklog(){}
   scrumBacklog.done = function(){}
@@ -152,6 +152,97 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
         response.send(html)
       }
     }
+
+
+  // Hot reloading
+
+  BrowserBridge.prototype.reloadOnFileSave = function(dirname, pathToFile, site) {
+      var bridge = this
+      var filename path.join(dirname, pathToFile)
+
+      setUpFileWatchers(filename bridge.id)
+      setUpBridgeReloaders(bridge)
+      setUpSiteReloaders(site)}
+
+  function setUpBridgeReloaders(bridge) {
+    if (bridge.remember(
+      "browser-bridge/listeningForReload")) {
+        return}
+
+    bridge.asap([
+      getSocket.defineOn(bridge)],
+      function(getSocket) {
+        var socket = getSocket(
+          function(socket) {
+            socket.listen(
+              handleIt)})
+
+        function handleIt(filename) {
+          console.log(
+            "reload file:",
+            filename)}})
+
+    bridge.see(
+      "browser-bridge/listeningForReload",
+      true)}
+
+
+  var socketsToNotifyByBridgeId = {}
+
+  function setUpSiteReloaders(site) {
+    if (site.remember(
+      "browser-bridge/notifyReloadListeners")) {
+        return}
+        
+    getSocket.handleConnections(
+      site,
+      function(socket) {
+        socket.listen(
+          function(bridgeId) {
+            socketsToNotifyByBridgeId[
+              bridgeId] = socket})
+        socket.onClose(
+          function(){
+            delete socketsToNotifyByBridgeId[
+              bridgeId]})
+      })}
+
+  
+  var bridgesToNotifyByFilename = {}
+
+  function setUpFileWatchers(filename, bridgeId) {
+      var bridgeIds = bridgesToNotifyByFilename[fileName]
+
+      if (!bridgeIds) {
+        bridgeIds = bridgesToNotifyByFilename[filename] = {}
+        fs.watchFile(
+          filename,
+          handleFileChange.bind(
+            null,
+            filename))}
+
+      bridgeIds[bridgeId] = true}
+
+
+  function handleFileChange(filename) {
+    var bridges = bridgesToNotifyByFilename[filename]
+    bridges.forEach(
+      function(bridgeId, i) {
+        if (!bridgeId) {
+          // already disconnected this bridge
+          return }
+        var socket = socketsToNotifyByBridgeId[bridgeId]
+        if (!socket) {
+          // the socket is closed, disconnect the bridge id
+          bridges[i] = null}
+        socket.send(
+          "yo file changed")})
+
+    if (bridge.length > 1000) {
+      bridgesToNotifyByFilename[filename] = removeNulls(bridges)}}
+
+
+  // Adding to the DOM
 
   BrowserBridge.prototype.addToHead =
     function(stuff) {
