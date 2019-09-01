@@ -179,6 +179,44 @@ bridge.domReady(function() {
 })
 ```
 
+## Hot reloading
+
+
+```
+var loadCount = 0
+var site = new WebSite()
+var fs = require("fs")
+
+var bridge = new BrowserBridge()
+
+bridge.reloadOnFileSave(
+  __dirname, "foo.js", site)
+
+site.addRoute(
+  "get",
+  "/",
+  function(request, response) {
+    loadCount++
+    bridge.send("Loaded "+loadCount+" times")})
+
+site.start(8008)
+
+fs.writeFile(
+  "foo.js",
+  "bleep",
+  writeAnother)
+
+function writeAnother() {
+  fs.writeFile(
+    "foo.js",
+    "bloop",
+    expectTwoLoads)}
+
+function expectTwoLoads() {
+  expect(loadCount).toEqual(2)}
+```
+
+
 ## Generating new evalable strings from the browser
 
 Sometimes you may want to add new elements on the browser. If those have events that need to call your bridge functions, you can pass a function or singleton declaration down to the browser in its raw [function-call](https://github.com/erikpukinskis/function-call) form, rather than as an actual reference to the client function:

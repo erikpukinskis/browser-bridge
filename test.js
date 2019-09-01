@@ -2,6 +2,77 @@ var runTest = require("run-test")(require)
 
 
 runTest(
+  "hot reloading",
+  ["./", "web-site", "browser-task", "fs"],
+  function(expect, done, BrowserBridge, WebSite, browserTask, fs) {
+    console.log("GO GO GO")
+    var loadCount = 0
+    var site = new WebSite()
+    var bridge = new BrowserBridge()
+
+    bridge.reloadOnFileSave(
+      __dirname, "foo.js", site)
+
+    site.addRoute(
+      "get",
+      "/",
+      function(request, response) {
+        loadCount++
+        bridge.forResponse(response).send("Loaded "+loadCount+" times")})
+
+    site.start(8008)
+
+    done.failAfter(1000000000)
+
+    var browser = browserTask("http://localhost:8008", function() {
+      console.log("about to do first write")
+      fs.writeFile(
+        "foo.js",
+        "bleep",
+        sequence(
+          bridge.waitForSave,
+          writeAnother))})
+
+    function writeAnother() {
+      console.log("writing again")
+
+      fs.writeFile(
+        "foo.js",
+        "bloop",
+        sequence(
+          bridge.waitForSave,
+          expectTwoLoads))}
+
+    function expectTwoLoads() {
+      console.log("checking")
+      expect(loadCount).to.equal(2)
+      done(browser.done)}
+  })
+
+
+  function sequence() {
+    var handlers = arguments
+    var begin = function beginSequence(done){
+      tryToBeDone(
+        handlers,
+        0,
+        done)}
+    return begin}
+    
+  function tryToBeDone(handlers, doneCount, done) {
+    var handler = handlers[
+      doneCount]
+    if (!handler) {
+      done()
+      return}
+    var tryAgain = tryToBeDone.bind(
+      handlers,
+      doneCount + 1,
+      done)
+    handler(
+      tryAgain)}
+
+runTest(
   "defining functions with strings",
   ["./", "web-element"],
   function(expect, done, BrowserBridge, element) {

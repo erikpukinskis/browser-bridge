@@ -38,7 +38,8 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
     }
 
     this.loadPartial.asCall = loadPartialFromBrowser.bind(this)
-
+    this.waitForSave = waitForSave.bind(this)
+    
     this.partials = []
     this.headSource = ""
     this.children = []
@@ -158,9 +159,9 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
 
   BrowserBridge.prototype.reloadOnFileSave = function(dirname, pathToFile, site) {
       var bridge = this
-      var filename path.join(dirname, pathToFile)
-
-      setUpFileWatchers(filename bridge.id)
+      var filename = path.join(dirname, pathToFile)
+      console.log("setting up bridge "+this.id+" and site "+site.id)
+      setUpFileWatchers(filename, bridge.id)
       setUpBridgeReloaders(bridge)
       setUpSiteReloaders(site)}
 
@@ -170,17 +171,22 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
         return}
 
     bridge.asap([
-      getSocket.defineOn(bridge)],
-      function(getSocket) {
+      getSocket.defineOn(bridge),
+      bridge.id],
+      function(getSocket, bridgeId) {
+        console.log("ok getting started on the client!")
         var socket = getSocket(
           function(socket) {
+            console.log("connected")
             socket.listen(
-              handleIt)})
+              handleIt)
+            socket.send(bridgeId)
+          })
 
         function handleIt(filename) {
-          console.log(
-            "reload file:",
-            filename)}})
+          console.log("got a message:"+filename)
+          location.reload()}
+      })
 
     bridge.see(
       "browser-bridge/listeningForReload",
@@ -197,21 +203,29 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
     getSocket.handleConnections(
       site,
       function(socket) {
+        console.log("a wild connection appeared")
+
         socket.listen(
           function(bridgeId) {
+            console.log("a message from the browser? "+bridgeId)
             socketsToNotifyByBridgeId[
-              bridgeId] = socket})
-        socket.onClose(
-          function(){
-            delete socketsToNotifyByBridgeId[
-              bridgeId]})
+              bridgeId] = socket
+
+            socket.onClose(
+              function(){
+
+                console.log("someone ded")
+                delete socketsToNotifyByBridgeId[
+                  bridgeId]})
+          })
+
       })}
 
   
   var bridgesToNotifyByFilename = {}
 
   function setUpFileWatchers(filename, bridgeId) {
-      var bridgeIds = bridgesToNotifyByFilename[fileName]
+      var bridgeIds = bridgesToNotifyByFilename[filename]
 
       if (!bridgeIds) {
         bridgeIds = bridgesToNotifyByFilename[filename] = {}
@@ -223,23 +237,41 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
 
       bridgeIds[bridgeId] = true}
 
+  var callbacksWaitingForSave = {}
+
+  function waitForSave(callback) {
+    var callbacks = callbacksWaitingForSave[this.id]
+    if (!callbacks) {
+      callbacks = callbacksWaitingForSave[this.id] = []
+    }
+    callbacks.push(
+      callback)}
+
+  function call(x) {
+    x()}
 
   function handleFileChange(filename) {
-    var bridges = bridgesToNotifyByFilename[filename]
-    bridges.forEach(
-      function(bridgeId, i) {
-        if (!bridgeId) {
-          // already disconnected this bridge
-          return }
-        var socket = socketsToNotifyByBridgeId[bridgeId]
-        if (!socket) {
-          // the socket is closed, disconnect the bridge id
-          bridges[i] = null}
-        socket.send(
-          "yo file changed")})
+    console.log("a wild file change appeared! in "+filename)
+    var bridgeIds = bridgesToNotifyByFilename[filename]
 
-    if (bridge.length > 1000) {
-      bridgesToNotifyByFilename[filename] = removeNulls(bridges)}}
+    for(var bridgeId in bridgeIds) {
+      var socket = socketsToNotifyByBridgeId[bridgeId]
+
+      var callbacks
+      if (callbacks = callbacksWaitingForSave[bridgeId]) {
+        callbacks.forEach(call)
+        callbacksWaitingForSave[bridgeId] = []}
+
+      // If socket is closed, stop looking for it when this file changes
+      if (!socket) {
+        console.log("that bird is no more")
+        delete bridgeIds[bridgeId]
+        return}
+
+      console.log("ya lezdoit")
+
+      socket.send(
+        "yo file changed")}}
 
 
   // Adding to the DOM
