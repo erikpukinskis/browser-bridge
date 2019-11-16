@@ -22,7 +22,7 @@
     "web-element": "*"
   },
   "devDependencies": {
-    "browser-task": "^0.47.0",
+    "browser-task": "^0.49.0",
     "run-test": "^0.58.0",
     "sinon": "*",
     "web-site": "*"

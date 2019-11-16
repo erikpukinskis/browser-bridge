@@ -453,8 +453,8 @@ runTest(
 
 runTest(
   "singleton source",
-  ["./", "browser-bridge"],
-  function(expect, done, bridgeModule, BrowserBridge) {
+  ["./"],
+  function(expect, done, BrowserBridge) {
 
     var bridge = new BrowserBridge()
 
@@ -464,6 +464,7 @@ runTest(
     })
 
     expect(bridge.script()).to.contain("var program = (function () {\n  return true\n}).call()")
+
     done()
   }
 )
