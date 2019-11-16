@@ -2,12 +2,12 @@ var library = require("module-library")(require)
 
 module.exports = library.export(
   "browser-bridge",
-  ["web-element", "function-call", "make-request", "./partial-bridge", "global-wait", "identifiable", "add-html", "./hot-reloading"],
+  ["web-element", "function-call", "make-request", "./partial-bridge", "global-wait", "identifiable", "add-html", "./reload-on-file-save"],
   generator
 )
 
 
-function generator(element, functionCall, makeRequest, PartialBridge, globalWait, identifiable, addHtml, hotReloading) {
+function generator(element, functionCall, makeRequest, PartialBridge, globalWait, identifiable, addHtml, configureReloadOnFileSave) {
 
   function scrumBacklog(){}
   scrumBacklog.done = function(){}
@@ -120,7 +120,7 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
 
   BrowserBridge.prototype.copy = function() {
       var copy = new BrowserBridge(this)
-      copy.id = "copy-"+Math.random().toString(36).substr(2,4)+"-"+this.id
+      copy.id = "copy-"+Math.random().toString(36).substr(2,4)+"-of-"+this.id
       return copy
     }
 
@@ -152,6 +152,11 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
         response.send(html)
       }
     }
+
+
+  // Hot reloading
+
+  configureReloadOnFileSave(BrowserBridge)
 
 
   // Adding to the DOM
