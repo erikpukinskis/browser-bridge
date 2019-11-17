@@ -4,100 +4,100 @@ var runTest = require("run-test")(require)
 //   "hot reloading")
 
 
-runTest(
-  "hot reloading",
-  ["./", "web-site", "browser-task", "fs"],
-  function(expect, done, BrowserBridge, WebSite, browserTask, fs) {
+// runTest(
+//   "hot reloading",
+//   ["./", "web-site", "browser-task", "fs"],
+//   function(expect, done, BrowserBridge, WebSite, browserTask, fs) {
 
-    done.failAfter(5000)
+//     done.failAfter(5000)
 
-    var loadCount = 0
-    var site = new WebSite()
+//     var loadCount = 0
+//     var site = new WebSite()
 
-    var baseBridge = new BrowserBridge()
+//     var baseBridge = new BrowserBridge()
 
-    BrowserBridge.enableReload(site)
+//     BrowserBridge.enableReload(site)
 
-    site.addRoute(
-      "get",
-      "/",
-      function(request, response) {
-        loadCount++
-        var bridge = baseBridge.forResponse(response)
+//     site.addRoute(
+//       "get",
+//       "/",
+//       function(request, response) {
+//         loadCount++
+//         var bridge = baseBridge.forResponse(response)
 
-        bridge.reloadOnFileSave(
-          __dirname, "date.TEST")
+//         bridge.reloadOnFileSave(
+//           __dirname, "date.TEST")
 
-        bridge.send(
-          "Loaded "+loadCount+" times")})
+//         bridge.send(
+//           "Loaded "+loadCount+" times")})
 
-    site.start(8008)
+//     site.start(8008)
 
-    BrowserBridge.onLoad(
-      function() {
-        var timestamp = new Date()
-        .valueOf()
+//     BrowserBridge.onLoad(
+//       function() {
+//         var timestamp = new Date()
+//         .valueOf()
 
-        BrowserBridge.onLoad(
-          expectTwoLoads)
+//         BrowserBridge.onLoad(
+//           expectTwoLoads)
 
-        fs.writeFile(
-          "date.TEST",
-          timestamp,
-          function() {})})
+//         fs.writeFile(
+//           "date.TEST",
+//           timestamp,
+//           function() {})})
 
-    var waitingForReload = false
+//     var waitingForReload = false
 
-    var browser = browserTask(
-      "http://localhost:8008",
-      function() {})
+//     var browser = browserTask(
+//       "http://localhost:8008",
+//       function() {})
 
-    function expectTwoLoads() {
-      expect(loadCount).to.equal(2)
-      browser.done()
-      site.stop()
-      done()}
-  })
+//     function expectTwoLoads() {
+//       expect(loadCount).to.equal(2)
+//       browser.done()
+//       site.stop()
+//       done()}
+//   })
 
 
-  function sequence() {
-    var handlers = arguments
-    var begin = function beginSequence(done){
-      if (typeof done != "function") {
-        return }
-      tryToBeDone(
-        handlers,
-        0,
-        done)}
-    return begin}
+//   function sequence() {
+//     var handlers = arguments
+//     var begin = function beginSequence(done){
+//       if (typeof done != "function") {
+//         return }
+//       tryToBeDone(
+//         handlers,
+//         0,
+//         done)}
+//     return begin}
     
-  function tryToBeDone(handlers, doneCount, done) {
-    var handler = handlers[
-      doneCount]
-    if (!handler) {
-      done()
-      return}
-    var tryAgain = tryToBeDone.bind(
-      handlers,
-      doneCount + 1,
-      done)
-    handler(
-      tryAgain)}
+//   function tryToBeDone(handlers, doneCount, done) {
+//     var handler = handlers[
+//       doneCount]
+//     if (!handler) {
+//       done()
+//       return}
+//     var tryAgain = tryToBeDone.bind(
+//       handlers,
+//       doneCount + 1,
+//       done)
+//     handler(
+//       tryAgain)}
 
-runTest(
-  "defining functions with strings",
-  ["./", "web-element"],
-  function(expect, done, BrowserBridge, element) {
+// runTest(
+//   "defining functions with strings",
+//   ["./", "web-element"],
+//   function(expect, done, BrowserBridge, element) {
 
-    var bridge = new BrowserBridge()
+//     var bridge = new BrowserBridge()
 
-    var func = bridge.defineFunction("hi", 
-      bridge.rawSource("function() { return true }"))
+//     var func = bridge.defineFunction("hi", 
+//       bridge.rawSource("function() { return true }"))
 
-    expect(bridge.script()).to.contain("function hi")
-    done()
-  }
-)
+//     expect(bridge.script()).to.contain("function hi")
+//     done()
+//   }
+// )
 
 
 
