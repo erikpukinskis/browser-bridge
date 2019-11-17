@@ -15,7 +15,7 @@
     "function-call": "*",
     "global-wait": "*",
     "identifiable": "*",
-    "make-request": "*",
+    "make-request": "^0.52.0",
     "module-library": "*",
     "object-hash": "*",
     "single-use-socket": "^0.28.0",
