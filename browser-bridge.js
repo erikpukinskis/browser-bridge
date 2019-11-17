@@ -848,6 +848,12 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
     for (var i=0; i<args.length; i++) {
       var arg = args[i]
 
+      var isBoundAsCall = Array.isArray(arg) && arg[0] && arg[0].__isFunctionCallBinding
+ 
+      if (isBoundAsCall) {
+        functionCall.defineOn(bridge)
+      }
+
       if (typeof arg == "undefined") {  
 
         console.log("\n ✿✿✿ WARNING ✿✿✿  You passed an undefined argument (#"+(i+1)+")")
