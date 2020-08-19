@@ -83,7 +83,7 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
     }
 
     string += bridge[attribute]
-    
+
     bridge.partials.forEach(
       function(partial) {
         var value = partial[attribute]
@@ -170,7 +170,7 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
     }
 
   BrowserBridge.rawSource =
-  BrowserBridge.prototype.rawSource = 
+  BrowserBridge.prototype.rawSource =
   PartialBridge.prototype.rawSource = function(source) {
     if (!source) {
       throw new Error("Raw source is empty")
@@ -387,7 +387,7 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
           content.addAttribute("onload", "onDomReady()")
         }
       }
-      
+
       var headSource = '<meta http-equiv="Content-Language" content="en">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n'+bindings.html()+getFullString(this, "headSource")
 
       if (isPartial) {
@@ -611,11 +611,11 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
     addSource(bridge, "\n\n// The mind is willing but the body is not ready:\n"+bindingSource(domReadyTicket))
 
     domReadyTicket = functionCall(domReadyTicket.identifier).singleton()
-    
+
     var finish = wait.methodCall("finish").withArgs(domReadyTicket)
 
     bridge.see("browser-bridge/finishDomReadyTicket", finish)
-    
+
     return finish
   }
 
@@ -699,6 +699,15 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
       addSource(this, bindingSource(binding))
 
       return functionCall(binding.identifier)
+    }
+
+  BrowserBridge.prototype.call =
+    function(call, prefix) {
+      var id = getIdentifier(this, prefix || call.identifier)
+
+      addSource(this, definitionComment()+"\n"+"var "+id+" = "+call.evalable())
+
+      return functionCall(id).evalable()
     }
 
   BrowserBridge.prototype.cache = function() {
@@ -849,12 +858,12 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
       var arg = args[i]
 
       var isBoundAsCall = Array.isArray(arg) && arg[0] && arg[0].__isFunctionCallBinding
- 
+
       if (isBoundAsCall) {
         functionCall.defineOn(bridge)
       }
 
-      if (typeof arg == "undefined") {  
+      if (typeof arg == "undefined") {
 
         console.log("\n ✿✿✿ WARNING ✿✿✿  You passed an undefined argument (#"+(i+1)+")")
 
@@ -884,10 +893,10 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
 
     dependencies.forEach(function(dep, i) {
       if (!dep) {
-        throw new Error("Dependency "+i+" you passed to the bridge is undefined") 
+        throw new Error("Dependency "+i+" you passed to the bridge is undefined")
       }
     })
-    
+
     if (!func) {
       throw new Error("You need to pass a function to bridge.defineFunction, but you passed "+JSON.stringify(args).slice(0,400)+".")
     }
@@ -908,24 +917,13 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
         bridge.previousBindingStacks[functionHash] = e.stack.split("\n").slice(3).join("\n")
       }
     }
-    
+
     preventBadDeps(dependencies, func)
-
-    var identifier = original = name || func.name || "f"
-
-
-    while(getValue(bridge, "identifiers", identifier)) {
-
-      identifier = original+"_"+Math.random().toString(36).split(".")[1].substr(0,4)
-    }
-
-    bridge.identifiers[identifier] = true
-
 
     var binding = {
       dependencies: dependencies,
       func: func,
-      identifier: identifier,
+      identifier: getIdentifier(bridge, name || func.name),
     }
 
     return binding
@@ -962,7 +960,20 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
         throw new Error("The "+i+"th dependency you passed for "+description+" was a module-library module called "+mod.name+". You probably meant to do bridgeModule(lib, \""+mod.name+"\", bridge) and you just passed the singleton.")
       }
     }
+  }
 
+  function getIdentifier(bridge, name) {
+    var identifier = original = name || "f"
+
+
+    while(getValue(bridge, "identifiers", identifier)) {
+
+      identifier = original+"_"+Math.random().toString(36).split(".")[1].substr(0,4)
+    }
+
+    bridge.identifiers[identifier] = true
+
+    return identifier
   }
 
   BrowserBridge.prototype.handle =
