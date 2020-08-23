@@ -164,6 +164,10 @@ function generator(element, functionCall) {
     return this.base.defineFunction.apply(this.base, arguments)
   }
 
+  PartialBridge.prototype.call = function() {
+    return this.base.call.apply(this.base, arguments)
+  }
+
   PartialBridge.prototype.remember = function() {
     return this.base.remember.apply(this.base, arguments)
   }
