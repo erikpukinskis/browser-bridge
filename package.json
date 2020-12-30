@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "add-html": "*",
-    "function-call": "*",
+    "function-call": "^0.41.0",
     "global-wait": "*",
     "identifiable": "*",
     "make-request": "^0.52.0",
