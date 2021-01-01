@@ -386,4 +386,46 @@ The basic API of browser-bridge is frozen, but there are a few things that need 
 
 * onclick handlers can be seen in DOM attributes, inspected and understood
 
-See also: [bridge-module](https://github.com/erikpukinskis/bridge-module) lets you define modules with dependencies that can be used just like these bridge functions.
+
+## Using modules as dependencies
+
+If you are using [module-library](https://github.com/erikpukinskis/module-library) lets you define modules with dependencies that can be used just like these bridge functions.
+
+You can also access this behavior directly by passing a library reference as a dependency:
+
+```js
+var library = require("module-library")(require)
+
+library.define(
+  "stuff",[
+  library.ref()],
+  function(lib) {
+    function Stuff(){}
+
+    Stuff.prototype.set = function(text) {
+      this.text = text}
+
+    Stuff.prototype.defineOn = function(bridge) {
+      var binding = bridge.defineSingleton([
+        lib.module("stuff")],
+        function(Stuff) {
+          return new Stuff()})
+      return binding}
+
+    return Stuff})
+
+library.using([
+  "browser-bridge",
+  "stuff"],
+  function(BrowserBridge, Stuff),
+    var bridge = new BrowserBridge()
+    var stuff = new Stuff()
+
+    bridge.asap([
+      stuff.defineOn(bridge)],
+      function(stuff) {
+        stuff.set(
+          "blerbl")}))
+````
+
+
