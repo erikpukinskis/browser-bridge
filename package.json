@@ -12,11 +12,12 @@
   },
   "dependencies": {
     "add-html": "*",
-    "function-call": "^0.41.0",
+    "bridge-module": "^0.48.0",
+    "function-call": "^0.42.0",
     "global-wait": "*",
     "identifiable": "*",
     "make-request": "^0.52.0",
-    "module-library": "*",
+    "module-library": "^0.96.0",
     "object-hash": "*",
     "single-use-socket": "^0.28.0",
     "web-element": "*"

@@ -205,10 +205,10 @@ runTest(
         bridge.sendPartial(element(".hi", "Your name is "+name))
       })
 
-    site.start(1919)
+    site.start(9800)
 
     var browser = browserTask(
-      "http://localhost:1919",
+      "http://localhost:9800",
       checkForTarl)
 
     function checkForTarl() {
@@ -273,9 +273,9 @@ runTest(
         partial.sendPartial(more)
       })
 
-    site.start(5111)
+    site.start(9801)
 
-    var browser = browserTask("http://localhost:5111", function() {
+    var browser = browserTask("http://localhost:9801", function() {
       browser.pressButton("button", checkPartialText)
     })
 
@@ -325,9 +325,9 @@ runTest(
       )
     )
 
-    site.start(6676)
+    site.start(9802)
 
-    var browser = browserTask("http://localhost:6676", function() {
+    var browser = browserTask("http://localhost:9802", function() {
       browser.pressButton("button", checkText)
     })
 
@@ -434,30 +434,30 @@ runTest(
   }
 )
 
-runTest(
-  "detecting duplicate definitions",
+// runTest(
+//   "detecting duplicate definitions",
 
-  ["./"],
+//   ["./"],
 
-  function(expect, done, BrowserBridge) {
-    var bridge = new BrowserBridge()
+//   function(expect, done, BrowserBridge) {
+//     var bridge = new BrowserBridge()
 
-    function splendid() {
-      log("I love being bathed in the sink!")
-    }
+//     function splendid() {
+//       log("I love being bathed in the sink!")
+//     }
 
-    bridge.defineFunction(splendid)
+//     bridge.defineFunction(splendid)
 
-    try {
-      bridge.defineFunction(splendid)
-    } catch (e) {
-      done()
-      return
-    }
+//     try {
+//       bridge.defineFunction(splendid)
+//     } catch (e) {
+//       done()
+//       return
+//     }
 
-    throw new Error("Was able to define a function twice")
-  }
-)
+//     throw new Error("Was able to define a function twice")
+//   }
+// )
 
 
 function BODY(func) {
@@ -586,10 +586,10 @@ runTest(
 
 //     site.addRoute("get", "/", bridge.requestHandler())
 
-//     site.start(9881)
+//     site.start(9803)
 
 //     browserTask(
-//       "http://localhost:9881",
+//       "http://localhost:9803",
 //       function(browser) {
 //         browser.assertText("body", "Prince", site.stop, browser.done, done)
 //       }
@@ -614,11 +614,46 @@ runTest(
 
     site.addRoute("get", "/", bridge.requestHandler())
 
-    site.start(9876)
+    site.start(9804)
 
-    browserTask("http://localhost:9876",
+    browserTask("http://localhost:9804",
       function(browser) {
         browser.assertText("body", "hola", site.stop, browser.done, done)
+      }
+    )
+  }
+)
+
+
+runTest(
+  "dependencies can be references to library modules",
+
+  [runTest.library.ref(), "./", "web-site", "browser-task"],
+  function(expect, done, lib, BrowserBridge, WebSite, browserTask) {
+
+    var site = new WebSite()
+    var bridge = new BrowserBridge()
+
+    lib.library.define(
+      "banana",
+      function() {
+        return "banana bread"
+      }
+    )
+
+    bridge.domReady([
+      lib.module("banana")],
+      function write(banana) {
+        document.getElementsByTagName("body")[0].innerHTML = banana
+      })
+
+    site.addRoute("get", "/", bridge.requestHandler())
+
+    site.start(9805)
+
+    browserTask("http://localhost:9805",
+      function(browser) {
+        browser.assertText("body", "banana bread", site.stop, browser.done, done)
       }
     )
   }
@@ -668,11 +703,11 @@ runTest(
       bridge.requestHandler(button)
     )
 
-    site.start(10101)
+    site.start(9806)
 
     // throw new Error("there's a race condition here. sometimes we still see Buttoon by the time we do our assertion")
 
-    var browser = browserTask("http://localhost:10101", pressIt)
+    var browser = browserTask("http://localhost:9806", pressIt)
 
     function pressIt() {
       browser.pressButton("button", checkForTed)
@@ -724,9 +759,9 @@ runTest(
       bridge.requestHandler(button)
     )
 
-    site.start(7662)
+    site.start(9807)
 
-    browserTask("http://localhost:7662",
+    browserTask("http://localhost:9807",
       function(browser) {
 
         browser.pressButton(
@@ -804,9 +839,9 @@ runTest(
     bridge.asap(check)
 
     site.addRoute("get", "/", bridge.requestHandler())
-    site.start(7000)
+    site.start(9808)
 
-    browserTask("http://localhost:7000",
+    browserTask("http://localhost:9808",
       function(browser) {
         site.stop()
         browser.done()

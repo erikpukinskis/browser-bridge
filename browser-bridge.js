@@ -2,12 +2,12 @@ var library = require("module-library")(require)
 
 module.exports = library.export(
   "browser-bridge",
-  ["web-element", "function-call", "make-request", "./partial-bridge", "global-wait", "identifiable", "add-html", "./reload-on-file-save"],
+  ["web-element", "function-call", "make-request", "./partial-bridge", "global-wait", "identifiable", "add-html", "./reload-on-file-save", "bridge-module"],
   generator
 )
 
 
-function generator(element, functionCall, makeRequest, PartialBridge, globalWait, identifiable, addHtml, configureReloadOnFileSave) {
+function generator(element, functionCall, makeRequest, PartialBridge, globalWait, identifiable, addHtml, configureReloadOnFileSave, bridgeModule) {
 
   function scrumBacklog(){}
   scrumBacklog.done = function(){}
@@ -669,7 +669,7 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
     } else {
       var binding = buildBinding(arguments, this)
       binding.definitionComment = definitionComment(1)
-      source += ";"+bindingSource(binding, {callNow: true})
+      source += ";"+bindingSource(binding, this, true)
     }
 
     return "\n"+source+"\n"
@@ -683,7 +683,7 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
       binding.definitionComment = definitionComment()
       binding.isGenerator = true
 
-      addSource(this, bindingSource(binding))
+      addSource(this, bindingSource(binding, this))
 
       return functionCall(binding.identifier).singleton()
     }
@@ -696,7 +696,7 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
 
       binding.definitionComment = definitionComment()
 
-      addSource(this, bindingSource(binding))
+      addSource(this, bindingSource(binding, this))
 
       return functionCall(binding.identifier)
     }
@@ -808,13 +808,21 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
   }
 
 
-  function bindingSource(binding, options) {
+  function bindingSource(binding, bridge, callNow) {
 
     var funcSource = deIndent(functionToString(binding.func))
 
-    var dependencies = binding.dependencies
+    var dependencies = binding.dependencies.map(
+      function(dep) {
+        if (dep === null || !dep.__isLibraryRef) {
+          return dep }
+        if (!dep.moduleName) throw new Error("Can't bind a library as a dependency just yet. Try lib(\"some-module-name\")")
+        return bridgeModule(
+          dep,
+          dep.moduleName,
+          bridge)})
+
     var hasDependencies = dependencies.length > 0
-    var callNow = options && !!options.callNow
     var isPlainFunction = !binding.isGenerator && !hasDependencies && !callNow
 
     if (isPlainFunction) {
@@ -892,8 +900,10 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
     dependencies = dependencies || []
 
     dependencies.forEach(function(dep, i) {
-      if (!dep) {
-        throw new Error("Dependency "+i+" you passed to the bridge is undefined")
+      if (typeof dep === "undefined") {
+        console.log("deps", dependencies)
+        var position = i == 0 ? "first" : i == 1 ? "second" : i == 2 ? "third" : i+"th"
+        throw new Error("The "+position+" dependency you passed to the bridge is undefined. Convert it to a null if you really want to pass something empty down.")
       }
     })
 
@@ -906,10 +916,15 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
     var stack = getValue(bridge, "previousBindingStacks", functionHash)
 
     if (stack) {
-      console.log("Duplicate function:\n", func)
-      console.log("\nOriginal defined:\n", stack)
 
-      throw new Error("You are trying to define the above function, but we already defined one that looks just like that on this bridge. That seems wrong, but if you think it's right, add support to browser-bridge for this.")
+      // WARNING: Commenting out this error for now, because I want to be able to define a bunch of singletons with the same function. But I think I added this to prevent people from doing weird recursive stuff? Not sure.
+
+      // console.log("Duplicate function:\n", func)
+      // console.log("\nOriginal defined:\n", stack)
+
+      // throw new Error("You are trying to define the above function, but we already defined one that looks just like that on this bridge. That seems wrong, but if you think it's right, add support to browser-bridge for this.")
+
+      console.warn("Duplicate function:\n", func.toString())
     } else {
       try {
         throw new Error()
@@ -951,13 +966,14 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
     if (!dependencies) { return }
 
     for(var i=0; i<dependencies.length; i++) {
-
+      if (dependencies[i] == null) {
+        continue }
       var mod = dependencies[i].__nrtvModule
       if (mod) {
 
         var description = (func.name || functionToString(func).substr(0,60)+"...").replace(/(\n| )+/g, " ")
 
-        throw new Error("The "+i+"th dependency you passed for "+description+" was a module-library module called "+mod.name+". You probably meant to do bridgeModule(lib, \""+mod.name+"\", bridge) and you just passed the singleton.")
+        throw new Error("The "+i+"th dependency you passed for "+description+" was a module-library module called "+mod.name+". You probably meant to do bridgeModule(lib, \""+mod.name+"\", bridge) or get a library.ref() and pass lib(\""+mod.name+"\") but you just passed the singleton.")
       }
     }
   }
