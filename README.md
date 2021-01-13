@@ -72,6 +72,34 @@ var friendlyButton = element("button", "Hi there?", {
 
 And now the greeting is a touch friendlier.
 
+
+## Why
+
+* you only send down the javascript that you actually need on a specific page, for faster first visit load times
+
+* no extra asset build step
+
+* client and server code that is tightly coupled can live side by side.
+
+* data is pre-bound on the server, no client boot process needed
+
+* the entire process of building a page is accessible in a single thread, accessible in the debugger
+
+* onclick handlers can be seen in DOM attributes, inspected and understood
+
+## Documentation
+
+* [Javascript events](#javascript-events)
+* [Persisting data across calls](#persisting-data-across-calls)
+* [Re-using a bridge](#re-using-a-bridge)
+* [Page lifecycle](#page-lifecycle)
+* [Generating new evalable strings from the browser](#generating-new-evalable-strings-from-the-browser)
+* [Loading more bridge-aware content after page load](#loading-more-bridge-aware-content-after-page-load)
+* [Recursive functions](#recursive-functions)
+* [Using `bind` with bridge functions](#using-bind-with-bridge-functions)
+* [Road to 1.0](#road-to-)
+* [Using modules as dependencies](#using-modules-as-dependencies)
+
 ## Javascript events
 
 ```javascript
@@ -178,34 +206,6 @@ bridge.domReady(function() {
   // work with page elements here
 })
 ```
-
-## Hot reloading
-
-If you want to reload a bridge when file you're editing changes, you can set that up by hand:
-
-```
-var site = new WebSite()
-var fs = require("fs")
-
-var bridge = new BrowserBridge()
-var site = new WebSite()
-
-BrowserBridge.enableReload(site)
-
-var loadCount = 0
-site.addRoute(
-  "get",
-  "/",
-  function(request, response) {
-    loadCount++
-    var bridge = baseBridge.forResponse(response)
-    bridge.reloadOnFileSave(__dirname, "date.TEST")
-    bridge.send("Loaded "+loadCount+" times")})
-
-site.start(8008)
-```
-
-Run `date > date.TEST` in the console to make the page reload.
 
 ## Generating new evalable strings from the browser
 
@@ -354,44 +354,11 @@ var showError = bridge.defineSingleton([
     return showError
   })
 ```
-
-## Road to 1.0
-
-The basic API of browser-bridge is frozen, but there are a few things that need to be finalized before we can do a 1.0 release:
-
-* PartialBridge instances share the same API as BrowserBridge instances, and they're mostly identical except they passthrough MOST functions to the parent bridge. The class maybe should be generated from a schema, or just folded into the BrowserBridge methods, enabled by a flag. Or maybe it's fine as it is, it's just a bunch of simple passthrough functions which are self explanatory, and it's probably worth thinking through partial bridges every time I add new bridge API.
-
-* Client bridge needs to get working again, and some cruft removed... prependBridgeData is deprecated but that doesn't exactly make sense. (Though it is intriguing I've gotten this far without fixing it. Says something about the importance of bridges being able to exist on the client. I guess it's easy enough to put a module on the client and bind data into it that you don't really need a bridge abstraction. I guess the time when we'd really need it is if we are loading whole new sites in the browser and we want to boot a new component that adds things to the bridge. But even in that case... why not just load a new HTML page from the server, and iframe it or even just append it as a partial.)
-
-* Possibly withChildren and rawSource can be private?
-
-* One header in the documentation for each frozen API
-
-
-
-
-
-
-## Why
-
-* you only send down the javascript that you actually need on a specific page, for faster first visit load times
-
-* no extra asset build step
-
-* client and server code that is tightly coupled can live side by side.
-
-* data is pre-bound on the server, no client boot process needed
-
-* the entire process of building a page is accessible in a single thread, accessible in the debugger
-
-* onclick handlers can be seen in DOM attributes, inspected and understood
-
-
 ## Using modules as dependencies
 
 If you are using [module-library](https://github.com/erikpukinskis/module-library) lets you define modules with dependencies that can be used just like these bridge functions.
 
-You can also access this behavior directly by passing a library reference as a dependency:
+You can also access this behavior more directly by passing a [module-library](https://www.npmjs.com/package/module-library) reference as a dependency:
 
 ```js
 var library = require("module-library")(require)
@@ -428,4 +395,14 @@ library.using([
           "blerbl")}))
 ````
 
+## Road to 1.0
 
+The basic API of browser-bridge is frozen, but there are a few things that need to be finalized before we can do a 1.0 release:
+
+* PartialBridge instances share the same API as BrowserBridge instances, and they're mostly identical except they passthrough MOST functions to the parent bridge. The class maybe should be generated from a schema, or just folded into the BrowserBridge methods, enabled by a flag. Or maybe it's fine as it is, it's just a bunch of simple passthrough functions which are self explanatory, and it's probably worth thinking through partial bridges every time I add new bridge API.
+
+* Client bridge needs to get working again, and some cruft removed... prependBridgeData is deprecated but that doesn't exactly make sense. (Though it is intriguing I've gotten this far without fixing it. Says something about the importance of bridges being able to exist on the client. I guess it's easy enough to put a module on the client and bind data into it that you don't really need a bridge abstraction. I guess the time when we'd really need it is if we are loading whole new sites in the browser and we want to boot a new component that adds things to the bridge. But even in that case... why not just load a new HTML page from the server, and iframe it or even just append it as a partial.)
+
+* Possibly withChildren and rawSource can be private?
+
+* One header in the documentation for each frozen API
