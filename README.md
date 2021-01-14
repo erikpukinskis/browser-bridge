@@ -356,9 +356,9 @@ var showError = bridge.defineSingleton([
 ```
 ## Using modules as dependencies
 
-If you are using [module-library](https://github.com/erikpukinskis/module-library) lets you define modules with dependencies that can be used just like these bridge functions.
+If you are using [module-library](https://github.com/erikpukinskis/module-library), then you can use [bridge-module](https://github.com/erikpukinskis/module-library) to use those modules as depencies for bridge functions.
 
-You can also access this behavior more directly by passing a [module-library](https://www.npmjs.com/package/module-library) reference as a dependency:
+As of January 2021, you can also access this behavior more directly by passing a [module-library](https://www.npmjs.com/package/module-library) reference as a dependency. Although this feature may not make it to 1.0 since it adds a dependency on bridge-module to browser-bridge.
 
 ```js
 var library = require("module-library")(require)
