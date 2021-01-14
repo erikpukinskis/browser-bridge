@@ -43,7 +43,7 @@ bridge.requestHandler returns a handler that will send a page with all of those 
       function greet(name) {
         alert("hi, "+name)
       }
-                  
+
       (function () {
         console.log("Everything is awesome")
       }).call()
@@ -97,8 +97,8 @@ And now the greeting is a touch friendlier.
 * [Loading more bridge-aware content after page load](#loading-more-bridge-aware-content-after-page-load)
 * [Recursive functions](#recursive-functions)
 * [Using `bind` with bridge functions](#using-bind-with-bridge-functions)
-* [Road to 1.0](#road-to-)
 * [Using modules as dependencies](#using-modules-as-dependencies)
+* [Road to 1.0](#road-to-)
 
 ## Javascript events
 
@@ -356,9 +356,33 @@ var showError = bridge.defineSingleton([
 ```
 ## Using modules as dependencies
 
-If you are using [module-library](https://github.com/erikpukinskis/module-library), then you can use [bridge-module](https://github.com/erikpukinskis/module-library) to use those modules as depencies for bridge functions.
+If you are using [module-library](https://github.com/erikpukinskis/module-library), then you can use [bridge-module](https://github.com/erikpukinskis/bridge-module) to add use modules as dependencies in bridge functions:
 
-As of January 2021, you can also access this behavior more directly by passing a [module-library](https://www.npmjs.com/package/module-library) reference as a dependency. Although this feature may not make it to 1.0 since it adds a dependency on bridge-module to browser-bridge.
+```js
+var setName = bridge.defineFunction([
+  bridgeModule(lib, "add-html", bridge)],
+  function(addHtml, name) {
+    addHtml.inside(
+      "#account-menu .name",
+      name)})
+```
+
+However, how this will be done in the future is a bit unsettled...
+
+As of January 2021, you can also access this behavior more directly by passing a [module-library](https://www.npmjs.com/package/module-library) reference as a dependency:
+
+```js
+var setName = bridge.defineFunction([
+  lib.module("add-html"),
+  function(addHtml, name) {
+    ...
+```
+
+This may or may not make it to 1.0 since it makes browser-bridge dependent on bridge-module. And dependencies like that are a code smell.
+
+The reasons we would keep this feature, are A) it makes adding bridge modules way simpler, and B) it makes it possible for modules to export code that controls how the module is used on a bridge. The hope is that this may make it easier to transition a module between the "defines some bridge functions"-style setup to the "provides a module that you can use on the client"-style setup. Because you can mix and match those styles in the same module.
+
+As a simple example, this module exports an `defineOn` function that creates a singleton that's idempotent on a per-bridge-basis:
 
 ```js
 var library = require("module-library")(require)
@@ -373,10 +397,13 @@ library.define(
       this.text = text}
 
     Stuff.prototype.defineOn = function(bridge) {
-      var binding = bridge.defineSingleton([
+      var binding = bridge.remember("stuff singleton")
+      if (binding) return binding
+      binding = bridge.defineSingleton([
         lib.module("stuff")],
         function(Stuff) {
           return new Stuff()})
+      bridge.see("stuff singleton", binding)
       return binding}
 
     return Stuff})
@@ -393,7 +420,11 @@ library.using([
       function(stuff) {
         stuff.set(
           "blerbl")}))
-````
+```
+
+Without this special `lib.module` support in `browser-bridge`, you'd have to have a `stuff` module with no dependencies and a separate `put-stuff-on-bridge` module that set up the singleton and had the `bridge-module` dependency.
+
+The jury is out about whether that's a good constraint or a bad constraint. So these `lib.module` dependencies may or may not survive.
 
 ## Road to 1.0
 
@@ -406,3 +437,6 @@ The basic API of browser-bridge is frozen, but there are a few things that need 
 * Possibly withChildren and rawSource can be private?
 
 * One header in the documentation for each frozen API
+
+* Need to resolve the question of whether the native bridge-module support is the right separation (inclusion?) of concerns.
+
