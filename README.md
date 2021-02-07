@@ -378,13 +378,14 @@ var setName = bridge.defineFunction([
     ...
 ```
 
-This may or may not make it to 1.0 since it makes browser-bridge dependent on bridge-module. And dependencies like that are a code smell.
+This may or may not make it to 1.0 since it makes browser-bridge dependent on [bridge-module](https://github.com/erikpukinskis/bridge-module). And dependencies like that are a code smell.
 
-The reasons we would keep this feature, are A) it makes adding bridge modules way simpler, and B) it makes it possible for modules to export code that controls how the module is used on a bridge. The hope is that this may make it easier to transition a module between the "defines some bridge functions"-style setup to the "provides a module that you can use on the client"-style setup. Because you can mix and match those styles in the same module.
+The reasons we would keep this feature, are A) it makes adding bridge modules way simpler, and B) it makes it possible for modules to export code that controls how that same is used on a bridge. The hope is that this may make it easier to transition a module between the "defines some bridge functions"-style setup (which doesn't require any dependencies) to the "provides a module that you can use on the client"-style setup (without adding any depedencies). Because you can mix and match those styles in the same module.
 
 As a simple example, this module exports an `defineOn` function that creates a singleton that's idempotent on a per-bridge-basis:
 
 ```js
+// New method for bridge safe modules:
 var library = require("module-library")(require)
 
 library.define(
@@ -422,9 +423,57 @@ library.using([
           "blerbl")}))
 ```
 
-Without this special `lib.module` support in `browser-bridge`, you'd have to have a `stuff` module with no dependencies and a separate `put-stuff-on-bridge` module that set up the singleton and had the `bridge-module` dependency.
+Without this special `lib.module` support in browser-bridge, you'd have to have a `stuff` module with no dependencies and a separate `put-stuff-on-bridge` module that set up the singleton and had the bridge-module dependency.
 
-The jury is out about whether that's a good constraint or a bad constraint. So these `lib.module` dependencies may or may not survive.
+That's not necessarily the end of the world... using [module-library](https://github.com/erikpukinskis/module-library), it's not hard to define a module-with-a-module that is bridge safe:
+
+```js
+// Original method for bridge-safe modules:
+library.define(
+  "stuff/bridge-safe",
+  function() {
+    function Stuff(){}
+
+    Stuff.prototype.set = ...
+
+    return Stuff
+  })
+
+module.exports = library.export(
+  "stuff",[
+  library.ref(),
+  "bridge-module",
+  "stuff/bridge-safe"],
+  function(bridgeModule, Stuff) {
+
+    Stuff.defineOn = function(bridge) {
+      var binding = bridge.remember("stuff singleton")
+      if (binding) return binding
+
+      binding = bridge.defineSingleton([
+        bridgeModule(
+          lib,
+          "stuff/bridge-safe",
+          bridge)],
+        function(Stuff) {
+          return new Stuff()})
+
+      bridge.see("stuff singleton", binding)
+
+      return binding
+    }
+
+    return Stuff
+  })
+```
+
+So, that's possible. It's just more code, and there are different names for the modules that you'd import on node and the one you'd see on the bridge. And "your-package" has to have a dependency on bridge-module, whether or not the consumer needs it.
+
+With the new method, of exposing `lib.module("some path")`, "your-package" can just have on dependency on [module-library](https://github.com/erikpukinskis/module-library), and [bridge-module](https://github.com/erikpukinskis/bridge-module) won't be pulled in unless the _consumer_ of "your-package" creates a [browser-bridge](https://github.com/erikpukinskis/browser-bridge).
+
+The major sacrifice of this new approach, is that browser-bridge depends on bridge-module. But it is essentially "taking one for the team," allowing every other module to be free of that dependency.
+
+The jury is out about whether that's a good move or a bad move. But it will have to be decided before 1.0.
 
 ## Road to 1.0
 
