@@ -757,7 +757,8 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
   BrowserBridge.prototype.send = function(content, response) {
 
     if (!response) {
-      response = this.response }
+      response = this.response
+    }
 
     if (!response) {
       throw new Error("You can not call bridge.send() on an original browser bridge. Try:\n        var newBridge = bridge.forResponse(response)\n        newBridge.send(content)\nor use bridge.requestHandler(content)")}
