@@ -731,6 +731,9 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
   }
 
   BrowserBridge.prototype.forResponse = function(response) {
+    if (typeof response.send != "function") {
+      throw new Error("The second argument to bridge.forResponse() needs to be an express response, or something with a .send() method.")
+    }
     var copy = this.copy()
     copy.response = response
     return copy
@@ -766,6 +769,9 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
     for(var key in headers) {
       this.response.set(key, headers[key]) }
 
+    if (typeof response.send != "function") {
+      throw new Error("The second argument to bridge.send() needs to be an express response, or something with a .send() method.")
+    }
     response.send(
       this.toHtml(
         content))}
