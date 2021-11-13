@@ -3,6 +3,24 @@ var runTest = require("run-test")(require)
 // runTest.only("calling a function and making the result available in global scope")
 
 runTest(
+  "base bridge cannot use stuff defined on a copy as dependencies",
+  ["."],
+  function (expect, done, BrowserBridge) {
+    var bridge = new BrowserBridge()
+
+    var copy = bridge.copy()
+
+    var singleton = copy.defineSingleton(function () {})
+
+    expect(function () {
+      bridge.defineFunction([singleton], function () {})
+    }).to.throw()
+    done()
+  }
+)
+
+
+runTest(
   "partials have everything bridges do",
   ["."],
   function(expect, done, BrowserBridge) {

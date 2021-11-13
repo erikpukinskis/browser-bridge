@@ -280,7 +280,10 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
       "browser-bridge/loadPartial",
       load)
 
-    return load.withArgs(this.id)
+    var call = load.withArgs(this.id)
+    call.__nrtvBridgeId = this.id
+
+    return call
   }
 
   BrowserBridge.prototype.withChildren = function(content) {
@@ -685,7 +688,9 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
 
       addSource(this, bindingSource(binding, this))
 
-      return functionCall(binding.identifier).singleton()
+      var call = functionCall(binding.identifier).singleton()
+      call.__nrtvBridgeId = this.id
+      return call
     }
 
   BrowserBridge.event = BrowserBridge.prototype.event = functionCall.raw("event")
@@ -698,7 +703,9 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
 
       addSource(this, bindingSource(binding, this))
 
-      return functionCall(binding.identifier)
+      var call = functionCall(binding.identifier)
+      call.__nrtvBridgeId = this.id
+      return call
     }
 
   BrowserBridge.prototype.call =
@@ -912,6 +919,19 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
         var position = i == 0 ? "first" : i == 1 ? "second" : i == 2 ? "third" : i+"th"
         throw new Error("The "+position+" dependency you passed to the bridge is undefined. Convert it to a null if you really want to pass something empty down.")
       }
+
+      if (dep.__isFunctionCallBinding) {
+        var maybeDefinedFunction = bridge
+        var count = 0
+        while(maybeDefinedFunction.id != dep.__nrtvBridgeId) {
+          count++
+          if (count > 10) {
+            throw new Error(
+              "10 levels deep of browser-bridges is too many")}
+          if (!maybeDefinedFunction.base) {
+            throw new Error("function call "+dep.evalable()+" was defined on bridge "+dep.__nrtvBridgeId+" but you are trying to use it from bridge "+bridge.id+" which doesn't seem to be one of its parents. Maybe you defined that function on a copy of "+bridge.id+"?")}
+
+          maybeDefinedFunction = maybeDefinedFunction.base}}
     })
 
     if (!func) {
