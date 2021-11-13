@@ -162,12 +162,23 @@ function generator(element, functionCall, makeRequest, PartialBridge, globalWait
   // Adding to the DOM
 
   BrowserBridge.prototype.addToHead =
-    function(stuff) {
-      if (typeof stuff.html == "function") {
-        stuff = stuff.html()
+    function(elements, etc) {
+      if (etc) {
+        elements = Array.prototype.slice.call(
+        arguments)
+      } else if (!Array.isArray(
+        elements)) {
+        elements = [elements]
       }
-      this.headSource = this.headSource+stuff
-    }
+
+      var bridge = this
+
+      elements.forEach(
+        function(stuff) {
+          if (typeof stuff.html == "function") {
+            stuff = stuff.html()
+          }
+          bridge.headSource = bridge.headSource+stuff})}
 
   BrowserBridge.rawSource =
   BrowserBridge.prototype.rawSource =
