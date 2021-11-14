@@ -19,7 +19,6 @@
     "make-request": "^0.52.0",
     "module-library": "^0.96.0",
     "object-hash": "*",
-    "single-use-socket": "^0.28.0",
     "web-element": "*"
   },
   "devDependencies": {
